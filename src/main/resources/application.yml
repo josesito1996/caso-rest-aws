@@ -1,0 +1,9 @@
+springdoc:
+  api-docs:
+    path: /api-docs
+aws:
+  config:
+    region: us-east-2
+    access-key: AKIAZK2JA2ZMTRFSMRFK
+    secret-key: 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
+    service-endpoint: dynamodb.us-east-2.amazonaws.com
