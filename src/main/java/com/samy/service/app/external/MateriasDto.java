@@ -16,11 +16,14 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
-public class TipoActuacionDto {
-	@JsonProperty("id_tipo_actuacion")
-	@DynamoDBAttribute(attributeName = "id_tipo_actuacion")
+public class MateriasDto {
+	@DynamoDBAttribute(attributeName = "id_materia")
 	private String id;
-	@JsonProperty("nombre_tipo_actuacion")
-	@DynamoDBAttribute(attributeName = "nombre_tipo_actuacion")
-	private String nombreTipoActuacion;
+	@DynamoDBAttribute
+	private String color;
+	@DynamoDBAttribute
+	private String icono;
+	@DynamoDBAttribute(attributeName = "nombre_materia")
+	@JsonProperty("nombre_materia")
+	private String nombreMateria;
 }

@@ -10,6 +10,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.samy.service.app.config.LocalDateConverter;
 import com.samy.service.app.config.LocalDateTimeConverter;
 import com.samy.service.app.external.ArchivoAdjunto;
+import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.TipoActuacionDto;
 
@@ -26,6 +27,10 @@ import lombok.ToString;
 @Setter
 @ToString
 public class Actuacion {
+
+	@DynamoDBAttribute(attributeName = "id_actuacion")
+	private String idActuacion;
+	
 	@DynamoDBAttribute
 	@DynamoDBTypeConverted( converter = LocalDateConverter.class )
 	private LocalDate fechaActuacion;
@@ -43,10 +48,11 @@ public class Actuacion {
 	private TipoActuacionDto tipoActuacion;
 	
 	@DynamoDBAttribute
-	private String etapa;
+	private EtapaDto etapa;
 	
 	@DynamoDBAttribute
 	private List<ArchivoAdjunto> archivos;
+	
 	@DynamoDBAttribute
 	private List<Tarea> tareas;
 }
