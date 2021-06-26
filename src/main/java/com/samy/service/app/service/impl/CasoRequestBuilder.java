@@ -57,13 +57,12 @@ public class CasoRequestBuilder {
 	public Caso transformFromBody(CasoBody request) {
 		Caso caso = new Caso();
 		caso.setId(request.getIdCaso());
-		caso.setDenominacionCaso(request.getDescripcionCaso());
 		caso.setFechaInicio(request.getFechaInicio());
 		caso.setOrdenInspeccion(request.getOrdenInspeccion());
 		caso.setInspectorTrabajo(request.getInspectorTrabajo());
 		caso.setInspectorAuxiliar(request.getInspectorAuxiliar());
 		caso.setMaterias(getMateriasDto(request.getMaterias()));
-		caso.setDenominacionCaso(request.getDescripcionCaso());
+		caso.setDescripcionCaso(request.getDescripcionCaso());
 		if (request.getIdCaso() == null) {
 			caso.setRegistro(LocalDateTime.now());
 		}

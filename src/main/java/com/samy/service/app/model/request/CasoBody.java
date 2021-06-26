@@ -10,7 +10,6 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.samy.service.app.external.InspectorDto;
-import com.samy.service.app.external.MateriasDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

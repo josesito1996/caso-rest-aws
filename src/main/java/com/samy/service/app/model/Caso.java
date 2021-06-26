@@ -45,8 +45,6 @@ public class Caso {
 	@DynamoDBAttribute
 	private List<MateriasDto> materias;
 	@DynamoDBAttribute
-	private String denominacionCaso;
-	@DynamoDBAttribute
 	private List<Actuacion> actuaciones;
 	@DynamoDBAttribute
 	private Boolean estadoCaso;
