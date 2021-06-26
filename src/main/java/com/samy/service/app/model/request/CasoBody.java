@@ -50,7 +50,7 @@ public class CasoBody {
 
 	@NotNull
 	@Size(min = 1)
-	private List<MateriasDto> materias;
+	private List<String> materias;
 
 	
 	@Valid

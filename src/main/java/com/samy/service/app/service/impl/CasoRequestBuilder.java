@@ -10,19 +10,21 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.util.Utils;
 
 @Component
 public class CasoRequestBuilder {
 
 	public Caso transformFromNewCaso(Caso caso, ActuacionBody request) {
 		List<Actuacion> actuaciones = caso.getActuaciones();
-		
+
 		if (actuaciones.size() > 0) {
 			actuaciones.add(transformActuacionFromBody(request));
 		} else {
@@ -60,14 +62,20 @@ public class CasoRequestBuilder {
 		caso.setOrdenInspeccion(request.getOrdenInspeccion());
 		caso.setInspectorTrabajo(request.getInspectorTrabajo());
 		caso.setInspectorAuxiliar(request.getInspectorAuxiliar());
-		caso.setMaterias(request.getMaterias());
+		caso.setMaterias(getMateriasDto(request.getMaterias()));
 		caso.setDenominacionCaso(request.getDescripcionCaso());
 		if (request.getIdCaso() == null) {
 			caso.setRegistro(LocalDateTime.now());
 		}
 		caso.setEstadoCaso(request.getEstado());
 		caso.setActuaciones(transformListActuacionFromBody(request.getActuacionBody()));
+		caso.setUsuario(request.getUsuario());
 		return caso;
+	}
+
+	private List<MateriasDto> getMateriasDto(List<String> materias) {
+		return materias.stream().map(item -> Utils.convertFromString(item, MateriasDto.class))
+				.collect(Collectors.toList());
 	}
 
 	private List<Actuacion> transformListActuacionFromBody(List<ActuacionBody> actuaciones) {
