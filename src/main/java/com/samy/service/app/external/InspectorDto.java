@@ -20,21 +20,16 @@ import lombok.ToString;
 @Setter
 @ToString
 public class InspectorDto {
-	
+
 	@NotNull
 	@NotEmpty
 	@DynamoDBAttribute(attributeName = "id_inspector")
 	private String id;
-	
-	
+
 	@NotNull
 	@NotEmpty
 	@JsonProperty("nombre_inspector")
 	@DynamoDBAttribute(attributeName = "nombre_inspector")
 	private String nombreInspector;
-	
-	@NotNull
-	@NotEmpty
-	@DynamoDBAttribute(attributeName = "tipo")
-	private String tipo;
+
 }

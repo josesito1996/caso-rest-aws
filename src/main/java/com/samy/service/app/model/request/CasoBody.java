@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.samy.service.app.external.InspectorDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,13 +38,14 @@ public class CasoBody {
 	@JsonProperty("orden_inspeccion")
 	private String ordenInspeccion;
 
-	@NotNull
+	@Size(min = 1)
 	@JsonProperty("inspector_trabajo")
-	private InspectorDto inspectorTrabajo;
+	@Valid
+	private List<ReactSelectRequest> inspectorTrabajo;
 
-	@NotNull
 	@JsonProperty("inspector_auxiliar")
-	private InspectorDto inspectorAuxiliar;
+	@Valid
+	private List<ReactSelectRequest> inspectorAuxiliar;
 
 	@NotNull
 	@Size(min = 1)

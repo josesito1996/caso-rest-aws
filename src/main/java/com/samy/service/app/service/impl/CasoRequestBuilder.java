@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.samy.service.app.external.InspectorDto;
 import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.ReactSelectRequest;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.util.Utils;
 
@@ -59,8 +61,8 @@ public class CasoRequestBuilder {
 		caso.setId(request.getIdCaso());
 		caso.setFechaInicio(request.getFechaInicio());
 		caso.setOrdenInspeccion(request.getOrdenInspeccion());
-		caso.setInspectorTrabajo(request.getInspectorTrabajo());
-		caso.setInspectorAuxiliar(request.getInspectorAuxiliar());
+		caso.setInspectorTrabajo(getInspectorDto(request.getInspectorTrabajo()));
+		caso.setInspectorAuxiliar(getInspectorDto(request.getInspectorAuxiliar()));
 		caso.setMaterias(getMateriasDto(request.getMaterias()));
 		caso.setDescripcionCaso(request.getDescripcionCaso());
 		if (request.getIdCaso() == null) {
@@ -70,6 +72,14 @@ public class CasoRequestBuilder {
 		caso.setActuaciones(transformListActuacionFromBody(request.getActuacionBody()));
 		caso.setUsuario(request.getUsuario());
 		return caso;
+	}
+
+	private List<InspectorDto> getInspectorDto(List<ReactSelectRequest> listReact) {
+		return listReact.stream().map(this::transformFromReact).collect(Collectors.toList());
+	}
+
+	private InspectorDto transformFromReact(ReactSelectRequest reactSelectRequest) {
+		return new InspectorDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
 	}
 
 	private List<MateriasDto> getMateriasDto(List<String> materias) {

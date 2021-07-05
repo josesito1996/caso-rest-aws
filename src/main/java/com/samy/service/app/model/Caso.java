@@ -39,9 +39,9 @@ public class Caso {
 	@DynamoDBAttribute
 	private String ordenInspeccion;
 	@DynamoDBAttribute
-	private InspectorDto inspectorTrabajo;
+	private List<InspectorDto> inspectorTrabajo;
 	@DynamoDBAttribute
-	private InspectorDto inspectorAuxiliar;
+	private List<InspectorDto> inspectorAuxiliar;
 	@DynamoDBAttribute
 	private List<MateriasDto> materias;
 	@DynamoDBAttribute
