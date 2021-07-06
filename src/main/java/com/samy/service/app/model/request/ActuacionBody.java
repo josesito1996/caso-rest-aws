@@ -10,7 +10,6 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.samy.service.app.external.ArchivoAdjunto;
-import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.TipoActuacionDto;
 
 import lombok.AllArgsConstructor;
@@ -50,6 +49,6 @@ public class ActuacionBody {
 	private List<TareaBody> tareas;
 
 	@Valid
-	private EtapaDto etapa;
+	private ReactSelectRequest etapa;
 
 }
