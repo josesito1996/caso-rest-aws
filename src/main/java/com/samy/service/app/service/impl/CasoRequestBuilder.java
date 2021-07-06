@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.InspectorDto;
 import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
@@ -105,12 +106,20 @@ public class CasoRequestBuilder {
 			actuacion.setFechaRegistro(LocalDateTime.now());
 		}
 		actuacion.setDescripcion(actuacionBody.getDescripcion());
-		actuacion.setFuncionario(actuacionBody.getFuncionario());
+		actuacion.setFuncionario(transformToFuncionarioDto(actuacionBody.getFuncionarios()));
 		actuacion.setTipoActuacion(actuacionBody.getTipoActuacion());
 		actuacion.setEtapa(actuacionBody.getEtapa());
 		actuacion.setArchivos(actuacionBody.getArchivos());
 		actuacion.setTareas(transformListTareaFromBody(actuacionBody.getTareas()));
 		return actuacion;
+	}
+
+	private List<FuncionarioDto> transformToFuncionarioDto(List<ReactSelectRequest> reactSelectRequests) {
+		return reactSelectRequests.stream().map(this::transformDto).collect(Collectors.toList());
+	}
+
+	private FuncionarioDto transformDto(ReactSelectRequest reactSelectRequest) {
+		return new FuncionarioDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
 	}
 
 	private List<Tarea> transformListTareaFromBody(List<TareaBody> tareas) {

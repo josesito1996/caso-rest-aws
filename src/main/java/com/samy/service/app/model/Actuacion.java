@@ -42,7 +42,7 @@ public class Actuacion {
 	private String descripcion;
 	
 	@DynamoDBAttribute
-	private FuncionarioDto funcionario;
+	private List<FuncionarioDto> funcionario;
 	
 	@DynamoDBAttribute
 	private TipoActuacionDto tipoActuacion;

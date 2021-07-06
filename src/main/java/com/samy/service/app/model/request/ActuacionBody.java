@@ -6,11 +6,11 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.EtapaDto;
-import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.TipoActuacionDto;
 
 import lombok.AllArgsConstructor;
@@ -37,12 +37,12 @@ public class ActuacionBody {
 	private String descripcion;
 
 	@Valid
-	private FuncionarioDto funcionario;
+	@Size(min = 1)
+	private List<ReactSelectRequest> funcionarios;
 
 	@JsonProperty("tipo_actuacion")
 	private TipoActuacionDto tipoActuacion;
 
-	
 	@Valid
 	private List<ArchivoAdjunto> archivos;
 
