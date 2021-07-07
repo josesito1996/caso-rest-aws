@@ -10,7 +10,6 @@ import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.samy.service.app.external.ArchivoAdjunto;
-import com.samy.service.app.external.TipoActuacionDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,7 +39,7 @@ public class ActuacionBody {
 	private List<ReactSelectRequest> funcionarios;
 
 	@JsonProperty("tipo_actuacion")
-	private TipoActuacionDto tipoActuacion;
+	private ReactSelectRequest tipoActuacion;
 
 	@Valid
 	private List<ArchivoAdjunto> archivos;

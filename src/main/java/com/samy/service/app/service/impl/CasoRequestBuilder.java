@@ -14,6 +14,7 @@ import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.InspectorDto;
 import com.samy.service.app.external.MateriasDto;
+import com.samy.service.app.external.TipoActuacionDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
@@ -108,17 +109,21 @@ public class CasoRequestBuilder {
 		}
 		actuacion.setDescripcion(actuacionBody.getDescripcion());
 		actuacion.setFuncionario(transformToFuncionarioDto(actuacionBody.getFuncionarios()));
-		actuacion.setTipoActuacion(actuacionBody.getTipoActuacion());
+		actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
 		actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
 		actuacion.setArchivos(actuacionBody.getArchivos());
 		actuacion.setTareas(transformListTareaFromBody(actuacionBody.getTareas()));
 		return actuacion;
 	}
 
+	private TipoActuacionDto toTipoActuacion(ReactSelectRequest reactSelectRequest) {
+		return new TipoActuacionDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
+	}
+
 	private EtapaDto toEtapaDto(ReactSelectRequest reactSelectRequest) {
 		return new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
 	}
-	
+
 	private List<FuncionarioDto> transformToFuncionarioDto(List<ReactSelectRequest> reactSelectRequests) {
 		return reactSelectRequests.stream().map(this::transformDto).collect(Collectors.toList());
 	}
