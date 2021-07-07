@@ -19,6 +19,7 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.service.CasoService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,11 @@ public class CasoController {
 	@GetMapping(path = "/listAll")
 	public List<Caso> listCasos() {
 		return service.listar();
+	}
+	
+	@GetMapping(path = "/listAllByUserName/{userName}")
+	public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName) {
+		return service.listadoDeCasosPorUserName(userName);
 	}
 
 	@PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
