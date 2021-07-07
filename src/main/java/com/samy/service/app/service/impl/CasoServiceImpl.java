@@ -69,6 +69,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	private HomeCaseResponse transformToHomeCase(Caso caso) {
 		return HomeCaseResponse.builder()
+				.idCaso(caso.getId())
 				.fechaInicio(fechaFormateada(caso.getFechaInicio()))
 				.etapaActuacion(etapaActuacion(caso.getActuaciones()))
 				.riesgo(null)

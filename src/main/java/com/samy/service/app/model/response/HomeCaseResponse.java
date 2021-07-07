@@ -19,6 +19,8 @@ public class HomeCaseResponse implements Serializable {
 	
 	private static final long serialVersionUID = -101992654946709540L;
 	
+	private String idCaso;
+	
 	private String fechaInicio;
 	
 	private String etapaActuacion;
