@@ -89,7 +89,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * @return
 	 */
 	private String etapaActuacion(List<Actuacion> actuaciones) {
-		return actuaciones.isEmpty() ? "" : actuaciones.get(actuaciones.size() - 1).getEtapa().getNombreEtapa();
+		return actuaciones.isEmpty() ? " --- " : actuaciones.get(actuaciones.size() - 1).getEtapa().getNombreEtapa();
 	}
 	
 	/**
@@ -98,7 +98,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * @return
 	 */
 	private String fechaActuacion(List<Actuacion> actuaciones) {
-		return actuaciones.isEmpty() ? "" : fechaFormateada(actuaciones.get(actuaciones.size() - 1).getFechaActuacion());
+		return actuaciones.isEmpty() ? " --- " : fechaFormateada(actuaciones.get(actuaciones.size() - 1).getFechaActuacion());
 	}
 	
 	/**
@@ -107,7 +107,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * @return
 	 */
 	private String tipoActuacion(List<Actuacion> actuaciones) {
-		return actuaciones.isEmpty() ? "" : actuaciones.get(actuaciones.size() - 1).getTipoActuacion().getNombreTipoActuacion();
+		return actuaciones.isEmpty() ? " --- " : actuaciones.get(actuaciones.size() - 1).getTipoActuacion().getNombreTipoActuacion();
 	}
 
 }
