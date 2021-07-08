@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.samy.service.app.external.EtapaDto;
@@ -27,6 +28,13 @@ import com.samy.service.app.util.Utils;
 @Component
 public class CasoRequestBuilder {
 
+	@Autowired
+	private FileServiceImpl fileService;
+	
+	@Autowired
+	private FileResquestBuilder fileBuilder;
+	
+	
 	public Caso transformFromNewCaso(Caso caso, ActuacionBody request) {
 		List<Actuacion> actuaciones = caso.getActuaciones();
 
@@ -111,7 +119,7 @@ public class CasoRequestBuilder {
 		actuacion.setFuncionario(transformToFuncionarioDto(actuacionBody.getFuncionarios()));
 		actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
 		actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
-		actuacion.setArchivos(actuacionBody.getArchivos());
+		actuacion.setArchivos(fileService.uploadFile(fileBuilder.getFiles(actuacionBody.getArchivos())));
 		actuacion.setTareas(transformListTareaFromBody(actuacionBody.getTareas()));
 		return actuacion;
 	}

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
@@ -45,6 +46,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		return registrar(builder.transformFromBody(request));
 	}
 
+	@Transactional
 	@Override
 	public Caso registrarActuacion(ActuacionBody request, String idCaso) {
 		Caso caso = verPodId(idCaso);

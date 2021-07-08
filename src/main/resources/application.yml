@@ -7,3 +7,10 @@ aws:
     access-key: AKIAZK2JA2ZMTRFSMRFK
     secret-key: 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
     service-endpoint: dynamodb.us-east-2.amazonaws.com
+  bucket:
+    name: archivos-samy
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB

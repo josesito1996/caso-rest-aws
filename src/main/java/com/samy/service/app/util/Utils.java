@@ -1,12 +1,19 @@
 package com.samy.service.app.util;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Utils {
 
 	public static String uuidGenerado() {
@@ -22,9 +29,25 @@ public class Utils {
 			return null;
 		}
 	}
-	
+
 	public static String fechaFormateada(LocalDate fecha) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
 		return fecha.format(formatter);
+	}
+
+	public static String getExtension(String fileName) {
+		return fileName.substring(fileName.indexOf("."), fileName.length());
+	}
+
+	public static ArchivoS3 archivoFromBase64(String base64, String fileName, String contentType) {
+		File tempFile = new File(fileName);
+		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+			byte[] decodedFile = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+			fos.write(decodedFile);
+			return ArchivoS3.builder().archivo(tempFile).contentType(contentType).build();
+		} catch (Exception e) {
+			log.error("Error al generar archivo " + e.getMessage());
+			return ArchivoS3.builder().build();
+		}
 	}
 }
