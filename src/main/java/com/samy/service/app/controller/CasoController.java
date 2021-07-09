@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.samy.service.app.aws.MateriaDbAws;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
@@ -32,9 +33,14 @@ public class CasoController {
 
 	@Autowired
 	private CasoService service;
+	
+	@Autowired
+	private MateriaDbAws awsConnect;
+	
 
 	@GetMapping(path = "/listAll")
 	public List<Caso> listCasos() {
+		log.info(awsConnect.getTable("764a7fea-87a2-4eb4-be60-43228a52e039").toString());
 		return service.listar();
 	}
 

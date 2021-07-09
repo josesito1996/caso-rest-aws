@@ -2,7 +2,7 @@ package com.samy.service.app.model.response;
 
 import java.util.List;
 
-import com.samy.service.app.external.MateriasDto;
+import com.samy.service.app.aws.MateriaPojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,5 +23,8 @@ public class DetailCaseResponse {
 	private String descripcion;
 	private String fechaCreacion;
 	private String ordenInspeccion;
-	private List<MateriasDto> materias;
+	private String tipoActuacion;
+	private Integer cantidadDocumentos;
+	private String funcionario;
+	private List<MateriaPojo> materias;
 }

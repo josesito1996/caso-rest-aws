@@ -12,6 +12,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.transfer.TransferManager;
@@ -38,6 +39,11 @@ public class AwsConfig {
 
 		return AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(endpointConfiguration())
 				.withCredentials(awsCredentialsProvider()).build();
+	}
+
+	@Bean
+	public DynamoDB getDynamoDB() {
+		return new DynamoDB(amazonDynamoDB());
 	}
 
 	@Bean

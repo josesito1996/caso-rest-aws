@@ -2,6 +2,7 @@ package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.util.Utils.fechaFormateada;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.samy.service.app.aws.MateriaDbAws;
+import com.samy.service.app.aws.MateriaPojo;
+import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
@@ -29,6 +33,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Autowired
 	private CasoRequestBuilder builder;
+	
+	@Autowired
+	private MateriaDbAws materiaAws;
 
 	@Override
 	protected GenericRepo<Caso, String> getRepo() {
@@ -81,8 +88,19 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.descripcion(caso.getDescripcionAdicional())
 				.fechaCreacion(fechaFormateada(caso.getFechaInicio()))
 				.ordenInspeccion(caso.getOrdenInspeccion())
-				.materias(caso.getMaterias())
+				.materias(transformToDto(caso.getMaterias()))
+				.tipoActuacion(tipoActuacion(caso.getActuaciones()))
+				.cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
+				.funcionario(funcionario(caso.getActuaciones()))
 				.build();
+	}
+	
+	private List<MateriaPojo> transformToDto(List<MateriasDto> materias){
+		List<MateriaPojo> materiasBd = new ArrayList<MateriaPojo>();
+		for (MateriasDto materia : materias) {
+			materiasBd.add(materiaAws.getTable(materia.getId()));
+		}
+		return materiasBd;
 	}
 	
 	private HomeCaseResponse transformToHomeCase(Caso caso) {
@@ -103,28 +121,57 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	/**
 	 * Ultima etapa de la Actuacion
+	 * 
 	 * @param actuaciones
 	 * @return
 	 */
 	private String etapaActuacion(List<Actuacion> actuaciones) {
 		return actuaciones.isEmpty() ? " --- " : actuaciones.get(actuaciones.size() - 1).getEtapa().getNombreEtapa();
 	}
-	
+
 	/**
 	 * Ultima fecha de Actuacion
+	 * 
 	 * @param actuaciones
 	 * @return
 	 */
 	private String fechaActuacion(List<Actuacion> actuaciones) {
-		return actuaciones.isEmpty() ? " --- " : fechaFormateada(actuaciones.get(actuaciones.size() - 1).getFechaActuacion());
+		return actuaciones.isEmpty() ? " --- "
+				: fechaFormateada(actuaciones.get(actuaciones.size() - 1).getFechaActuacion());
 	}
-	
+
 	/**
 	 * Ultima Tipo de Actuacion
+	 * 
 	 * @param actuaciones
 	 * @return
 	 */
 	private String tipoActuacion(List<Actuacion> actuaciones) {
-		return actuaciones.isEmpty() ? " --- " : actuaciones.get(actuaciones.size() - 1).getTipoActuacion().getNombreTipoActuacion();
+		return actuaciones.isEmpty() ? " --- "
+				: actuaciones.get(actuaciones.size() - 1).getTipoActuacion().getNombreTipoActuacion();
+	}
+	
+	/**
+	 * Cantidad de documentos de la ultima actuacion.
+	 * @param actuaciones
+	 * @return
+	 */
+	private Integer cantidadDocumentos(List<Actuacion> actuaciones) {
+		return actuaciones.isEmpty() ? 0 : actuaciones.get(actuaciones.size() - 1).getArchivos().size();
+	}
+	
+	/**
+	 * Nombre de Funcionario de ultima actuacion.
+	 * @param actuaciones
+	 * @return
+	 */
+	private String funcionario(List<Actuacion> actuaciones) {
+		if (actuaciones.isEmpty()) {
+			return " --- ";
+		}
+		int actuacionesSize = actuaciones.size();
+		Actuacion actuacion = actuaciones.get(actuacionesSize -1);
+		int funcionariosSize = actuacion.getFuncionario().size();
+		return funcionariosSize > 0 ? actuacion.getFuncionario().get(funcionariosSize -1).getDatosFuncionario() : " --- ";
 	}
 }
