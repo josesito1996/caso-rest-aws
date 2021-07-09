@@ -34,6 +34,9 @@ public class Caso {
 	private String id;
 	
 	@DynamoDBAttribute
+	private String descripcionAdicional;
+	
+	@DynamoDBAttribute
 	private String descripcionCaso;
 	
 	@DynamoDBTypeConverted( converter = LocalDateConverter.class )

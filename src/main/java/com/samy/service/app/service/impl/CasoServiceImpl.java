@@ -15,6 +15,7 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
@@ -68,7 +69,22 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName) {
 		return listarCasosPorUserName(userName).stream().map(this::transformToHomeCase).collect(Collectors.toList());
 	}
-
+	@Override
+	public DetailCaseResponse mostratDetalleDelCasoPorId(String idCaso) {
+		return transformFromCaso(verPodId(idCaso));
+	}
+	
+	private DetailCaseResponse transformFromCaso(Caso caso) {
+		return DetailCaseResponse.builder()
+				.idCaso(caso.getId())
+				.nombreCaso(caso.getDescripcionCaso())
+				.descripcion(caso.getDescripcionAdicional())
+				.fechaCreacion(fechaFormateada(caso.getFechaInicio()))
+				.ordenInspeccion(caso.getOrdenInspeccion())
+				.materias(caso.getMaterias())
+				.build();
+	}
+	
 	private HomeCaseResponse transformToHomeCase(Caso caso) {
 		return HomeCaseResponse.builder()
 				.idCaso(caso.getId())
@@ -111,5 +127,4 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	private String tipoActuacion(List<Actuacion> actuaciones) {
 		return actuaciones.isEmpty() ? " --- " : actuaciones.get(actuaciones.size() - 1).getTipoActuacion().getNombreTipoActuacion();
 	}
-
 }

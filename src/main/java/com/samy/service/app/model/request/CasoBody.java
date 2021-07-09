@@ -29,6 +29,9 @@ public class CasoBody {
 	@NotNull
 	@JsonProperty("descripcion_caso")
 	private String descripcionCaso;
+	
+	@JsonProperty("descripcion_adicional")
+	private String descripcionAdicional;
 
 	@NotNull
 	private LocalDate fechaInicio;
