@@ -47,9 +47,10 @@ public class FileServiceImpl implements FileService {
 				metadata.put("Content-Length", String.valueOf(archivo.length()));
 				InputStream is = new FileInputStream(archivo);
 				String uuidGenerado = uuidGenerado();
-				upload(bucketName, archivo.getName().concat("(@@)").concat(uuidGenerado), Optional.of(metadata), is);
+				upload(bucketName, uuidGenerado.concat(getExtension(archivo.getName())), Optional.of(metadata), is);
 				archivos.add(new ArchivoAdjunto(uuidGenerado, archivo.getName(), getExtension(archivo.getName()), ""));
 				archivo.delete();
+				log.info("Archivo " + archivo.getName() + "registrado correctamente");
 			} catch (FileNotFoundException e) {
 				log.error("Error al tratar con archivo " + e.getMessage());
 			}

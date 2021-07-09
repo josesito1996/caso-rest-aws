@@ -42,12 +42,16 @@ public class Utils {
 	public static ArchivoS3 archivoFromBase64(String base64, String fileName, String contentType) {
 		File tempFile = new File(fileName);
 		try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-			byte[] decodedFile = Base64.getDecoder().decode(base64.getBytes(StandardCharsets.UTF_8));
+			byte[] decodedFile = Base64.getDecoder().decode(base64Text(base64).getBytes(StandardCharsets.UTF_8));
 			fos.write(decodedFile);
 			return ArchivoS3.builder().archivo(tempFile).contentType(contentType).build();
 		} catch (Exception e) {
-			log.error("Error al generar archivo " + e.getMessage());
+			log.error("Error al convertir archivo desde Base64 " + e.getMessage());
 			return ArchivoS3.builder().build();
 		}
+	}
+
+	public static String base64Text(String base64) {
+		return base64.isEmpty() || base64 == null ? "" : base64.split(",")[1];
 	}
 }
