@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.samy.service.app.aws.MateriaDbAws;
 import com.samy.service.app.aws.MateriaPojo;
+import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
@@ -147,6 +148,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * @return
 	 */
 	private String tipoActuacion(List<Actuacion> actuaciones) {
+		if (actuaciones == null) {
+			return " --- ";
+		}
 		return actuaciones.isEmpty() ? " --- "
 				: actuaciones.get(actuaciones.size() - 1).getTipoActuacion().getNombreTipoActuacion();
 	}
@@ -157,7 +161,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * @return
 	 */
 	private Integer cantidadDocumentos(List<Actuacion> actuaciones) {
-		return actuaciones.isEmpty() ? 0 : actuaciones.get(actuaciones.size() - 1).getArchivos().size();
+		if (actuaciones == null) {
+			return 0;
+		}
+		if (actuaciones.isEmpty()) {
+			return 0;
+		}
+		List<ArchivoAdjunto> archivos = actuaciones.get(actuaciones.size() - 1).getArchivos();
+		return archivos != null ? archivos.size() : 0;
 	}
 	
 	/**
