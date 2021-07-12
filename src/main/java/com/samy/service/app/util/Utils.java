@@ -55,7 +55,7 @@ public class Utils {
 	}
 
 	private static String formatMes(String mes) {
-		String primeraLetra = mes.substring(0).toUpperCase();
+		String primeraLetra = mes.substring(0, 1).toUpperCase();
 		String resto = mes.substring(1, mes.length());
 		return primeraLetra.concat(resto);
 	}
