@@ -1,6 +1,9 @@
 package com.samy.service.app.service.impl;
 
+import static com.samy.service.app.util.Utils.añoFecha;
+import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
+import static com.samy.service.app.util.Utils.mesFecha;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +20,13 @@ import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
+import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
+import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
@@ -80,6 +86,45 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public DetailCaseResponse mostratDetalleDelCasoPorId(String idCaso) {
 		return transformFromCaso(verPodId(idCaso));
+	}
+	
+
+	@Override
+	public List<ActuacionResponse> listarActuacionesPorCaso(String idCaso) {
+		return verPodId(idCaso).getActuaciones().stream().map(this::transformDetalle).collect(Collectors.toList());
+	}
+	
+	private ActuacionResponse transformDetalle(Actuacion actuacion) {
+		return ActuacionResponse.builder()
+				.idActuacion(actuacion.getIdActuacion())
+				.año(añoFecha(actuacion.getFechaActuacion()))
+				.dia(diaFecha(actuacion.getFechaActuacion()))
+				.mes(mesFecha(actuacion.getFechaActuacion()))
+				.tipo(actuacion.getTipoActuacion().getNombreTipoActuacion())
+				.etapa(actuacion.getEtapa().getNombreEtapa())
+				.descripcionActuacion(actuacion.getDescripcion())
+				.detalles(transformDetalleActuacionResponse(actuacion.getTareas()))
+				.build();
+	}
+	
+	private List<DetalleActuacionResponse> transformDetalleActuacionResponse(List<Tarea> tareas) {
+		List<DetalleActuacionResponse> detalle = new ArrayList<DetalleActuacionResponse>();
+		for (Tarea tare : tareas) {
+			detalle.add(transformFromTarea(tare));
+		}
+		return detalle;
+	}
+	
+	private DetalleActuacionResponse transformFromTarea(Tarea tarea) {
+		return DetalleActuacionResponse.builder()
+				.idTarea(tarea.getIdTarea())
+				.nombreTarea(tarea.getDenominacion())
+				.cantidadDocumentos(tarea == null ? 0 : tarea.getArchivos().size())
+				.equipo(tarea.getEquipo().getNombreEquipo())
+				.fechaRegistro(fechaFormateada(tarea.getFechaRegistro()))
+				.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
+				.estado(tarea.getEstado())
+				.build();
 	}
 	
 	private DetailCaseResponse transformFromCaso(Caso caso) {

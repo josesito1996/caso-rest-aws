@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.UUID;
@@ -30,9 +31,33 @@ public class Utils {
 		}
 	}
 
+	public static String fechaFormateada(LocalDateTime fecha) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY hh:mm:s");
+		return fecha.format(formatter);
+	}
+
 	public static String fechaFormateada(LocalDate fecha) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
 		return fecha.format(formatter);
+	}
+
+	public static String añoFecha(LocalDate fecha) {
+		return String.valueOf(fecha.getYear());
+	}
+
+	public static String diaFecha(LocalDate fecha) {
+		return String.valueOf(fecha.getDayOfMonth());
+	}
+
+	public static String mesFecha(LocalDate fecha) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM");
+		return formatMes(fecha.format(formatter));
+	}
+
+	private static String formatMes(String mes) {
+		String primeraLetra = mes.substring(0).toUpperCase();
+		String resto = mes.substring(1, mes.length());
+		return primeraLetra.concat(resto);
 	}
 
 	public static String getExtension(String fileName) {

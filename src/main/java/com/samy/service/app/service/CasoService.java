@@ -6,6 +6,7 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 
@@ -24,5 +25,7 @@ public interface CasoService extends ICrud<Caso, String> {
 	public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName);
 
 	public DetailCaseResponse mostratDetalleDelCasoPorId(String idCaso);
+	
+	public List<ActuacionResponse> listarActuacionesPorCaso(String idCaso);
 
 }

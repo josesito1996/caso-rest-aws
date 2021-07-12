@@ -19,6 +19,7 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.service.CasoService;
@@ -36,6 +37,11 @@ public class CasoController {
 	@GetMapping(path = "/listAll")
 	public List<Caso> listCasos() {
 		return service.listar();
+	}
+	
+	@GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
+	public List<ActuacionResponse> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
+		return service.listarActuacionesPorCaso(idCaso);
 	}
 
 	@GetMapping(path = "/listAllByUserName/{userName}")
