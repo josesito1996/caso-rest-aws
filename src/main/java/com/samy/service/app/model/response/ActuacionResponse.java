@@ -34,6 +34,12 @@ public class ActuacionResponse implements Serializable {
 	
 	private String descripcionActuacion;
 	
+	private Integer totalDocumentosActuacion;
+	
+	private Integer totalDocumentosTareas;
+	
+	private Integer totalTareasRealizadas;
+	
 	private List<DetalleActuacionResponse> detalles;
 	
 }

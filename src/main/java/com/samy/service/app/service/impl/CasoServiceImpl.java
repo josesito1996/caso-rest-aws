@@ -103,8 +103,24 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.tipo(actuacion.getTipoActuacion().getNombreTipoActuacion())
 				.etapa(actuacion.getEtapa().getNombreEtapa())
 				.descripcionActuacion(actuacion.getDescripcion())
+				.totalDocumentosActuacion(actuacion.getArchivos() == null ? 0 : actuacion.getArchivos().size())
+				.totalDocumentosTareas(countDocumentosDeTareas(actuacion.getTareas()))
+				.totalTareasRealizadas(countTareasRealizadas(actuacion.getTareas()).intValue())
 				.detalles(transformDetalleActuacionResponse(actuacion.getTareas()))
 				.build();
+	}
+	
+	
+	private Long countTareasRealizadas(List<Tarea> tareas) {
+		return tareas.stream().filter(estado -> estado.getEstado()).count();
+	}
+	
+	private Integer countDocumentosDeTareas(List<Tarea> tareas) {
+		int contador = 0;
+		for (Tarea tarea : tareas) {
+			contador = contador + (tarea.getArchivos() == null ? 0 : tarea.getArchivos().size());
+		}
+		return contador;
 	}
 	
 	private List<DetalleActuacionResponse> transformDetalleActuacionResponse(List<Tarea> tareas) {
