@@ -111,7 +111,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
     private ActuacionResponse transformDetalle(Actuacion actuacion) {
         return ActuacionResponse.builder().idActuacion(actuacion.getIdActuacion())
-                // .año(añoFecha(actuacion.getFechaActuacion()))
                 .dia(diaFecha(actuacion.getFechaActuacion()))
                 .mes(mesFecha(actuacion.getFechaActuacion()))
                 .tipo(actuacion.getTipoActuacion().getNombreTipoActuacion())

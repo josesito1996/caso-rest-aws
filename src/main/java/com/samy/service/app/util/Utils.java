@@ -32,7 +32,8 @@ public class Utils {
 	}
 
 	public static String fechaFormateada(LocalDateTime fecha) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY hh:mm:s");
+		//DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY hh:mm:s");
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
 		return fecha.format(formatter);
 	}
 
