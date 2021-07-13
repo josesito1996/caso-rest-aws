@@ -8,6 +8,7 @@ import static com.samy.service.app.util.Utils.mesFecha;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
+import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
@@ -92,14 +94,24 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     @Override
-    public List<ActuacionResponse> listarActuacionesPorCaso(String idCaso) {
-        return verPodId(idCaso).getActuaciones().stream().map(this::transformDetalle)
-                .collect(Collectors.toList());
+    public List<MainActuacionResponse> listarActuacionesPorCaso(String idCaso) {
+        return transformMainActuacion(verPodId(idCaso).getActuaciones());
+    }
+
+    private List<MainActuacionResponse> transformMainActuacion(List<Actuacion> actuaciones) {
+        List<MainActuacionResponse> mainActuaciones = new ArrayList<MainActuacionResponse>();
+        Map<Object, List<Actuacion>> actuMap = actuaciones.stream().collect(
+                Collectors.groupingBy(actuacion -> añoFecha(actuacion.getFechaActuacion())));
+        actuMap.forEach((key, item) -> {
+            mainActuaciones.add(new MainActuacionResponse(String.valueOf(key),
+                    item.stream().map(this::transformDetalle).collect(Collectors.toList())));
+        });
+        return mainActuaciones;
     }
 
     private ActuacionResponse transformDetalle(Actuacion actuacion) {
         return ActuacionResponse.builder().idActuacion(actuacion.getIdActuacion())
-                .año(añoFecha(actuacion.getFechaActuacion()))
+                // .año(añoFecha(actuacion.getFechaActuacion()))
                 .dia(diaFecha(actuacion.getFechaActuacion()))
                 .mes(mesFecha(actuacion.getFechaActuacion()))
                 .tipo(actuacion.getTipoActuacion().getNombreTipoActuacion())

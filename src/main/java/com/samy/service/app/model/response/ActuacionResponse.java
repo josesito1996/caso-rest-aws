@@ -22,8 +22,6 @@ public class ActuacionResponse implements Serializable {
 
 	private String idActuacion;
 	
-	private String año;
-	
 	private String dia;
 	
 	private String mes;

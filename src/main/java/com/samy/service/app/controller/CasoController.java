@@ -19,9 +19,9 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaBody;
-import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
+import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.service.CasoService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,47 +31,48 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CasoController {
 
-	@Autowired
-	private CasoService service;
+    @Autowired
+    private CasoService service;
 
-	@GetMapping(path = "/listAll")
-	public List<Caso> listCasos() {
-		return service.listar();
-	}
-	
-	@GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
-	public List<ActuacionResponse> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
-		return service.listarActuacionesPorCaso(idCaso);
-	}
+    @GetMapping(path = "/listAll")
+    public List<Caso> listCasos() {
+        return service.listar();
+    }
 
-	@GetMapping(path = "/listAllByUserName/{userName}")
-	public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName) {
-		return service.listadoDeCasosPorUserName(userName);
-	}
+    @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
+    public List<MainActuacionResponse> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
+        return service.listarActuacionesPorCaso(idCaso);
+    }
 
-	@PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public Caso registrarCaso(@Valid @RequestBody CasoBody requestBody) {
-		log.info("Cuerpo del Body : " + requestBody.toString());
-		return service.registrarCaso(requestBody);
-	}
+    @GetMapping(path = "/listAllByUserName/{userName}")
+    public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName) {
+        return service.listadoDeCasosPorUserName(userName);
+    }
 
-	@GetMapping(path = "/findById/{id}")
-	public DetailCaseResponse findById(@PathVariable String id) {
-		return service.mostratDetalleDelCasoPorId(id);
-	}
+    @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Caso registrarCaso(@Valid @RequestBody CasoBody requestBody) {
+        log.info("Cuerpo del Body : " + requestBody.toString());
+        return service.registrarCaso(requestBody);
+    }
 
-	@PostMapping(path = "/saveActuacion/{idCaso}")
-	public Caso registrarActuacion(@Valid @RequestBody ActuacionBody requestBody, @PathVariable String idCaso) {
-		log.info("Cuerpo del Body : " + requestBody.toString());
-		return service.registrarActuacion(requestBody, idCaso);
-	}
+    @GetMapping(path = "/findById/{id}")
+    public DetailCaseResponse findById(@PathVariable String id) {
+        return service.mostratDetalleDelCasoPorId(id);
+    }
 
-	@PostMapping(path = "/saveTarea")
-	public Caso registrarTarea(@Valid @RequestBody TareaBody requestBody,
-			@ParameterObject @RequestParam(name = "id_caso") String idCaso,
-			@RequestParam(name = "id_actuacion") String idActuacion) {
-		log.info("Cuerpo del Body : " + requestBody.toString());
-		return service.registrarTarea(requestBody, idActuacion, idCaso);
-	}
+    @PostMapping(path = "/saveActuacion/{idCaso}")
+    public Caso registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
+            @PathVariable String idCaso) {
+        log.info("Cuerpo del Body : " + requestBody.toString());
+        return service.registrarActuacion(requestBody, idCaso);
+    }
+
+    @PostMapping(path = "/saveTarea")
+    public Caso registrarTarea(@Valid @RequestBody TareaBody requestBody,
+            @ParameterObject @RequestParam(name = "id_caso") String idCaso,
+            @RequestParam(name = "id_actuacion") String idActuacion) {
+        log.info("Cuerpo del Body : " + requestBody.toString());
+        return service.registrarTarea(requestBody, idActuacion, idCaso);
+    }
 
 }
