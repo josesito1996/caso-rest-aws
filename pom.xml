@@ -100,24 +100,29 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
+				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy-resources</id>
-						<!-- here the phase you need -->
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
+						<id>prepare</id>
+						<phase>package</phase>
 						<configuration>
-							<outputDirectory>${basedir}/target/.ebextensions</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/resources/ebextensions</directory>
-									<filtering>true</filtering>
-								</resource>
-							</resources>
+							<tasks>
+								<unzip
+									src="${project.build.directory}/${project.build.finalName}.jar"
+									dest="${project.build.directory}/${project.build.finalName}" />
+								<copy
+									todir="${project.build.directory}/${project.build.finalName}/"
+									overwrite="false">
+									<fileset dir="./" includes=".ebextensions/**" />
+								</copy>
+								<zip compress="false"
+									destfile="${project.build.directory}/${project.build.finalName}.jar"
+									basedir="${project.build.directory}/${project.build.finalName}" />
+							</tasks>
 						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
