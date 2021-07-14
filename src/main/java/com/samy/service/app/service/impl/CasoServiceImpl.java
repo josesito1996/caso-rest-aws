@@ -71,7 +71,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return registrar(builder.transformFromNewCaso(caso, request));
     }
 
-    @Transactional
     @Override
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso) {
         Caso caso = verPodId(idCaso);

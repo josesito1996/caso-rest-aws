@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.samy.service.app.external.EquipoDto;
 import com.samy.service.app.external.EtapaDto;
@@ -54,6 +55,7 @@ public class CasoRequestBuilder {
         return caso;
     }
 
+    @Transactional
     public Caso transformFromNewActuacion(Caso caso, TareaBody request, String idActuacion) {
         List<Actuacion> actuaciones = caso.getActuaciones();
         Integer index = 0;
@@ -178,15 +180,13 @@ public class CasoRequestBuilder {
 
     private EquipoDto transformEquipoBody(EquipoBody equipoBody) {
         return EquipoDto.builder()
-                .idEquipo(personalService.registrar(
+                .idEquipo(personalService.registrarPersonal(
                         new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()))
                         .getIdPersonal())
                 .build();
     }
 
     public List<String> getEquiposString(List<EquipoDto> equipos) {
-        return equipos.stream()
-                .map(item -> personalService.verUnoPorId(item.getIdEquipo()).getDatos())
-                .collect(Collectors.toList());
+        return personalService.listarPersonal(equipos);
     }
 }
