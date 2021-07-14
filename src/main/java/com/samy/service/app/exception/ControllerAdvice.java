@@ -23,12 +23,6 @@ public class ControllerAdvice {
 		return new ErrorResponse(HttpStatus.NOT_FOUND.value(), LocalDateTime.now(), ex.getMessage(), new ArrayList<>());
 	}
 
-	@ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse error500(Exception ex) {
-        log.error("Recurso no encontrado : " + ex.getMessage());
-        return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now(), ex.getMessage(), new ArrayList<>());
-    }
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

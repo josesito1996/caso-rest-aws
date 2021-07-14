@@ -1,6 +1,8 @@
 package com.samy.service.app.model.response;
 
 import java.io.Serializable;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +26,7 @@ public class DetalleActuacionResponse implements Serializable {
 
 	private Integer cantidadDocumentos;
 
-	private String equipo;
+	private List<String> equipos;
 
 	private String fechaRegistro;
 

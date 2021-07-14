@@ -23,22 +23,30 @@ import lombok.ToString;
 @Setter
 @ToString
 public class Tarea {
-	
-	@DynamoDBAttribute(attributeName = "id_tarea")
-	private String idTarea;
-	
-	@DynamoDBAttribute
-	private String denominacion;
-	@DynamoDBAttribute
-	@DynamoDBTypeConverted( converter = LocalDateTimeConverter.class )
-	private LocalDateTime fechaRegistro;
-	@DynamoDBAttribute
-	@DynamoDBTypeConverted( converter = LocalDateTimeConverter.class )
-	private LocalDateTime fechaVencimiento;
-	@DynamoDBAttribute
-	private EquipoDto equipo;
-	@DynamoDBAttribute
-	private List<ArchivoAdjunto> archivos;
-	@DynamoDBAttribute
-	private Boolean estado;
+
+    @DynamoDBAttribute(attributeName = "id_tarea")
+    private String idTarea;
+
+    @DynamoDBAttribute
+    private String denominacion;
+    
+    @DynamoDBAttribute
+    private String mensaje;
+
+    @DynamoDBAttribute
+    @DynamoDBTypeConverted(converter = LocalDateTimeConverter.class)
+    private LocalDateTime fechaRegistro;
+
+    @DynamoDBAttribute
+    @DynamoDBTypeConverted(converter = LocalDateTimeConverter.class)
+    private LocalDateTime fechaVencimiento;
+
+    @DynamoDBAttribute
+    private List<EquipoDto> equipos;
+
+    @DynamoDBAttribute
+    private List<ArchivoAdjunto> archivos;
+
+    @DynamoDBAttribute
+    private Boolean estado;
 }

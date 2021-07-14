@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.samy.service.app.external.EquipoDto;
 import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.InspectorDto;
@@ -19,11 +20,14 @@ import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.external.TipoActuacionDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
+import com.samy.service.app.model.Personal;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.EquipoBody;
 import com.samy.service.app.model.request.ReactSelectRequest;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.service.PersonalService;
 import com.samy.service.app.util.Utils;
 
 @Component
@@ -34,6 +38,9 @@ public class CasoRequestBuilder {
 
     @Autowired
     private FileResquestBuilder fileBuilder;
+
+    @Autowired
+    private PersonalService personalService;
 
     public Caso transformFromNewCaso(Caso caso, ActuacionBody request) {
         List<Actuacion> actuaciones = caso.getActuaciones();
@@ -50,7 +57,7 @@ public class CasoRequestBuilder {
     public Caso transformFromNewActuacion(Caso caso, TareaBody request, String idActuacion) {
         List<Actuacion> actuaciones = caso.getActuaciones();
         Integer index = 0;
-        for (int i = 0; i <= actuaciones.size(); i++) {
+        for (int i = 0; i < actuaciones.size(); i++) {
             if (actuaciones.get(i).getIdActuacion().equals(idActuacion)) {
                 index = i;
                 break;
@@ -159,9 +166,27 @@ public class CasoRequestBuilder {
         tarea.setDenominacion(tareaBody.getDenominacion());
         tarea.setFechaVencimiento(
                 LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
-        tarea.setEquipo(tareaBody.getEquipo());
-        tarea.setArchivos(tareaBody.getArchivos());
+        tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
+        tarea.setMensaje(tareaBody.getMensaje());
         tarea.setEstado(tareaBody.getEstado());
         return tarea;
+    }
+
+    private List<EquipoDto> getEquipos(List<EquipoBody> equipoBodies) {
+        return equipoBodies.stream().map(this::transformEquipoBody).collect(Collectors.toList());
+    }
+
+    private EquipoDto transformEquipoBody(EquipoBody equipoBody) {
+        return EquipoDto.builder()
+                .idEquipo(personalService.registrar(
+                        new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()))
+                        .getIdPersonal())
+                .build();
+    }
+
+    public List<String> getEquiposString(List<EquipoDto> equipos) {
+        return equipos.stream()
+                .map(item -> personalService.verUnoPorId(item.getIdEquipo()).getDatos())
+                .collect(Collectors.toList());
     }
 }

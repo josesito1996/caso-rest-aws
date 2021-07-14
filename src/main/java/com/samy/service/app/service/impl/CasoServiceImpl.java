@@ -71,6 +71,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return registrar(builder.transformFromNewCaso(caso, request));
     }
 
+    @Transactional
     @Override
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso) {
         Caso caso = verPodId(idCaso);
@@ -146,8 +147,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private DetalleActuacionResponse transformFromTarea(Tarea tarea) {
         return DetalleActuacionResponse.builder().idTarea(tarea.getIdTarea())
                 .nombreTarea(tarea.getDenominacion())
-                .cantidadDocumentos(tarea == null ? 0 : tarea.getArchivos().size())
-                .equipo(tarea.getEquipo().getNombreEquipo())
+                .cantidadDocumentos(tarea == null || tarea.getArchivos() == null ? 0
+                        : tarea.getArchivos().size())
+                .equipos(builder.getEquiposString(tarea.getEquipos()))/////////////////////////////////////////////////////////
                 .fechaRegistro(fechaFormateada(tarea.getFechaRegistro()))
                 .fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
                 .estado(tarea.getEstado()).build();
