@@ -21,21 +21,24 @@ public class CasoServiceAwsApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String fileName = "proxy.conf";
-        String rutaLinux = "/etc/nginx/conf.d/";
-        File archivoConf = new File("src/main/resources/" + fileName);
-        File ficheroDestino = new File(rutaLinux, fileName);
-        log.info("Archivo pesa " + archivoConf.length() + " bytes");
-        if (archivoConf.exists()) {
-            if (ficheroDestino.exists()) {
-                Files.copy(Paths.get(archivoConf.getAbsolutePath()),
-                        Paths.get(ficheroDestino.getAbsolutePath()),
-                        StandardCopyOption.REPLACE_EXISTING);
-                log.info("Archivo Copiado en Linux");
-            } else {
-                log.info("Estas en Windows");
-            }
+        try {
+            String fileName = "proxy.conf";
+            String rutaLinux = "/etc/nginx/conf.d/";
+            File archivoConf = new File("src/main/resources/" + fileName);
+            File ficheroDestino = new File(rutaLinux, fileName);
+            log.info("Archivo pesa " + archivoConf.length() + " bytes");
+            if (archivoConf.exists()) {
+                if (!ficheroDestino.exists()) {
+                    Files.copy(Paths.get(archivoConf.getAbsolutePath()),
+                            Paths.get(ficheroDestino.getAbsolutePath()),
+                            StandardCopyOption.REPLACE_EXISTING);
+                    log.info("Archivo Copiado en Linux");
+                } else {
+                    log.info("Estas en Windows");
+                }
+            }   
+        } catch (Exception e) {
+            log.error("Error : " + e.getMessage());
         }
-
     }
 }
