@@ -1,6 +1,6 @@
 package com.samy.service.app.model.request;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -33,7 +33,7 @@ public class TareaBody {
 
 	@NotNull
 	@JsonProperty("fecha_vencimiento")
-	private LocalDateTime fechaVencimiento;
+	private LocalDate fechaVencimiento;
 	
 	@Valid
 	private EquipoDto equipo;

@@ -3,6 +3,7 @@ package com.samy.service.app.service.impl;
 import static com.samy.service.app.util.Utils.uuidGenerado;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -156,7 +157,8 @@ public class CasoRequestBuilder {
         String idTarea = tareaBody.getIdTarea();
         tarea.setIdTarea(idTarea == null ? uuidGenerado() : idTarea);
         tarea.setDenominacion(tareaBody.getDenominacion());
-        tarea.setFechaVencimiento(tareaBody.getFechaVencimiento());
+        tarea.setFechaVencimiento(
+                LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
         tarea.setEquipo(tareaBody.getEquipo());
         tarea.setArchivos(tareaBody.getArchivos());
         tarea.setEstado(tareaBody.getEstado());
