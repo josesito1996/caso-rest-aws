@@ -24,7 +24,7 @@ public class ControllerAdvice {
 	}
 
 	@ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse error500(Exception ex) {
         log.error("Recurso no encontrado : " + ex.getMessage());
         return new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now(), ex.getMessage(), new ArrayList<>());
