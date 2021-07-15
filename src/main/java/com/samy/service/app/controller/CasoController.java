@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
@@ -73,6 +74,12 @@ public class CasoController {
             @RequestParam(name = "id_actuacion") String idActuacion) {
         log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarTarea(requestBody, idActuacion, idCaso);
+    }
+    
+    @PostMapping(path = "/uploadFileFromTarea")
+    public Caso registrarArchivoTarea(@Valid @RequestBody TareaArchivoBody requestBody) {
+        log.info("Cuerpo del Body : " + requestBody.toString());
+        return service.registrarArchivoTarea(requestBody);
     }
 
 }

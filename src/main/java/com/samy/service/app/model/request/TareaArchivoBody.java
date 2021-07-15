@@ -1,13 +1,11 @@
 package com.samy.service.app.model.request;
 
-import java.time.LocalDate;
+import java.io.Serializable;
 import java.util.List;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.validation.constraints.Size;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,28 +20,24 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
-public class TareaBody {
+public class TareaArchivoBody implements Serializable {
 
-    @JsonProperty("id_tarea")
-    private String idTarea;
-
-    @NotNull
-    @NotEmpty
-    private String denominacion;
-
-    @NotNull
-    @JsonProperty("fecha_vencimiento")
-    private LocalDate fechaVencimiento;
-
-    @NotNull
-    @Valid
-    private List<EquipoBody> equipos;
+    private static final long serialVersionUID = 893890546885962278L;
 
     @NotEmpty
     @NotNull
-    private String mensaje;
+    private String id_caso;
+
+    @NotEmpty
+    @NotNull
+    private String id_actuacion;
+
+    @NotEmpty
+    @NotNull
+    private String id_tarea;
 
     @NotNull
-    private Boolean estado;
+    @Size(min = 1)
+    private List<ArchivoBody> archivos;
 
 }
