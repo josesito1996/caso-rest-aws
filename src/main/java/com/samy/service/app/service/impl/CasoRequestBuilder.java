@@ -32,6 +32,7 @@ import com.samy.service.app.model.request.EquipoBody;
 import com.samy.service.app.model.request.ReactSelectRequest;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.service.PersonalService;
 import com.samy.service.app.util.Utils;
 
@@ -108,12 +109,27 @@ public class CasoRequestBuilder {
         if (archivos.isEmpty()) {
             archivos = fileService.uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
         } else {
-           List<ArchivoAdjunto> archivosAux = fileService.uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
-           for (ArchivoAdjunto archivo : archivosAux) {
-               archivos.add(archivo);
-           }
+            List<ArchivoAdjunto> archivosAux = fileService
+                    .uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
+            for (ArchivoAdjunto archivo : archivosAux) {
+                archivos.add(archivo);
+            }
         }
         tareas.get(indexTarea).setArchivos(archivos);
+        actuaciones.get(indexActuacion).setTareas(tareas);
+        caso.setActuaciones(actuaciones);
+        return caso;
+    }
+
+    public Caso transformCambioEstadoTarea(Caso caso, TareaCambioEstadoBody tareaCambioEstadoBody) {
+        List<Actuacion> actuaciones = caso.getActuaciones();
+        int indexActuacion = getIndexActuacion(tareaCambioEstadoBody.getId_actuacion(),
+                actuaciones);
+
+        List<Tarea> tareas = actuaciones.get(indexActuacion).getTareas();
+        int indexTarea = getIndexTarea(tareaCambioEstadoBody.getId_tarea(), tareas);
+
+        tareas.get(indexTarea).setEstado(tareaCambioEstadoBody.getEstado());
         actuaciones.get(indexActuacion).setTareas(tareas);
         caso.setActuaciones(actuaciones);
         return caso;
@@ -220,4 +236,5 @@ public class CasoRequestBuilder {
         }
         return tareas.indexOf(tareaAux.get(0));
     }
+
 }

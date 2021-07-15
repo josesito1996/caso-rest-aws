@@ -7,6 +7,7 @@ import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
@@ -22,6 +23,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
 
     public Caso registrarArchivoTarea(TareaArchivoBody tareaArchivoBody);
+    
+    public Caso cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
 
     public List<Caso> listarCasosPorUserName(String userName);
 

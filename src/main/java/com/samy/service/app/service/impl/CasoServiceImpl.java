@@ -29,6 +29,7 @@ import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
+import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
@@ -99,6 +100,15 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     public Caso registrarArchivoTarea(TareaArchivoBody tareaArchivoBody) {
         Caso caso = verPodId(tareaArchivoBody.getId_caso());
         return registrar(builder.transformUpdateTarea(caso, tareaArchivoBody));
+    }
+
+    /**
+     * Metodo que cambia es estado de una Tarea
+     */
+    @Override
+    public Caso cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody) {
+        Caso caso = verPodId(tareaCambioEstadoBody.getId_caso());
+        return registrar(builder.transformCambioEstadoTarea(caso, tareaCambioEstadoBody));
     }
 
     /**
