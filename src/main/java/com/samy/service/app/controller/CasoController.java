@@ -84,7 +84,7 @@ public class CasoController {
     }
 
     @PostMapping(path = "/changeStatusTarea")
-    public Caso cambiarEstadoTarea(@Valid @RequestBody TareaCambioEstadoBody requestBody) {
+    public Boolean cambiarEstadoTarea(@Valid @RequestBody TareaCambioEstadoBody requestBody) {
         log.info("Cuerpo del Body : " + requestBody.toString());
         return service.cambiarEstadoTarea(requestBody);
     }

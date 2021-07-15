@@ -106,9 +106,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      * Metodo que cambia es estado de una Tarea
      */
     @Override
-    public Caso cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody) {
+    public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody) {
         Caso caso = verPodId(tareaCambioEstadoBody.getId_caso());
-        return registrar(builder.transformCambioEstadoTarea(caso, tareaCambioEstadoBody));
+        return registrar(builder.transformCambioEstadoTarea(caso, tareaCambioEstadoBody)).getId() != null;
     }
 
     /**
