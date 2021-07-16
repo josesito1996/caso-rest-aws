@@ -1,5 +1,10 @@
 package com.samy.service.app.service.impl;
 
+import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentos;
+import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
+import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
+import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
+import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
@@ -16,11 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.samy.service.app.aws.MateriaDbAws;
+import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
-import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
@@ -49,7 +53,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private CasoRequestBuilder builder;
 
     @Autowired
-    private MateriaDbAws materiaAws;
+    private ExternalDbAws materiaAws;
 
     @Override
     protected GenericRepo<Caso, String> getRepo() {
@@ -63,6 +67,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Caso verPodId(String id) {
         Optional<Caso> optional = verPorId(id);
+        if (!optional.isPresent()) {
+            throw new NotFoundException("El Caso con el ID : " + id + "no existe");
+        }
         return optional.isPresent() ? optional.get() : new Caso();
     }
 
@@ -81,6 +88,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Caso registrarActuacion(ActuacionBody request, String idCaso) {
         Caso caso = verPodId(idCaso);
+        if (caso == null) {
+            throw new NotFoundException("El Caso con el ID : " + idCaso + "no existe");
+        }
         return registrar(builder.transformActuacion(caso, request));
     }
 
@@ -90,6 +100,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso) {
         Caso caso = verPodId(idCaso);
+        if (caso == null) {
+            throw new NotFoundException("El Caso con el ID : " + idCaso + " no existe");
+        }
         return registrar(builder.transformTarea(caso, request, idActuacion));
     }
 
@@ -108,7 +121,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody) {
         Caso caso = verPodId(tareaCambioEstadoBody.getId_caso());
-        return registrar(builder.transformCambioEstadoTarea(caso, tareaCambioEstadoBody)).getId() != null;
+        return registrar(builder.transformCambioEstadoTarea(caso, tareaCambioEstadoBody))
+                .getId() != null;
     }
 
     /**
@@ -254,77 +268,5 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                     "El id de tarea : " + idTarea + " no se encuentra registrado");
         }
         return tareas.indexOf(tareaAux.get(0));
-    }
-
-    /**
-     * Ultima etapa de la Actuacion
-     * 
-     * @param actuaciones
-     * @return
-     */
-    private String etapaActuacion(List<Actuacion> actuaciones) {
-        return actuaciones.isEmpty() ? " --- "
-                : actuaciones.get(actuaciones.size() - 1).getEtapa().getNombreEtapa();
-    }
-
-    /**
-     * Ultima fecha de Actuacion
-     * 
-     * @param actuaciones
-     * @return
-     */
-    private String fechaActuacion(List<Actuacion> actuaciones) {
-        return actuaciones.isEmpty() ? " --- "
-                : fechaFormateada(actuaciones.get(actuaciones.size() - 1).getFechaActuacion());
-    }
-
-    /**
-     * Ultima Tipo de Actuacion
-     * 
-     * @param actuaciones
-     * @return
-     */
-    private String tipoActuacion(List<Actuacion> actuaciones) {
-        if (actuaciones == null) {
-            return " --- ";
-        }
-        return actuaciones.isEmpty() ? " --- "
-                : actuaciones.get(actuaciones.size() - 1).getTipoActuacion()
-                        .getNombreTipoActuacion();
-    }
-
-    /**
-     * Cantidad de documentos de la ultima actuacion.
-     * 
-     * @param actuaciones
-     * @return
-     */
-    private Integer cantidadDocumentos(List<Actuacion> actuaciones) {
-        if (actuaciones == null) {
-            return 0;
-        }
-        if (actuaciones.isEmpty()) {
-            return 0;
-        }
-        List<ArchivoAdjunto> archivos = actuaciones.get(actuaciones.size() - 1).getArchivos();
-        return archivos != null ? archivos.size() : 0;
-    }
-
-    /**
-     * Nombre de Funcionario de ultima actuacion.
-     * 
-     * @param actuaciones
-     * @return
-     */
-    private String funcionario(List<Actuacion> actuaciones) {
-        if (actuaciones.isEmpty()) {
-            return " --- ";
-        }
-        int actuacionesSize = actuaciones.size();
-        Actuacion actuacion = actuaciones.get(actuacionesSize - 1);
-        int funcionariosSize = actuacion.getFuncionario().size();
-        return funcionariosSize > 0
-                ? actuacion.getFuncionario().get(funcionariosSize - 1).getDatosFuncionario()
-                : " --- ";
     }
 }

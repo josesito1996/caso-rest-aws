@@ -42,13 +42,14 @@ public class FileServiceImpl implements FileService {
 		for (ArchivoS3 fileS3 : files) {
 			try {
 				File archivo = fileS3.getArchivo();
+				log.info("content " + fileS3.getContentType());
 				Map<String, String> metadata = new HashMap<>();
 				metadata.put("Content-Type", fileS3.getContentType());
 				metadata.put("Content-Length", String.valueOf(archivo.length()));
 				InputStream is = new FileInputStream(archivo);
 				String uuidGenerado = uuidGenerado();
 				upload(bucketName, uuidGenerado.concat(getExtension(archivo.getName())), Optional.of(metadata), is);
-				archivos.add(new ArchivoAdjunto(uuidGenerado, archivo.getName(), getExtension(archivo.getName()), ""));
+				archivos.add(new ArchivoAdjunto(uuidGenerado, archivo.getName(), fileS3.getContentType(), ""));
 				archivo.delete();
 				log.info("Archivo " + archivo.getName() + "registrado correctamente");
 			} catch (FileNotFoundException e) {
