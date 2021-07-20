@@ -50,6 +50,7 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
     private ActuacionDetalleFileResponse transformActuacionDetalleFileResponse(
             Actuacion actuacion) {
         return ActuacionDetalleFileResponse.builder()
+                .idActuacion(actuacion.getIdActuacion())
                 .fechaRegistro(fechaFormateada(actuacion.getFechaActuacion()))
                 .tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
                 .totalTareasActuacion(actuacion.getTareas().size())
