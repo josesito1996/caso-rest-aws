@@ -19,6 +19,8 @@ import lombok.ToString;
 @ToString
 public class ActuacionDetalleFileResponse {
 
+    private Boolean isOpen;
+    
     @JsonProperty("id_actuacion")
     private String idActuacion;
 

@@ -5,6 +5,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasIndiv
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasPendientesGeneral;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,9 +43,16 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
     }
 
     private List<ActuacionDetalleFileResponse> transformActuaciones(List<Actuacion> actuaciones) {
-
-        return actuaciones.stream().map(this::transformActuacionDetalleFileResponse)
-                .collect(Collectors.toList());
+        List<ActuacionDetalleFileResponse> lista = new ArrayList<ActuacionDetalleFileResponse>();
+        int contador = 0;
+        for (Actuacion actuacion : actuaciones) {
+            ActuacionDetalleFileResponse actuacionDetalleFileResponse = transformActuacionDetalleFileResponse(
+                    actuacion);
+            actuacionDetalleFileResponse.setIsOpen(contador == 0);
+            lista.add(actuacionDetalleFileResponse);
+            contador ++;
+        }
+        return lista;
     }
 
     private ActuacionDetalleFileResponse transformActuacionDetalleFileResponse(
@@ -89,21 +97,21 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
         return TareaDetalleResponse.builder().id(tarea.getIdTarea())
                 .denominacion(tarea.getDenominacion())
                 .fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-                .documentos(transformDocumentoDetalleResponse(tarea.getArchivos(), fechaFormateada(tarea.getFechaRegistro()))).build();
+                .documentos(transformDocumentoDetalleResponse(tarea.getArchivos(),
+                        fechaFormateada(tarea.getFechaRegistro())))
+                .build();
     }
 
     private List<DocumentoDetalleResponse> transformDocumentoDetalleResponse(
             List<ArchivoAdjunto> archivos, String fechaRegistro) {
-        return archivos.stream().map(item -> transformDocumentoDetalle(item, fechaRegistro)).collect(Collectors.toList());
+        return archivos.stream().map(item -> transformDocumentoDetalle(item, fechaRegistro))
+                .collect(Collectors.toList());
     }
 
-    private DocumentoDetalleResponse transformDocumentoDetalle(ArchivoAdjunto archivo, String fechaRegistro) {
-        return DocumentoDetalleResponse.builder()
-                .id(archivo.getId())
-                .nombreArchivo(archivo.getNombreArchivo())
-                .fechaRegistro(fechaRegistro)
-                .type(archivo.getTipoArchivo())
-                .url("")
-                .build();
+    private DocumentoDetalleResponse transformDocumentoDetalle(ArchivoAdjunto archivo,
+            String fechaRegistro) {
+        return DocumentoDetalleResponse.builder().id(archivo.getId())
+                .nombreArchivo(archivo.getNombreArchivo()).fechaRegistro(fechaRegistro)
+                .type(archivo.getTipoArchivo()).url("").build();
     }
 }

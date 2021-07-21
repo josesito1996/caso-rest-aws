@@ -20,6 +20,8 @@ public class ActuacionResponse implements Serializable {
 
 	private static final long serialVersionUID = -1054177119541119588L;
 
+	private Boolean isOpen;
+	
 	private String idActuacion;
 	
 	private String dia;

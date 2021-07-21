@@ -163,11 +163,23 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<MainActuacionResponse> mainActuaciones = new ArrayList<MainActuacionResponse>();
         Map<Object, List<Actuacion>> actuMap = actuaciones.stream().collect(
                 Collectors.groupingBy(actuacion -> añoFecha(actuacion.getFechaActuacion())));
-        actuMap.forEach((key, item) -> {
-            mainActuaciones.add(new MainActuacionResponse(String.valueOf(key),
-                    item.stream().map(this::transformDetalle).collect(Collectors.toList())));
-        });
+        for (Map.Entry<Object, List<Actuacion>> entry : actuMap.entrySet()) {
+            mainActuaciones.add(new MainActuacionResponse(String.valueOf(entry.getKey()),
+                    getListActuacionResponse(entry.getValue())));
+        }
         return mainActuaciones;
+    }
+
+    public List<ActuacionResponse> getListActuacionResponse(List<Actuacion> actuaciones) {
+        List<ActuacionResponse> lista = new ArrayList<ActuacionResponse>();
+        int contador = 0;
+        for (Actuacion actuacion : actuaciones) {
+            ActuacionResponse actuacionResponse = transformDetalle(actuacion);
+            actuacionResponse.setIsOpen(contador == 0);
+            lista.add(actuacionResponse);
+            contador++;
+        }
+        return lista;
     }
 
     private ActuacionResponse transformDetalle(Actuacion actuacion) {
