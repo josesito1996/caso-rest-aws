@@ -86,7 +86,7 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
             ArchivoAdjunto archivoAdjunto, String fechaActuacion) {
         return DocumentoDetalleResponse.builder().id(archivoAdjunto.getId())
                 .fechaRegistro(fechaActuacion).nombreArchivo(archivoAdjunto.getNombreArchivo())
-                .type(archivoAdjunto.getTipoArchivo()).url("").build();
+                .type(archivoAdjunto.getTipoArchivo()).build();
     }
 
     private List<TareaDetalleResponse> transformTareas(List<Tarea> tareas) {
@@ -112,6 +112,6 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
             String fechaRegistro) {
         return DocumentoDetalleResponse.builder().id(archivo.getId())
                 .nombreArchivo(archivo.getNombreArchivo()).fechaRegistro(fechaRegistro)
-                .type(archivo.getTipoArchivo()).url("").build();
+                .type(archivo.getTipoArchivo()).build();
     }
 }

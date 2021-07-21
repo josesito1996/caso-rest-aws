@@ -26,7 +26,4 @@ public class DocumentoDetalleResponse {
     
     @JsonProperty("fecha_registro")
     private String fechaRegistro;
-    
-    @JsonProperty("url")
-    private String url;
 }
