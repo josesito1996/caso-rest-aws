@@ -4,11 +4,11 @@ springdoc:
 aws:
   config:
     region: us-east-2
-    access-key: AKIAZK2JA2ZMTRFSMRFK
-    secret-key: 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
+    access-key: AKIA5Z6LZFXPAWUQ2LFZ
+    secret-key: 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
     service-endpoint: dynamodb.us-east-2.amazonaws.com
   bucket:
-    name: archivos-samy
+    name: archivos-samy-v1
 spring:
   servlet:
     multipart:
