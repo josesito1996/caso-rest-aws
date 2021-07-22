@@ -32,4 +32,6 @@ public class EtapaDto {
 	@JsonProperty("nombre_etapa")
 	@DynamoDBAttribute(attributeName = "nombre_etapa")
 	private String nombreEtapa;
+	
+	private Integer nroOrden;
 }

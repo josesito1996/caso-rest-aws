@@ -24,6 +24,7 @@ import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
+import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.service.CasoService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -89,4 +90,9 @@ public class CasoController {
         return service.cambiarEstadoTarea(requestBody);
     }
 
+    @GetMapping(path = "/listNotifVenciByUserName/{userName}")
+    public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientosPorNombreUsuario(
+            @PathVariable String userName) {
+        return service.listarNotificacionesVencimientos(userName);
+    }
 }

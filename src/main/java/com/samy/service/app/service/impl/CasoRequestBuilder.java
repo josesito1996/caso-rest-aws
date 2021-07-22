@@ -169,7 +169,24 @@ public class CasoRequestBuilder {
     }
 
     private EtapaDto toEtapaDto(ReactSelectRequest reactSelectRequest) {
-        return new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
+        EtapaDto etapaDto = null;
+        switch (reactSelectRequest.getLabel()) {
+        case "Instruccion":
+            etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
+                    2);
+            break;
+        case "Investigacion":
+            etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
+                    1);
+            break;
+        case "Sancionadora":
+            etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
+                    3);
+            break;
+        default:
+            break;
+        }
+        return etapaDto;
     }
 
     private List<FuncionarioDto> transformToFuncionarioDto(

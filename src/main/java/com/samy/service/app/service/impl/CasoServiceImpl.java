@@ -6,13 +6,17 @@ import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
 import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
+import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
+import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.mesFecha;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,11 +44,15 @@ import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
+import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoService {
 
     @Autowired
@@ -153,6 +161,18 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     /**
+     * Metodo que lista las Notificacion y Vencimientos
+     */
+    @Override
+    public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(
+            String userName) {
+        test(listarCasosPorUserName(userName));
+        return listarCasosPorUserName(userName).stream()
+                .map(this::transformNotificacionesVencimientosResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Metodo que lista las actuaciones correspondientes a un solo Caso.
      */
     @Override
@@ -256,8 +276,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .tipoActuacion(tipoActuacion(caso.getActuaciones())).totalTareas(null)
                 .tareasPendientes(null).aVencer(null)
                 .siguienteVencimiento(siguienteVencimientoDelCaso(caso.getActuaciones()))
-                .iconoCampana(0)
-                .build();
+                .iconoCampana(0).build();
     }
 
     public int getIndexActuacion(String idActuacion, List<Actuacion> actuaciones) {
@@ -285,4 +304,31 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         }
         return tareas.indexOf(tareaAux.get(0));
     }
+
+    private NotificacionesVencimientosResponse transformNotificacionesVencimientosResponse(
+            Caso caso) {
+        return NotificacionesVencimientosResponse.builder().idCaso("").idActuacion("").idTarea("")
+                .nombreCaso("").fechaVencimiento(fechaFormateada(fechaActual))
+                .descripcion(new HashMap<String, Object>()).build();
+    }
+
+    private void test(List<Caso> casos) {
+        List<Caso> listaCaso = casos;
+        for (Caso caso : listaCaso) {
+            List<Actuacion> actuaciones = caso.getActuaciones();
+            for (Actuacion actuacion : actuaciones) {
+                List<Tarea> tareas = actuacion.getTareas();
+                for (Tarea tarea : tareas) {
+                    LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
+                    LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
+                    if (fechaVencimiento.isAfter(fechaActual)
+                            && fechaVencimiento.isBefore(fechaAumentada)) {
+                        log.info("Fecha de vencimiento : " + fechaVencimiento
+                                + " Fecha Aumentada hasta -> : " + fechaAumentada);
+                    }
+                }
+            }
+        }
+    }
+
 }

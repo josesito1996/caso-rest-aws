@@ -11,6 +11,7 @@ import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
+import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 
 public interface CasoService extends ICrud<Caso, String> {
 
@@ -23,7 +24,7 @@ public interface CasoService extends ICrud<Caso, String> {
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
 
     public Caso registrarArchivoTarea(TareaArchivoBody tareaArchivoBody);
-    
+
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
 
     public List<Caso> listarCasosPorUserName(String userName);
@@ -33,5 +34,7 @@ public interface CasoService extends ICrud<Caso, String> {
     public DetailCaseResponse mostratDetalleDelCasoPorId(String idCaso);
 
     public List<MainActuacionResponse> listarActuacionesPorCaso(String idCaso);
+
+    public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(String userName);
 
 }
