@@ -1,9 +1,13 @@
 package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentos;
+import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasAVencerDelCaso;
+import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasDelCasoGeneral;
+import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasPendientesGeneral;
 import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
+import static com.samy.service.app.service.impl.ServiceUtils.nroOrdenEtapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
@@ -270,11 +274,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private HomeCaseResponse transformToHomeCase(Caso caso) {
         return HomeCaseResponse.builder().idCaso(caso.getId())
                 .fechaInicio(fechaFormateada(caso.getFechaInicio()))
+                .nroOrden(nroOrdenEtapaActuacion(caso.getActuaciones()))
                 .etapaActuacion(etapaActuacion(caso.getActuaciones())).riesgo(null)
                 .nombreCaso(caso.getDescripcionCaso()).ordenInspeccion(caso.getOrdenInspeccion())
                 .utltimaActuacion(fechaActuacion(caso.getActuaciones()))
-                .tipoActuacion(tipoActuacion(caso.getActuaciones())).totalTareas(null)
-                .tareasPendientes(null).aVencer(null)
+                .tipoActuacion(tipoActuacion(caso.getActuaciones()))
+                .totalTareas(cantidadTareasDelCasoGeneral(caso))
+                .tareasPendientes(cantidadTareasPendientesGeneral(caso))
+                .aVencer(cantidadTareasAVencerDelCaso(caso))
                 .siguienteVencimiento(siguienteVencimientoDelCaso(caso.getActuaciones()))
                 .iconoCampana(0).build();
     }

@@ -23,6 +23,8 @@ public class HomeCaseResponse implements Serializable {
 	
 	private String fechaInicio;
 	
+	private Integer nroOrden;
+	
 	private String etapaActuacion;
 	
 	private String riesgo;

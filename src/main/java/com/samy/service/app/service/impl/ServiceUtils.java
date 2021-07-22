@@ -1,7 +1,10 @@
 package com.samy.service.app.service.impl;
 
+import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
+import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.samy.service.app.external.ArchivoAdjunto;
@@ -26,6 +29,17 @@ public class ServiceUtils {
         }
         List<ArchivoAdjunto> archivos = actuaciones.get(actuaciones.size() - 1).getArchivos();
         return archivos != null ? archivos.size() : 0;
+    }
+
+    /**
+     * Nro Orden etapa de la Actuacion
+     * 
+     * @param actuaciones
+     * @return
+     */
+    public static Integer nroOrdenEtapaActuacion(List<Actuacion> actuaciones) {
+        return actuaciones.isEmpty() ? 0
+                : actuaciones.get(actuaciones.size() - 1).getEtapa().getNroOrden();
     }
 
     /**
@@ -84,6 +98,23 @@ public class ServiceUtils {
     }
 
     /**
+     * Contador de tareas General del Caso
+     * 
+     * @param caso
+     * @return
+     */
+    public static Integer cantidadTareasDelCasoGeneral(Caso caso) {
+        int contadorTareas = 0;
+        for (Actuacion actuacion : caso.getActuaciones()) {
+            for (@SuppressWarnings("unused")
+            Tarea tarea : actuacion.getTareas()) {
+                contadorTareas++;
+            }
+        }
+        return contadorTareas;
+    }
+
+    /**
      * Cantidad de documentos icluidas actuaciones y tareas del caso.
      * 
      * @param caso
@@ -128,6 +159,26 @@ public class ServiceUtils {
     public static Integer cantidadTareasIndividualPorEstado(List<Tarea> tareas, Boolean estado) {
         Long cantidad = tareas.stream().filter(tarea -> estado).count();
         return cantidad.intValue();
+    }
+
+    /**
+     * CAntidad de tareas a vencer del Caso.
+     * 
+     * @param caso
+     * @return
+     */
+    public static Integer cantidadTareasAVencerDelCaso(Caso caso) {
+        int contadorTareasAVencer = 0;
+        for (Actuacion actuacion : caso.getActuaciones()) {
+            for (Tarea tarea : actuacion.getTareas()) {
+                LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
+                if (fechaVencimiento.isAfter(fechaActual) && fechaVencimiento
+                        .isBefore(fechaVencimiento.plusDays(diasPlazoVencimiento))) {
+                    contadorTareasAVencer++;
+                }
+            }
+        }
+        return contadorTareasAVencer;
     }
 
     /**
