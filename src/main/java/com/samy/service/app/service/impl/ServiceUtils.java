@@ -82,9 +82,10 @@ public class ServiceUtils {
                 ? actuacion.getFuncionario().get(funcionariosSize - 1).getDatosFuncionario()
                 : " --- ";
     }
-    
+
     /**
      * Cantidad de documentos icluidas actuaciones y tareas del caso.
+     * 
      * @param caso
      * @return
      */
@@ -99,9 +100,10 @@ public class ServiceUtils {
         }
         return contadorDocActuacion + contadorDocTareas;
     }
-    
+
     /**
      * Cantidad de tareas pendienes de todas las actuaciones del caso.
+     * 
      * @param caso
      * @return
      */
@@ -114,9 +116,11 @@ public class ServiceUtils {
         }
         return contadorPendientes;
     }
-    
+
     /**
-     * Cuenta la cantidad de tareas realizadas(true) o pendientes (false) de manera individual.
+     * Cuenta la cantidad de tareas realizadas(true) o pendientes (false) de manera
+     * individual.
+     * 
      * @param tareas
      * @param estado
      * @return
@@ -124,6 +128,26 @@ public class ServiceUtils {
     public static Integer cantidadTareasIndividualPorEstado(List<Tarea> tareas, Boolean estado) {
         Long cantidad = tareas.stream().filter(tarea -> estado).count();
         return cantidad.intValue();
+    }
+
+    /**
+     * Muestra la fecha de vencimiento de la ultima tarea activa.
+     * 
+     * @param actuaciones
+     * @return
+     */
+    public static String siguienteVencimientoDelCaso(List<Actuacion> actuaciones) {
+        if (!actuaciones.isEmpty()) {
+            int cantidadActuaciones = actuaciones.size();
+            Actuacion ultimaActuacion = actuaciones.get(cantidadActuaciones - 1);
+            List<Tarea> tareas = ultimaActuacion.getTareas();
+            if (!tareas.isEmpty()) {
+                int cantidadTareas = tareas.size();
+                Tarea tarea = tareas.get(cantidadTareas - 1);
+                return fechaFormateada(tarea.getFechaVencimiento());
+            }
+        }
+        return " --- ";
     }
 
 }

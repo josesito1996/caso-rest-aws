@@ -4,6 +4,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentos;
 import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
+import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
@@ -253,7 +254,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .nombreCaso(caso.getDescripcionCaso()).ordenInspeccion(caso.getOrdenInspeccion())
                 .utltimaActuacion(fechaActuacion(caso.getActuaciones()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones())).totalTareas(null)
-                .tareasPendientes(null).aVencer(null).build();
+                .tareasPendientes(null).aVencer(null)
+                .siguienteVencimiento(siguienteVencimientoDelCaso(caso.getActuaciones()))
+                .iconoCampana(0)
+                .build();
     }
 
     public int getIndexActuacion(String idActuacion, List<Actuacion> actuaciones) {

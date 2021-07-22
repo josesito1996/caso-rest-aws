@@ -40,5 +40,9 @@ public class HomeCaseResponse implements Serializable {
 	private Integer tareasPendientes;
 	
 	private Integer aVencer;
+	
+	private String siguienteVencimiento;
+	
+	private Integer iconoCampana;
 
 }
