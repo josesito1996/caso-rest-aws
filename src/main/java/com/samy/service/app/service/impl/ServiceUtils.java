@@ -173,7 +173,7 @@ public class ServiceUtils {
             for (Tarea tarea : actuacion.getTareas()) {
                 LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
                 if (fechaVencimiento.isAfter(fechaActual) && fechaVencimiento
-                        .isBefore(fechaVencimiento.plusDays(diasPlazoVencimiento))) {
+                        .isBefore(fechaActual.plusDays(diasPlazoVencimiento))) {
                     contadorTareasAVencer++;
                 }
             }

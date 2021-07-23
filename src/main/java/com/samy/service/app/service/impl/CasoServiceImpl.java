@@ -20,6 +20,7 @@ import static com.samy.service.app.util.Utils.mesFecha;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,10 +171,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(
             String userName) {
-        test(listarCasosPorUserName(userName));
-        return listarCasosPorUserName(userName).stream()
-                .map(this::transformNotificacionesVencimientosResponse)
-                .collect(Collectors.toList());
+        /*
+         * return listarCasosPorUserName(userName).stream()
+         * .map(this::transformNotificacionesVencimientosResponse)
+         * .collect(Collectors.toList());
+         */
+        return test(listarCasosPorUserName(userName));
     }
 
     /**
@@ -319,8 +322,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .descripcion(new HashMap<String, Object>()).build();
     }
 
-    private void test(List<Caso> casos) {
+    private List<NotificacionesVencimientosResponse> test(List<Caso> casos) {
         List<Caso> listaCaso = casos;
+        List<NotificacionesVencimientosResponse> notiVenci = new ArrayList<NotificacionesVencimientosResponse>();
         for (Caso caso : listaCaso) {
             List<Actuacion> actuaciones = caso.getActuaciones();
             for (Actuacion actuacion : actuaciones) {
@@ -330,12 +334,26 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                     LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
                     if (fechaVencimiento.isAfter(fechaActual)
                             && fechaVencimiento.isBefore(fechaAumentada)) {
-                        log.info("Fecha de vencimiento : " + fechaVencimiento
-                                + " Fecha Aumentada hasta -> : " + fechaAumentada);
+                        notiVenci.add(NotificacionesVencimientosResponse.builder()
+                                .idCaso(caso.getId()).idActuacion(actuacion.getIdActuacion())
+                                .idTarea(tarea.getIdTarea())
+                                .fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
+                                .nombreCaso(caso.getDescripcionCaso()).descripcion(getObject(tarea))
+                                .build());
                     }
                 }
             }
         }
+        return notiVenci.stream()
+                .sorted(Comparator
+                        .comparing(NotificacionesVencimientosResponse::getFechaVencimiento))
+                .collect(Collectors.toList());
     }
 
+    public Map<String, Object> getObject(Tarea tarea) {
+        Map<String, Object> lista = new HashMap<String, Object>();
+        lista.put("cabecera", "Tarea por vencer");
+        lista.put("contenido", tarea.getDenominacion());
+        return lista;
+    }
 }
