@@ -48,8 +48,10 @@ public class CasoController {
     }
 
     @GetMapping(path = "/listAllByUserName/{userName}")
-    public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName) {
-        return service.listadoDeCasosPorUserName(userName);
+    public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName,
+            @ParameterObject @RequestParam(required = true) Integer pageNumber,
+            @RequestParam(required = true) Integer pageSize) {
+        return service.listadoDeCasosPorUserName(userName, pageNumber, pageSize);
     }
 
     @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)

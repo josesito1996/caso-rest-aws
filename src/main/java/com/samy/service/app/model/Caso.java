@@ -1,5 +1,6 @@
 package com.samy.service.app.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +46,9 @@ public class Caso {
 	
 	@DynamoDBAttribute
 	private String ordenInspeccion;
+	
+	@DynamoDBAttribute
+	private BigDecimal multaPotencial;
 	
 	@DynamoDBAttribute
 	private List<InspectorDto> inspectorTrabajo;

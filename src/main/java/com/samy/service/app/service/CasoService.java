@@ -29,12 +29,14 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public List<Caso> listarCasosPorUserName(String userName);
 
-    public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName);
+    public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber,
+            Integer pageSize);
 
     public DetailCaseResponse mostratDetalleDelCasoPorId(String idCaso);
 
     public List<MainActuacionResponse> listarActuacionesPorCaso(String idCaso);
 
-    public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(String userName);
+    public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(
+            String userName);
 
 }

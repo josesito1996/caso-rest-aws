@@ -53,6 +53,7 @@ import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
+import com.samy.service.app.util.ListPagination;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -152,9 +153,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      * Front.
      */
     @Override
-    public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName) {
-        return orderByDesc(listarCasosPorUserName(userName).stream().map(this::transformToHomeCase)
-                .collect(Collectors.toList()));
+    public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber, Integer pageSize) {
+        List<Caso> lista = listarCasosPorUserName(userName);
+        return ListPagination.getPage(
+                orderByDesc(
+                        lista.stream().map(this::transformToHomeCase).collect(Collectors.toList())),
+                pageNumber, pageSize);
     }
 
     /**

@@ -2,6 +2,7 @@ package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.util.Utils.uuidGenerado;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -140,6 +141,7 @@ public class CasoRequestBuilder {
         caso.setId(request.getIdCaso());
         caso.setFechaInicio(request.getFechaInicio());
         caso.setOrdenInspeccion(request.getOrdenInspeccion());
+        caso.setMultaPotencial(BigDecimal.valueOf(Math.random() * 10000));//VAlor aleatorio
         caso.setInspectorTrabajo(getInspectorDto(request.getInspectorTrabajo()));
         caso.setInspectorAuxiliar(getInspectorDto(request.getInspectorAuxiliar()));
         caso.setMaterias(getMateriasDto(request.getMaterias()));
