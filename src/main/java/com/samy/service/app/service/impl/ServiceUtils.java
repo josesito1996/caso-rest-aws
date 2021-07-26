@@ -172,8 +172,8 @@ public class ServiceUtils {
         for (Actuacion actuacion : caso.getActuaciones()) {
             for (Tarea tarea : actuacion.getTareas()) {
                 LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
-                if (fechaVencimiento.isAfter(fechaActual) && fechaVencimiento
-                        .isBefore(fechaActual.plusDays(diasPlazoVencimiento))) {
+                if (fechaVencimiento.isAfter(fechaActual)
+                        && fechaVencimiento.isBefore(fechaActual.plusDays(diasPlazoVencimiento))) {
                     contadorTareasAVencer++;
                 }
             }
@@ -199,6 +199,17 @@ public class ServiceUtils {
             }
         }
         return " --- ";
+    }
+
+    /**
+     * Contador de casos por estado. (ACtivos o inactivos)
+     * 
+     * @param casos
+     * @param estado
+     * @return
+     */
+    public static int totalCasosPorEstado(List<Caso> casos, Boolean estado) {
+        return (int) casos.stream().filter(caso -> caso.getEstadoCaso() == estado).count();
     }
 
 }

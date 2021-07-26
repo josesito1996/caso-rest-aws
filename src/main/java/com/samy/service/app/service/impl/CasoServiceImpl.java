@@ -10,12 +10,14 @@ import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
 import static com.samy.service.app.service.impl.ServiceUtils.nroOrdenEtapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
+import static com.samy.service.app.service.impl.ServiceUtils.totalCasosPorEstado;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
+import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
 
 import java.time.LocalDate;
@@ -31,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
@@ -49,16 +52,14 @@ import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
+import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.util.ListPagination;
 
-import lombok.extern.slf4j.Slf4j;
-
 @Service
-@Slf4j
 public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoService {
 
     @Autowired
@@ -149,11 +150,21 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     /**
+     * Metodo que lista Casos por nombre de usuario y FEcha de inicio como
+     * parametros.
+     */
+    @Override
+    public List<Caso> listarCasosPorUserNameYFechaInicio(String userName, LocalDate fechaInicio) {
+        return repo.findByUsuarioAndFechaInicio(userName, fechaInicio);
+    }
+
+    /**
      * MEtodo que lista los casos por nombre de usuario, pero para poder verlo en el
      * Front.
      */
     @Override
-    public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber, Integer pageSize) {
+    public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber,
+            Integer pageSize) {
         List<Caso> lista = listarCasosPorUserName(userName);
         return ListPagination.getPage(
                 orderByDesc(
@@ -190,6 +201,49 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     public List<MainActuacionResponse> listarActuacionesPorCaso(String idCaso) {
         return transformMainActuacion(verPodId(idCaso).getActuaciones());
     }
+
+    @Override
+    public MiCarteraResponse verCarteraResponse(String userName) {
+        List<Caso> casos = listarCasosPorUserName(userName);
+        int totalCasos = casos.size();
+        int totalCasosActivos = totalCasosPorEstado(casos, true);
+        return MiCarteraResponse.builder().hasta(fechaFormateada(fechaActual))
+                .casosActivos(String.valueOf(totalCasosActivos))
+                .casosRegistrados(String.valueOf(totalCasos)).etapas(transformToMap(casos)).build();
+    }
+
+    private List<Map<String, Object>> transformToMap(List<Caso> casos) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        Map<String, Object> mapa;
+        for (EtapaPojo etapa : materiaAws.getTableEtapa().stream()
+                .sorted(Comparator.comparing(EtapaPojo::getNroOrden))
+                .collect(Collectors.toList())) {
+            mapa = new HashMap<String, Object>();
+            String idEtapa = etapa.getId_etapa();
+            int contadorCasos = cuentaCasos(idEtapa, casos);
+            mapa.put("nombreEtapa", etapa.getNombreEtapa());
+            mapa.put("cantidad", contadorCasos);
+            mapa.put("porcentaje", getPorcentaje(contadorCasos, casos.size()));
+            listMap.add(mapa);
+        }
+        return listMap;
+    }
+
+    private int cuentaCasos(String idEtapa, List<Caso> casos) {
+        int contadorCasos = 0;
+        for (Caso caso : casos) {
+            int contadorActuaciones = 0;
+            for (Actuacion actuacion : caso.getActuaciones()) {
+                if (actuacion.getEtapa().getId().equals(idEtapa)) {
+                    contadorActuaciones++;
+                }
+            }
+            if (contadorActuaciones > 0) {
+                contadorCasos++;
+            }
+        }
+        return contadorCasos;
+    };
 
     private List<MainActuacionResponse> transformMainActuacion(List<Actuacion> actuaciones) {
         List<MainActuacionResponse> mainActuaciones = new ArrayList<MainActuacionResponse>();
@@ -317,13 +371,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                     "El id de tarea : " + idTarea + " no se encuentra registrado");
         }
         return tareas.indexOf(tareaAux.get(0));
-    }
-
-    private NotificacionesVencimientosResponse transformNotificacionesVencimientosResponse(
-            Caso caso) {
-        return NotificacionesVencimientosResponse.builder().idCaso("").idActuacion("").idTarea("")
-                .nombreCaso("").fechaVencimiento(fechaFormateada(fechaActual))
-                .descripcion(new HashMap<String, Object>()).build();
     }
 
     private List<NotificacionesVencimientosResponse> test(List<Caso> casos) {

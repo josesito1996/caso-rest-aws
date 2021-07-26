@@ -8,7 +8,7 @@ import com.samy.service.app.model.response.HomeCaseResponse;
 public class ListUtils {
 
     public static List<HomeCaseResponse> orderByDesc(List<HomeCaseResponse> casos) {
-        casos.sort(Comparator.comparing(HomeCaseResponse::getFechaInicio).reversed());
+        casos.sort(Comparator.comparing(HomeCaseResponse::getSiguienteVencimiento).reversed());
         return casos;
     }
     

@@ -1,5 +1,6 @@
 package com.samy.service.app.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.samy.service.app.model.Caso;
@@ -11,10 +12,16 @@ import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
+import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 
 public interface CasoService extends ICrud<Caso, String> {
 
+    public List<Caso> listarCasosPorUserName(String userName);
+    
+    public List<Caso> listarCasosPorUserNameYFechaInicio(String userName, LocalDate fechaInicio);
+    
+    
     public Caso verPodId(String id);
 
     public Caso registrarCaso(CasoBody request);
@@ -27,8 +34,9 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
 
-    public List<Caso> listarCasosPorUserName(String userName);
-
+    /**
+     * Vista del Dashboard.
+     */
     public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber,
             Integer pageSize);
 
@@ -38,5 +46,7 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(
             String userName);
+
+    public MiCarteraResponse verCarteraResponse(String userName);
 
 }
