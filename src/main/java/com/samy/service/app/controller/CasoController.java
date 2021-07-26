@@ -21,6 +21,7 @@ import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
@@ -102,6 +103,11 @@ public class CasoController {
     @GetMapping(path = "/listCarteraByUserName/{userName}")
     public MiCarteraResponse verCarteraResponse(@PathVariable String userName) {
         return service.verCarteraResponse(userName);
+    }
+    
+    @GetMapping(path = "/viewCriticidadByUserName/{userName}")
+    public CriticidadCasosResponse verCriticidadResponse(@PathVariable String userName) {
+        return service.verCriticidadResponse(userName);
     }
 
 }

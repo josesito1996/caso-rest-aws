@@ -3,6 +3,7 @@ package com.samy.service.app.util;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -85,5 +86,10 @@ public class Utils {
 
     public static double getPorcentaje(int cantidad, int total) {
         return (float) cantidad / (float) total * 100;
+    }
+
+    public static String formatMoney(double money) {
+        DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
+        return df.format(money);
     }
 }

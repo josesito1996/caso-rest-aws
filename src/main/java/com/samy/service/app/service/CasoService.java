@@ -9,6 +9,7 @@ import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
@@ -18,10 +19,9 @@ import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 public interface CasoService extends ICrud<Caso, String> {
 
     public List<Caso> listarCasosPorUserName(String userName);
-    
+
     public List<Caso> listarCasosPorUserNameYFechaInicio(String userName, LocalDate fechaInicio);
-    
-    
+
     public Caso verPodId(String id);
 
     public Caso registrarCaso(CasoBody request);
@@ -48,5 +48,7 @@ public interface CasoService extends ICrud<Caso, String> {
             String userName);
 
     public MiCarteraResponse verCarteraResponse(String userName);
+
+    public CriticidadCasosResponse verCriticidadResponse(String userName);
 
 }

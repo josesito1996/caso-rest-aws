@@ -17,9 +17,11 @@ import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
+import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,6 +50,7 @@ import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.ActuacionResponse;
+import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
@@ -210,6 +213,28 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return MiCarteraResponse.builder().hasta(fechaFormateada(fechaActual))
                 .casosActivos(String.valueOf(totalCasosActivos))
                 .casosRegistrados(String.valueOf(totalCasos)).etapas(transformToMap(casos)).build();
+    }
+
+    @Override
+    public CriticidadCasosResponse verCriticidadResponse(String userName) {
+        List<Caso> casos = listarCasosPorUserName(userName);
+        BigDecimal suma = casos.stream().map(item -> item.getMultaPotencial())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return CriticidadCasosResponse.builder().total(formatMoney(suma.doubleValue()))
+                .detalles(transformToMapCritidicidad(casos)).build();
+    }
+
+    private List<Map<String, Object>> transformToMapCritidicidad(List<Caso> casos) {
+        List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+        Map<String, Object> mapa;
+        for (Caso caso : casos) {
+            mapa = new HashMap<String, Object>();
+            mapa.put("nombreCaso", caso.getDescripcionCaso());
+            mapa.put("montoMulta", formatMoney(caso.getMultaPotencial().doubleValue()));
+            listMap.add(mapa);
+        }
+        return listMap;
     }
 
     private List<Map<String, Object>> transformToMap(List<Caso> casos) {
