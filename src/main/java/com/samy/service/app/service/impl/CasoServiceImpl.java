@@ -222,16 +222,17 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return CriticidadCasosResponse.builder().total(formatMoney(suma.doubleValue()))
-                .detalles(transformToMapCritidicidad(casos)).build();
+                .detalles(transformToMapCritidicidad(casos, suma.doubleValue())).build();
     }
 
-    private List<Map<String, Object>> transformToMapCritidicidad(List<Caso> casos) {
+    private List<Map<String, Object>> transformToMapCritidicidad(List<Caso> casos, double suma) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         Map<String, Object> mapa;
         for (Caso caso : casos) {
             mapa = new HashMap<String, Object>();
             mapa.put("nombreCaso", caso.getDescripcionCaso());
             mapa.put("montoMulta", formatMoney(caso.getMultaPotencial().doubleValue()));
+            mapa.put("porcentaje", getPorcentaje(caso.getMultaPotencial().doubleValue(), suma));
             listMap.add(mapa);
         }
         return listMap;
