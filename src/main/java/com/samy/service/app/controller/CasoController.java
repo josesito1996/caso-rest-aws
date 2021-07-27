@@ -1,6 +1,7 @@
 package com.samy.service.app.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -68,7 +69,7 @@ public class CasoController {
     }
 
     @PostMapping(path = "/saveActuacion/{idCaso}")
-    public Caso registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
+    public Map<String, Object> registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
             @PathVariable String idCaso) {
         log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarActuacion(requestBody, idCaso);

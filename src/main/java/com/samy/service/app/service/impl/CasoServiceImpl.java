@@ -18,6 +18,7 @@ import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.formatMoney;
+import static com.samy.service.app.util.Utils.getExtension;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
 
@@ -40,6 +41,7 @@ import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
+import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.MateriasDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
@@ -105,12 +107,32 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      */
     @Transactional
     @Override
-    public Caso registrarActuacion(ActuacionBody request, String idCaso) {
+    public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso) {
         Caso caso = verPodId(idCaso);
         if (caso == null) {
             throw new NotFoundException("El Caso con el ID : " + idCaso + "no existe");
         }
-        return registrar(builder.transformActuacion(caso, request));
+        return transformMap(registrar(builder.transformActuacion(caso, request)));
+    }
+
+    private Map<String, Object> transformMap(Caso caso) {
+        Map<String, Object> newMap = new HashMap<String, Object>();
+        List<Actuacion> actuaciones = caso.getActuaciones();
+        int ultimoItem = actuaciones.isEmpty() ? 0 : actuaciones.size() - 1;
+        newMap.put("idActuacion", actuaciones.get(ultimoItem).getIdActuacion());
+        newMap.put("archivos", archivos(actuaciones.get(ultimoItem).getArchivos()));
+        return newMap;
+    }
+
+    private List<ArchivoAdjunto> archivos(List<ArchivoAdjunto> archivos) {
+        return archivos.stream().map(this::transform).collect(Collectors.toList());
+    }
+
+    private ArchivoAdjunto transform(ArchivoAdjunto archivo) {
+        return ArchivoAdjunto.builder()
+                .id(archivo.getId().concat(getExtension(archivo.getNombreArchivo())))
+                .nombreArchivo(archivo.getNombreArchivo()).tipoArchivo(archivo.getTipoArchivo())
+                .build();
     }
 
     /**

@@ -28,6 +28,7 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Personal;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
+import com.samy.service.app.model.request.ArchivoBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.EquipoBody;
 import com.samy.service.app.model.request.ReactSelectRequest;
@@ -69,10 +70,18 @@ public class CasoRequestBuilder {
         actuacion.setFuncionario(transformToFuncionarioDto(actuacionBody.getFuncionarios()));
         actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
         actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
-        actuacion.setArchivos(
-                fileService.uploadFile(fileBuilder.getFiles(actuacionBody.getArchivos())));
+        actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
         actuacion.setTareas(new ArrayList<Tarea>());
         return actuacion;
+    }
+
+    private List<ArchivoAdjunto> listArchivoAdjunto(List<ArchivoBody> archivos) {
+        return archivos.stream().map(this::getArchivoAdjunto).collect(Collectors.toList());
+    }
+
+    private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
+        return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
+                .tipoArchivo(body.getTipo()).build();
     }
 
     @Transactional
@@ -141,7 +150,7 @@ public class CasoRequestBuilder {
         caso.setId(request.getIdCaso());
         caso.setFechaInicio(request.getFechaInicio());
         caso.setOrdenInspeccion(request.getOrdenInspeccion());
-        caso.setMultaPotencial(BigDecimal.valueOf(Math.random() * 10000));//VAlor aleatorio
+        caso.setMultaPotencial(BigDecimal.valueOf(Math.random() * 10000));// VAlor aleatorio
         caso.setInspectorTrabajo(getInspectorDto(request.getInspectorTrabajo()));
         caso.setInspectorAuxiliar(getInspectorDto(request.getInspectorAuxiliar()));
         caso.setMaterias(getMateriasDto(request.getMaterias()));
