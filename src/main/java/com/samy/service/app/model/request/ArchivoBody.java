@@ -21,8 +21,6 @@ public class ArchivoBody {
 	@NotEmpty
 	private String nombreArchivo;
 
-	@NotNull
-	@NotEmpty
 	private String base64;
 
 	@NotNull
