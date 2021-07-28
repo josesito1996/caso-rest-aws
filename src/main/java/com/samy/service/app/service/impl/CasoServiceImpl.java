@@ -25,6 +25,7 @@ import static com.samy.service.app.util.Utils.mesFecha;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -124,6 +125,25 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return newMap;
     }
 
+    private Map<String, Object> transformMapTarea(Caso caso, TareaArchivoBody tareaArchivoBody) {
+        Map<String, Object> newMap = new HashMap<String, Object>();
+        List<Actuacion> actuaciones = caso.getActuaciones().stream()
+                .filter(actu -> actu.getIdActuacion().equals(tareaArchivoBody.getId_actuacion()))
+                .collect(Collectors.toList());
+        if (!actuaciones.isEmpty()) {
+            List<Tarea> tareas = actuaciones.get(0).getTareas().stream()
+                    .filter(tarea -> tarea.getIdTarea().equals(tareaArchivoBody.getId_tarea()))
+                    .collect(Collectors.toList());
+            if (!tareas.isEmpty()) {
+                List<ArchivoAdjunto> archivos = tareas.get(0).getArchivos();
+                int indice = archivos.size() > 0 ? archivos.size() - 1 : 0;
+                newMap.put("id", tareaArchivoBody.getId_tarea());
+                newMap.put("archivos", archivos(Arrays.asList(archivos.get(indice))));
+            }
+        }
+        return newMap;
+    }
+
     private List<ArchivoAdjunto> archivos(List<ArchivoAdjunto> archivos) {
         return archivos.stream().map(this::transform).collect(Collectors.toList());
     }
@@ -153,7 +173,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody) {
         Caso caso = verPodId(tareaArchivoBody.getId_caso());
-        return transformMap(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)));
+        return transformMapTarea(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)),
+                tareaArchivoBody);
     }
 
     /**
