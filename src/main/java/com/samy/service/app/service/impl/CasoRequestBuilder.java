@@ -42,12 +42,6 @@ import com.samy.service.app.util.Utils;
 public class CasoRequestBuilder {
 
     @Autowired
-    private FileServiceImpl fileService;
-
-    @Autowired
-    private FileResquestBuilder fileBuilder;
-
-    @Autowired
     private PersonalService personalService;
 
     public Caso transformActuacion(Caso caso, ActuacionBody request) {
@@ -73,15 +67,6 @@ public class CasoRequestBuilder {
         actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
         actuacion.setTareas(new ArrayList<Tarea>());
         return actuacion;
-    }
-
-    private List<ArchivoAdjunto> listArchivoAdjunto(List<ArchivoBody> archivos) {
-        return archivos.stream().map(this::getArchivoAdjunto).collect(Collectors.toList());
-    }
-
-    private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
-        return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
-                .tipoArchivo(body.getTipo()).build();
     }
 
     @Transactional
@@ -117,11 +102,14 @@ public class CasoRequestBuilder {
 
         List<ArchivoAdjunto> archivos = tareas.get(indexTarea).getArchivos();
         if (archivos.isEmpty()) {
-            archivos = fileService.uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
+            //////////
+            archivos = listArchivoAdjunto(tareaArchivoBody.getArchivos());
+            // archivos =
+            // fileService.uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
         } else {
-            List<ArchivoAdjunto> archivosAux = fileService
-                    .uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
-            for (ArchivoAdjunto archivo : archivosAux) {
+            // List<ArchivoAdjunto> archivosAux = fileService
+            // .uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
+            for (ArchivoAdjunto archivo : listArchivoAdjunto(tareaArchivoBody.getArchivos())) {
                 archivos.add(archivo);
             }
         }
@@ -265,4 +253,12 @@ public class CasoRequestBuilder {
         return tareas.indexOf(tareaAux.get(0));
     }
 
+    private List<ArchivoAdjunto> listArchivoAdjunto(List<ArchivoBody> archivos) {
+        return archivos.stream().map(this::getArchivoAdjunto).collect(Collectors.toList());
+    }
+
+    private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
+        return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
+                .tipoArchivo(body.getTipo()).build();
+    }
 }

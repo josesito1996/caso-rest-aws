@@ -84,7 +84,7 @@ public class CasoController {
     }
 
     @PostMapping(path = "/uploadFileFromTarea")
-    public Caso registrarArchivoTarea(@Valid @RequestBody TareaArchivoBody requestBody) {
+    public Map<String, Object> registrarArchivoTarea(@Valid @RequestBody TareaArchivoBody requestBody) {
         log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarArchivoTarea(requestBody);
     }

@@ -119,7 +119,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         Map<String, Object> newMap = new HashMap<String, Object>();
         List<Actuacion> actuaciones = caso.getActuaciones();
         int ultimoItem = actuaciones.isEmpty() ? 0 : actuaciones.size() - 1;
-        newMap.put("idActuacion", actuaciones.get(ultimoItem).getIdActuacion());
+        newMap.put("id", actuaciones.get(ultimoItem).getIdActuacion());
         newMap.put("archivos", archivos(actuaciones.get(ultimoItem).getArchivos()));
         return newMap;
     }
@@ -151,9 +151,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      * Metodo que registra el archivo de una tarea ya registrada previamente.
      */
     @Override
-    public Caso registrarArchivoTarea(TareaArchivoBody tareaArchivoBody) {
+    public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody) {
         Caso caso = verPodId(tareaArchivoBody.getId_caso());
-        return registrar(builder.transformUpdateTarea(caso, tareaArchivoBody));
+        return transformMap(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)));
     }
 
     /**

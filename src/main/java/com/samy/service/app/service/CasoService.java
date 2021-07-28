@@ -31,7 +31,7 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
 
-    public Caso registrarArchivoTarea(TareaArchivoBody tareaArchivoBody);
+    public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody);
 
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
 
