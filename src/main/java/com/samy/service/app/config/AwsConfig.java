@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -13,10 +12,6 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
 
 @Configuration
 @EnableDynamoDBRepositories(basePackages = "com.samy.service.app.repo")
@@ -44,18 +39,6 @@ public class AwsConfig {
 	@Bean
 	public DynamoDB getDynamoDB() {
 		return new DynamoDB(amazonDynamoDB());
-	}
-
-	@Bean
-	public AmazonS3 s3Client() {
-		AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-		return AmazonS3ClientBuilder.standard().withCredentials(new AWSStaticCredentialsProvider(credentials))
-				.withRegion(region).build();
-	}
-
-	@Bean
-	public TransferManager transferManager() {
-		return TransferManagerBuilder.standard().withS3Client(s3Client()).build();
 	}
 
 	public AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
