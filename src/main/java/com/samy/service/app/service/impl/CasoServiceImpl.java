@@ -121,6 +121,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                             .build())
                     .build());
             casoRegistrado.setEmailGenerado(obj.get("email").getAsString());
+            return modificar(casoRegistrado);
         }
         return new Caso();
     }
