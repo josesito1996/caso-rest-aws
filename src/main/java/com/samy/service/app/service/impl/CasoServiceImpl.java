@@ -106,6 +106,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     /**
      * Metodo que registra el caso.
      */
+    @Transactional
     @Override
     public Caso registrarCaso(CasoBody request) {
         Caso casoRegistrado = registrar(builder.transformFromBody(request));
