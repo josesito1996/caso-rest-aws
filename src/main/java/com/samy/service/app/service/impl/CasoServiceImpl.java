@@ -110,15 +110,13 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     public Caso registrarCaso(CasoBody request) {
         Caso casoRegistrado = registrar(builder.transformFromBody(request));
         if (casoRegistrado != null) {
-            JsonObject obj = lambdaService.invocarLambdaMail(LambdaMailRequest.builder().httpStatus("POST")
-                    .httpStatus("POST")
+            JsonObject obj = lambdaService.invocarLambdaMail(LambdaMailRequest.builder()
+                    .httpStatus("POST").httpStatus("POST")
                     .mailBody(LambdaMailRequestBody.builder()
-                            .nombreUsuario(casoRegistrado.getDescripcionCaso()
+                            .nombreUsuario(casoRegistrado.getDescripcionCaso().replace(" ", "")
                                     .concat(casoRegistrado.getOrdenInspeccion()).toLowerCase())
-                            .nombres(casoRegistrado.getDescripcionCaso())
-                            .apellidos("")
-                            .password(passwordCaso)
-                            .build())
+                            .nombres(casoRegistrado.getDescripcionCaso()).apellidos("")
+                            .password(passwordCaso).build())
                     .build());
             casoRegistrado.setEmailGenerado(obj.get("email").getAsString());
             return modificar(casoRegistrado);
