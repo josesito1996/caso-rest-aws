@@ -18,11 +18,10 @@ public class ActuacionController {
 
     @Autowired
     private ActuacionFilesService service;
-
+    
     @GetMapping(path = "/listDetailActuacionByIdCase/{idCaso}")
     public ActuacionFileResponse listDetalleActuacionRenponse(@PathVariable String idCaso) {
         log.info("Id del CAso " + idCaso);
         return service.listarActuacionesConArchivos(idCaso);
     }
-
 }

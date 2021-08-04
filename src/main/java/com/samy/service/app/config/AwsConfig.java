@@ -9,43 +9,54 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.lambda.AWSLambda;
+import com.amazonaws.services.lambda.AWSLambdaClientBuilder;
 
 @Configuration
 @EnableDynamoDBRepositories(basePackages = "com.samy.service.app.repo")
 public class AwsConfig {
 
-	@Value("${aws.config.region}")
-	private String region;
+    @Value("${aws.config.region}")
+    private String region;
 
-	@Value("${aws.config.access-key}")
-	private String accessKey;
+    @Value("${aws.config.access-key}")
+    private String accessKey;
 
-	@Value("${aws.config.secret-key}")
-	private String secretKey;
+    @Value("${aws.config.secret-key}")
+    private String secretKey;
 
-	@Value("${aws.config.service-endpoint}")
-	private String serviceEnpoint;
+    @Value("${aws.config.service-endpoint}")
+    private String serviceEnpoint;
 
-	@Bean
-	public AmazonDynamoDB amazonDynamoDB() {
+    @Bean
+    public AmazonDynamoDB amazonDynamoDB() {
 
-		return AmazonDynamoDBClientBuilder.standard().withEndpointConfiguration(endpointConfiguration())
-				.withCredentials(awsCredentialsProvider()).build();
-	}
+        return AmazonDynamoDBClientBuilder.standard()
+                .withEndpointConfiguration(endpointConfiguration())
+                .withCredentials(awsCredentialsProvider()).build();
+    }
 
-	@Bean
-	public DynamoDB getDynamoDB() {
-		return new DynamoDB(amazonDynamoDB());
-	}
+    @Bean
+    public DynamoDB getDynamoDB() {
+        return new DynamoDB(amazonDynamoDB());
+    }
 
-	public AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
-		return new AwsClientBuilder.EndpointConfiguration(serviceEnpoint, region);
-	}
+    @Bean
+    public AWSLambda getAwsLambda() {
+        return AWSLambdaClientBuilder.standard().withCredentials(awsCredentialsProvider())
+                .withRegion(Regions.US_EAST_2)
+                .build();
+    }
 
-	public AWSCredentialsProvider awsCredentialsProvider() {
-		return new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey));
-	}
+    public AwsClientBuilder.EndpointConfiguration endpointConfiguration() {
+        return new AwsClientBuilder.EndpointConfiguration(serviceEnpoint, region);
+    }
+
+    public AWSCredentialsProvider awsCredentialsProvider() {
+        return new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey));
+    }
 }

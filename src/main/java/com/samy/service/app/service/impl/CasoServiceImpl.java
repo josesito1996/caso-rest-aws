@@ -13,6 +13,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.totalCasosPorEstado;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
+import static com.samy.service.app.util.Contants.passwordCaso;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
@@ -37,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.gson.JsonObject;
 import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.MateriaPojo;
@@ -49,6 +51,8 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.LambdaMailRequest;
+import com.samy.service.app.model.request.LambdaMailRequestBody;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -63,6 +67,7 @@ import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
+import com.samy.service.app.service.LambdaService;
 import com.samy.service.app.util.ListPagination;
 
 @Service
@@ -76,6 +81,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
     @Autowired
     private ExternalDbAws materiaAws;
+
+    @Autowired
+    private LambdaService lambdaService;
 
     @Override
     protected GenericRepo<Caso, String> getRepo() {
@@ -100,7 +108,21 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      */
     @Override
     public Caso registrarCaso(CasoBody request) {
-        return registrar(builder.transformFromBody(request));
+        Caso casoRegistrado = registrar(builder.transformFromBody(request));
+        if (casoRegistrado != null) {
+            JsonObject obj = lambdaService.invocarLambdaMail(LambdaMailRequest.builder().httpStatus("POST")
+                    .httpStatus("POST")
+                    .mailBody(LambdaMailRequestBody.builder()
+                            .nombreUsuario(casoRegistrado.getDescripcionCaso()
+                                    .concat(casoRegistrado.getOrdenInspeccion()).toLowerCase())
+                            .nombres(casoRegistrado.getDescripcionCaso())
+                            .apellidos("")
+                            .password(passwordCaso)
+                            .build())
+                    .build());
+            casoRegistrado.setEmailGenerado(obj.get("email").getAsString());
+        }
+        return new Caso();
     }
 
     /**

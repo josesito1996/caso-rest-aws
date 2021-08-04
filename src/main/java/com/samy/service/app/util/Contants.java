@@ -10,5 +10,9 @@ public class Contants {
 
     public static final String REGEX_EMAIL = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)"
             + "+[a-zA-Z]{2,6}$";
+    
+    public static final String lambdaMailNombre = "lambda-mail-service";
+    
+    public static final String passwordCaso = "51st3ma$2021.";
 
 }
