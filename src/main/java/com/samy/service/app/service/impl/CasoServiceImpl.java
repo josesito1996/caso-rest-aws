@@ -285,9 +285,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<Caso> casos = listarCasosPorUserName(userName);
         BigDecimal suma = casos.stream().map(item -> item.getMultaPotencial())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
+        double mayor = casos.stream().max(Comparator.comparing(Caso::getMultaPotencial)).get()
+                .getMultaPotencial().doubleValue();
         return CriticidadCasosResponse.builder().total(formatMoney(suma.doubleValue()))
-                .detalles(transformToMapCritidicidad(casos, suma.doubleValue())).build();
+                .detalles(transformToMapCritidicidad(casos, mayor)).build();
     }
 
     private List<Map<String, Object>> transformToMapCritidicidad(List<Caso> casos, double suma) {
