@@ -138,11 +138,11 @@ public class ServiceUtils {
      * @param caso
      * @return
      */
-    public static Integer cantidadTareasPendientesGeneral(Caso caso) {
+    public static Integer totalTareasDelCaso(Caso caso, Boolean estado) {
         int contadorPendientes = 0;
         for (Actuacion actuacion : caso.getActuaciones()) {
             for (Tarea tarea : actuacion.getTareas()) {
-                contadorPendientes = contadorPendientes + (tarea.getEstado() ? 0 : 1);
+                contadorPendientes = contadorPendientes + (tarea.getEstado() == estado ? 0 : 1);
             }
         }
         return contadorPendientes;
@@ -210,6 +210,79 @@ public class ServiceUtils {
      */
     public static int totalCasosPorEstado(List<Caso> casos, Boolean estado) {
         return (int) casos.stream().filter(caso -> caso.getEstadoCaso() == estado).count();
+    }
+
+    /**
+     * Total de actuaciones completadas de los casos.
+     * 
+     * @param casos
+     * @return
+     */
+    public static int totalActuacionesCompletadasGeneral(List<Caso> casos, Boolean estado) {
+        int totalCompletas = 0;
+        for (Caso caso : casos) {
+            int cantidad = 0;
+            for (Actuacion actuacion : caso.getActuaciones()) {
+                cantidad = cantidad + (int) actuacion.getTareas().stream()
+                        .filter(tarea -> tarea.getEstado() == estado).count();
+                if (cantidad > 0) {
+                    totalCompletas++;
+                }
+            }
+        }
+        return totalCompletas;
+    }
+
+    /**
+     * Contador de total de documentos Existentes en todos los casos
+     * 
+     * @param casos
+     * @return
+     */
+    public static int totalDocumentosGenerales(List<Caso> casos) {
+        int contadorTotal = 0;
+        for (Caso caso : casos) {
+            int contadorPorCaso = cantidadDocumentosGenerales(caso);
+            contadorTotal = contadorTotal + contadorPorCaso;
+        }
+        return contadorTotal;
+    }
+
+    /**
+     * Total de documentos segun el estado de todos los casos
+     * 
+     * @param casos
+     * @param estado
+     * @return
+     */
+    public static int totalDocumentosPendientes(List<Caso> casos, Boolean estado) {
+        int contador = 0;
+        for (Caso caso : casos) {
+            for (Actuacion actuacion : caso.getActuaciones()) {
+                for (Tarea tarea : actuacion.getTareas()) {
+                    if (tarea.getEstado() == estado) {
+                        contador++;
+                    }
+                }
+            }
+        }
+        return contador;
+    }
+
+    /**
+     * Contador del total General de tareas de todos los casos por estado.
+     * 
+     * @param casos
+     * @param estado
+     * @return
+     */
+    public static int totalTareasGeneralPorEstado(List<Caso> casos, Boolean estado) {
+        int totalGeneral = 0;
+        for (Caso caso : casos) {
+            int total = totalTareasDelCaso(caso, estado);
+            totalGeneral = totalGeneral + total;
+        }
+        return totalGeneral;
     }
 
 }

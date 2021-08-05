@@ -3,14 +3,18 @@ package com.samy.service.app.service.impl;
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentos;
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasAVencerDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasDelCasoGeneral;
-import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasPendientesGeneral;
 import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
 import static com.samy.service.app.service.impl.ServiceUtils.nroOrdenEtapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
+import static com.samy.service.app.service.impl.ServiceUtils.totalActuacionesCompletadasGeneral;
 import static com.samy.service.app.service.impl.ServiceUtils.totalCasosPorEstado;
+import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosGenerales;
+import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosPendientes;
+import static com.samy.service.app.service.impl.ServiceUtils.totalTareasDelCaso;
+import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralPorEstado;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.Contants.passwordCaso;
@@ -320,6 +324,28 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return mapResponse;
     }
 
+    @Override
+    public List<Map<String, Object>> verTotalesCompletados(String userName) {
+        List<Caso> casos = listarCasosPorUserName(userName);
+        List<Map<String, Object>> lista = new ArrayList<Map<String, Object>>();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("tipo", "Actuaciones");
+        map.put("completadas", totalActuacionesCompletadasGeneral(casos, true));
+        map.put("activas", totalActuacionesCompletadasGeneral(casos, false));
+        lista.add(map);
+        map = new HashMap<String, Object>();
+        map.put("tipo", "Documentos");
+        map.put("total", totalDocumentosGenerales(casos));
+        map.put("pendientes", totalDocumentosPendientes(casos, false));
+        lista.add(map);
+        map = new HashMap<String, Object>();
+        map.put("tipo", "Tareas");
+        map.put("completadas", totalTareasGeneralPorEstado(casos, true));
+        map.put("pendientes", totalTareasGeneralPorEstado(casos, false));
+        lista.add(map);
+        return lista;
+    }
+
     private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {
         List<Map<String, Object>> newCaso = new ArrayList<>();
         Map<String, Object> itemCaso;
@@ -479,7 +505,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .utltimaActuacion(fechaActuacion(caso.getActuaciones()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones()))
                 .totalTareas(cantidadTareasDelCasoGeneral(caso))
-                .tareasPendientes(cantidadTareasPendientesGeneral(caso))
+                .tareasPendientes(totalTareasDelCaso(caso, false))
                 .aVencer(cantidadTareasAVencerDelCaso(caso))
                 .siguienteVencimiento(siguienteVencimientoDelCaso(caso.getActuaciones()))
                 .iconoCampana(0).build();

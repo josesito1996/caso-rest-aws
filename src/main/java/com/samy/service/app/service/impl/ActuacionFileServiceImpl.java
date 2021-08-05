@@ -2,7 +2,7 @@ package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentosGenerales;
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasIndividualPorEstado;
-import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasPendientesGeneral;
+import static com.samy.service.app.service.impl.ServiceUtils.totalTareasDelCaso;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
     private ActuacionFileResponse transformCaso(Caso caso) {
         return ActuacionFileResponse.builder().totalActuaciones(caso.getActuaciones().size())
                 .totalDocumentosActuacion(cantidadDocumentosGenerales(caso))
-                .totalPendientes(cantidadTareasPendientesGeneral(caso))
+                .totalPendientes(totalTareasDelCaso(caso, false))
                 .actuaciones(transformActuaciones(caso.getActuaciones())).build();
     }
 

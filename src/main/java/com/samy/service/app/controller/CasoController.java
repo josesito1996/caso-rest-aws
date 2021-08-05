@@ -84,7 +84,8 @@ public class CasoController {
     }
 
     @PostMapping(path = "/uploadFileFromTarea")
-    public Map<String, Object> registrarArchivoTarea(@Valid @RequestBody TareaArchivoBody requestBody) {
+    public Map<String, Object> registrarArchivoTarea(
+            @Valid @RequestBody TareaArchivoBody requestBody) {
         log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarArchivoTarea(requestBody);
     }
@@ -105,15 +106,20 @@ public class CasoController {
     public MiCarteraResponse verCarteraResponse(@PathVariable String userName) {
         return service.verCarteraResponse(userName);
     }
-    
+
     @GetMapping(path = "/viewCriticidadByUserName/{userName}")
     public CriticidadCasosResponse verCriticidadResponse(@PathVariable String userName) {
         return service.verCriticidadResponse(userName);
     }
-    
+
     @GetMapping(path = "/viewCasoPorMateriaByUserName/{userName}")
     public List<Map<String, Object>> verCasoPorMateriaResponse(@PathVariable String userName) {
         return service.verCasosPorMateria(userName);
+    }
+
+    @GetMapping(path = "/viewTotalesCompletados/{userName}")
+    public List<Map<String, Object>> verTotalesCompletados(@PathVariable String userName) {
+        return service.verTotalesCompletados(userName);
     }
 
 }
