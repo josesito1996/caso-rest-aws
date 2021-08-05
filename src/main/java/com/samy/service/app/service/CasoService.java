@@ -52,4 +52,6 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public CriticidadCasosResponse verCriticidadResponse(String userName);
 
+    public List<Map<String, Object>> verCasosPorMateria(String userName);
+    
 }

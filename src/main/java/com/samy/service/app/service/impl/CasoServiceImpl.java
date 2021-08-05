@@ -291,6 +291,52 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .detalles(transformToMapCritidicidad(casos, mayor)).build();
     }
 
+    @Override
+    public List<Map<String, Object>> verCasosPorMateria(String userName) {
+        List<Caso> casos = listarCasosPorUserName(userName);
+        if (casos.isEmpty()) {
+            return new ArrayList<Map<String, Object>>();
+        }
+        List<String> materias = new ArrayList<String>();
+        for (Caso caso : casos) {
+            for (MateriasDto materia : caso.getMaterias()) {
+                if (!materias.contains(materia.getNombreMateria())) {
+                    materias.add(materia.getNombreMateria());
+                }
+            }
+        }
+        List<Map<String, Object>> mapResponse = new ArrayList<Map<String, Object>>();
+        Map<String, Object> mapItem;
+        for (String materia : materias) {
+            mapItem = new HashMap<String, Object>();
+            List<Map<String, Object>> newCaso = listCasosByMateria(materia, casos);
+            mapItem.put("nombreMateria", materia);
+            mapItem.put("cantidadCasos", newCaso.size());
+            mapItem.put("casos", newCaso);
+            mapResponse.add(mapItem);
+        }
+        mapResponse.sort(Comparator.comparing(m -> (int) m.get("cantidadCasos"),
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        return mapResponse;
+    }
+
+    private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {
+        List<Map<String, Object>> newCaso = new ArrayList<>();
+        Map<String, Object> itemCaso;
+        for (Caso caso : casos) {
+            for (MateriasDto materia : caso.getMaterias()) {
+                if (materia.getNombreMateria().equals(nombreMateria)) {
+                    itemCaso = new HashMap<String, Object>();
+                    itemCaso.put("nombreCaso", caso.getDescripcionCaso());
+                    itemCaso.put("ordenInspeccion", caso.getOrdenInspeccion());
+                    itemCaso.put("materiasEspecificas", new ArrayList<>());
+                    newCaso.add(itemCaso);
+                }
+            }
+        }
+        return newCaso.stream().distinct().collect(Collectors.toList());
+    }
+
     private List<Map<String, Object>> transformToMapCritidicidad(List<Caso> casos, double suma) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         Map<String, Object> mapa;

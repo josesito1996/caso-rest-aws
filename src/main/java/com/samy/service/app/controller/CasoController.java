@@ -110,5 +110,10 @@ public class CasoController {
     public CriticidadCasosResponse verCriticidadResponse(@PathVariable String userName) {
         return service.verCriticidadResponse(userName);
     }
+    
+    @GetMapping(path = "/viewCasoPorMateriaByUserName/{userName}")
+    public List<Map<String, Object>> verCasoPorMateriaResponse(@PathVariable String userName) {
+        return service.verCasosPorMateria(userName);
+    }
 
 }
