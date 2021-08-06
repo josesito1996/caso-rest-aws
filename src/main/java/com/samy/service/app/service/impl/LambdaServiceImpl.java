@@ -29,15 +29,16 @@ public class LambdaServiceImpl implements LambdaService {
 
     @Override
     public JsonObject invocarLambdaMail(LambdaMailRequest request) {
+        log.info("Ejecutando lambda para crear correo");
         try {
             Gson gson = new Gson();
             String payLoad = gson.toJson(request);
-            log.info(payLoad);
             InvokeRequest invokeRequest = new InvokeRequest().withFunctionName(lambdaMailNombre)
                     .withPayload(payLoad);
             InvokeResult result = awsLambda.invoke(invokeRequest);
             String ans = new String(result.getPayload().array(), StandardCharsets.UTF_8);
             JsonElement element = JsonParser.parseString(ans);
+            log.info("Lambda ejecutó con exito " + element);
             return element.getAsJsonObject();
         } catch (ServiceException e) {
             log.error("Error al invocar lambda -> " + e.toString());

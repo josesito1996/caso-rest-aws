@@ -18,7 +18,6 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralP
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVencerCasos;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
-import static com.samy.service.app.util.Contants.passwordCaso;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
@@ -43,7 +42,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.google.gson.JsonObject;
 import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.MateriaPojo;
@@ -56,8 +54,6 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
-import com.samy.service.app.model.request.LambdaMailRequest;
-import com.samy.service.app.model.request.LambdaMailRequestBody;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -73,9 +69,13 @@ import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
+import com.samy.service.app.util.LambdaUtils;
 import com.samy.service.app.util.ListPagination;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoService {
 
     @Autowired
@@ -116,18 +116,17 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     public Caso registrarCaso(CasoBody request) {
         Caso casoRegistrado = registrar(builder.transformFromBody(request));
         if (casoRegistrado != null) {
-            JsonObject obj = lambdaService.invocarLambdaMail(LambdaMailRequest.builder()
-                    .httpStatus("POST").httpStatus("POST")
-                    .mailBody(LambdaMailRequestBody.builder()
-                            .nombreUsuario(casoRegistrado.getDescripcionCaso().replace(" ", "")
-                                    .concat(casoRegistrado.getOrdenInspeccion()).toLowerCase())
-                            .nombres(casoRegistrado.getDescripcionCaso()).apellidos("")
-                            .password(passwordCaso).build())
-                    .build());
-            casoRegistrado.setEmailGenerado(obj.get("email").getAsString());
-            return modificar(casoRegistrado);
+            try {
+                LambdaUtils util = new LambdaUtils(lambdaService);
+                String email;
+                email = util.mailGeneradoLambda(casoRegistrado);
+                casoRegistrado.setEmailGenerado(email);
+                return modificar(casoRegistrado);
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
         }
-        return new Caso();
+        return casoRegistrado;
     }
 
     /**
@@ -190,6 +189,17 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         Caso caso = verPodId(idCaso);
         if (caso == null) {
             throw new NotFoundException("El Caso con el ID : " + idCaso + " no existe");
+        }
+        if (caso.getEmailGenerado() == null) {
+            try {
+                LambdaUtils util = new LambdaUtils(lambdaService);
+                String email = util.mailGeneradoLambda(caso);
+                log.info("Correo creado con exito " + email);
+                caso.setEmailGenerado(email);
+                return registrar(builder.transformTarea(caso, request, idActuacion));
+            } catch (Exception e) {
+                log.error("Error al crear el correo registrando la tarea" + e.getMessage());
+            }
         }
         return registrar(builder.transformTarea(caso, request, idActuacion));
     }

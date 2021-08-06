@@ -30,11 +30,8 @@ import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.service.CasoService;
 
-import lombok.extern.slf4j.Slf4j;
-
 @RestController
 @RequestMapping("/api-caso")
-@Slf4j
 public class CasoController {
 
     @Autowired
@@ -59,7 +56,6 @@ public class CasoController {
 
     @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Caso registrarCaso(@Valid @RequestBody CasoBody requestBody) {
-        log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarCaso(requestBody);
     }
 
@@ -71,7 +67,6 @@ public class CasoController {
     @PostMapping(path = "/saveActuacion/{idCaso}")
     public Map<String, Object> registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
             @PathVariable String idCaso) {
-        log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarActuacion(requestBody, idCaso);
     }
 
@@ -79,20 +74,17 @@ public class CasoController {
     public Caso registrarTarea(@Valid @RequestBody TareaBody requestBody,
             @ParameterObject @RequestParam(name = "id_caso") String idCaso,
             @RequestParam(name = "id_actuacion") String idActuacion) {
-        log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarTarea(requestBody, idActuacion, idCaso);
     }
 
     @PostMapping(path = "/uploadFileFromTarea")
     public Map<String, Object> registrarArchivoTarea(
             @Valid @RequestBody TareaArchivoBody requestBody) {
-        log.info("Cuerpo del Body : " + requestBody.toString());
         return service.registrarArchivoTarea(requestBody);
     }
 
     @PostMapping(path = "/changeStatusTarea")
     public Boolean cambiarEstadoTarea(@Valid @RequestBody TareaCambioEstadoBody requestBody) {
-        log.info("Cuerpo del Body : " + requestBody.toString());
         return service.cambiarEstadoTarea(requestBody);
     }
 
