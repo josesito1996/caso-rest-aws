@@ -15,6 +15,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosGene
 import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosPendientes;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralPorEstado;
+import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVencerCasos;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.Contants.passwordCaso;
@@ -342,6 +343,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         map.put("tipo", "Tareas");
         map.put("completadas", totalTareasGeneralPorEstado(casos, true));
         map.put("pendientes", totalTareasGeneralPorEstado(casos, false));
+        map.put("porVencer", totalTareasPorVencerCasos(casos));
         lista.add(map);
         return lista;
     }

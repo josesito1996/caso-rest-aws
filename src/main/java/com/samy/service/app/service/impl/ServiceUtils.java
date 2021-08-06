@@ -285,4 +285,18 @@ public class ServiceUtils {
         return totalGeneral;
     }
 
+    /**
+     * Total de tareas por vencer de todos los casos.
+     * 
+     * @return
+     */
+    public static int totalTareasPorVencerCasos(List<Caso> casos) {
+        int contadorTotal = 0;
+        for (Caso caso : casos) {
+            int totalTareaCaso = cantidadTareasAVencerDelCaso(caso);
+            contadorTotal = contadorTotal + totalTareaCaso;
+        }
+        return contadorTotal;
+    }
+
 }
