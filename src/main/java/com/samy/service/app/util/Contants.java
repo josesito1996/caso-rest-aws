@@ -13,6 +13,8 @@ public class Contants {
     
     public static final String lambdaMailNombre = "lambda-mail-service";
     
+    public static final String lambdaMailSenderNombre = "lambda-mailSender-service";
+    
     public static final String passwordCaso = "51st3ma$2021.";
 
 }

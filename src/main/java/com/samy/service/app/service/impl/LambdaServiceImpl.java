@@ -1,6 +1,7 @@
 package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.util.Contants.lambdaMailNombre;
+import static com.samy.service.app.util.Contants.lambdaMailSenderNombre;
 
 import java.nio.charset.StandardCharsets;
 
@@ -16,6 +17,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.samy.service.app.model.request.LambdaMailRequest;
+import com.samy.service.app.model.request.LambdaMailRequestSendgrid;
 import com.samy.service.app.service.LambdaService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -46,4 +48,21 @@ public class LambdaServiceImpl implements LambdaService {
         }
     }
 
+    @Override
+    public JsonObject enviarCorreo(LambdaMailRequestSendgrid request) {
+        try {
+            Gson gson = new Gson();
+            String payLoad = gson.toJson(request);
+            InvokeRequest invokeRequest = new InvokeRequest()
+                    .withFunctionName(lambdaMailSenderNombre).withPayload(payLoad);
+            InvokeResult result = awsLambda.invoke(invokeRequest);
+            String ans = new String(result.getPayload().array(), StandardCharsets.UTF_8);
+            JsonElement element = JsonParser.parseString(ans);
+            log.info("Respuesta de la Lambda : " + ans);
+            return element.getAsJsonObject();
+        } catch (ServiceException e) {
+            log.error("Error al invocar lambda -> " + e.toString());
+            return new JsonObject();
+        }
+    }
 }

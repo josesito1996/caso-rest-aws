@@ -36,12 +36,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.gson.JsonObject;
 import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.MateriaPojo;
@@ -54,6 +56,7 @@ import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.LambdaMailRequestSendgrid;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -200,6 +203,16 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
             } catch (Exception e) {
                 log.error("Error al crear el correo registrando la tarea" + e.getMessage());
             }
+        }
+        try {
+            CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(() -> lambdaService
+                    .enviarCorreo(LambdaMailRequestSendgrid.builder().content(request.getMensaje())
+                            .emailTo(request.getEquipos().get(0).getCorreo())
+                            .emailFrom(caso.getEmailGenerado())
+                            .subject("Asunto : " + request.getDenominacion()).build()));
+            completableFuture.get();
+        } catch (Exception e) {
+            log.error("Error al enviar correo " + e.getMessage());
         }
         return registrar(builder.transformTarea(caso, request, idActuacion));
     }
