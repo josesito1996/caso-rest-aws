@@ -201,7 +201,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 caso.setEmailGenerado(email);
                 return registrar(builder.transformTarea(caso, request, idActuacion));
             } catch (Exception e) {
-                log.error("Error al crear el correo registrando la tarea" + e.getMessage());
+                log.error("Error al crear el correo registrando la tarea " + e.getMessage());
             }
         }
         try {

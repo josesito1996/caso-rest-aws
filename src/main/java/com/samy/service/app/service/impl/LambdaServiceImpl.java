@@ -51,6 +51,7 @@ public class LambdaServiceImpl implements LambdaService {
     @Override
     public JsonObject enviarCorreo(LambdaMailRequestSendgrid request) {
         try {
+            log.info("Cuerp de la peticion para el envio de correo : " + request);
             Gson gson = new Gson();
             String payLoad = gson.toJson(request);
             InvokeRequest invokeRequest = new InvokeRequest()
