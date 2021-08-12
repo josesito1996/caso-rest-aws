@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -112,6 +113,11 @@ public class CasoController {
     @GetMapping(path = "/viewTotalesCompletados/{userName}")
     public List<Map<String, Object>> verTotalesCompletados(@PathVariable String userName) {
         return service.verTotalesCompletados(userName);
+    }
+    
+    @PostMapping(path = "/addSubMateriaToCase")
+    public Caso agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
+        return service.agregarSubMateria(request);
     }
 
 }

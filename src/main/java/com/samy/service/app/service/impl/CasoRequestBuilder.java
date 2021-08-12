@@ -21,7 +21,8 @@ import com.samy.service.app.external.EquipoDto;
 import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.InspectorDto;
-import com.samy.service.app.external.MateriasDto;
+import com.samy.service.app.external.MateriaDto;
+import com.samy.service.app.external.SubMateriaDto;
 import com.samy.service.app.external.TipoActuacionDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
@@ -31,7 +32,9 @@ import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.ArchivoBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.EquipoBody;
+import com.samy.service.app.model.request.MateriaRequest;
 import com.samy.service.app.model.request.ReactSelectRequest;
+import com.samy.service.app.model.request.SubMateriaCheck;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -141,7 +144,7 @@ public class CasoRequestBuilder {
         caso.setMultaPotencial(BigDecimal.valueOf(Math.random() * 10000));// VAlor aleatorio
         caso.setInspectorTrabajo(getInspectorDto(request.getInspectorTrabajo()));
         caso.setInspectorAuxiliar(getInspectorDto(request.getInspectorAuxiliar()));
-        caso.setMaterias(getMateriasDto(request.getMaterias()));
+        caso.setMaterias(getMateriaDto(request.getMaterias()));
         caso.setDescripcionCaso(request.getDescripcionCaso());
         caso.setRegistro(LocalDateTime.now());
         caso.setEstadoCaso(request.getEstado());
@@ -158,9 +161,14 @@ public class CasoRequestBuilder {
         return new InspectorDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
     }
 
-    private List<MateriasDto> getMateriasDto(List<String> materias) {
-        return materias.stream().map(item -> Utils.convertFromString(item, MateriasDto.class))
-                .collect(Collectors.toList());
+    private List<MateriaDto> getMateriaDto(List<String> materias) {
+        return materias.stream().map(item -> Utils.convertFromString(item, MateriaDto.class))
+                .map(this::initSubMateria).collect(Collectors.toList());
+    }
+
+    private MateriaDto initSubMateria(MateriaDto materia) {
+        materia.setSubMaterias(new ArrayList<SubMateriaDto>());
+        return materia;
     }
 
     private TipoActuacionDto toTipoActuacion(ReactSelectRequest reactSelectRequest) {
@@ -260,5 +268,34 @@ public class CasoRequestBuilder {
     private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
         return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
                 .tipoArchivo(body.getTipo()).build();
+    }
+
+    /**
+     * Util para registrar la SubMAteria en las materias del Caso.
+     * 
+     * @param materias
+     * @return
+     */
+    public List<MateriaDto> materiaDtoBuilderList(List<MateriaRequest> materias) {
+        return materias.stream().map(this::materiaDtoBuilder).collect(Collectors.toList());
+    }
+
+    private MateriaDto materiaDtoBuilder(MateriaRequest request) {
+        return MateriaDto.builder().id(request.getIdMateria())
+                .subMaterias(subMateriaListBuilder(request)).build();
+    }
+
+    private List<SubMateriaDto> subMateriaListBuilder(MateriaRequest request) {
+        List<SubMateriaDto> newList = new ArrayList<SubMateriaDto>();
+        for (SubMateriaCheck sub : request.getSubMateriasCheck()) {
+            newList.add(SubMateriaDto.builder().idSubMateria(sub.getIdSubMateria())
+                    .nombreSubMateria(sub.getSubMateria()).idMateria(request.getIdMateria())
+                    .build());
+        }
+        for (ReactSelectRequest react : request.getSubMateriasSelect()) {
+            newList.add(SubMateriaDto.builder().idSubMateria(react.getValue())
+                    .nombreSubMateria(react.getLabel()).idMateria(request.getIdMateria()).build());
+        }
+        return newList;
     }
 }

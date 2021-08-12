@@ -13,7 +13,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.samy.service.app.config.LocalDateConverter;
 import com.samy.service.app.config.LocalDateTimeConverter;
 import com.samy.service.app.external.InspectorDto;
-import com.samy.service.app.external.MateriasDto;
+import com.samy.service.app.external.MateriaDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -57,7 +57,7 @@ public class Caso {
     private List<InspectorDto> inspectorAuxiliar;
 
     @DynamoDBAttribute
-    private List<MateriasDto> materias;
+    private List<MateriaDto> materias;
 
     @DynamoDBAttribute
     private List<Actuacion> actuaciones;

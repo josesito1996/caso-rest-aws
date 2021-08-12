@@ -7,6 +7,7 @@ import java.util.Map;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -26,6 +27,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public Caso verPodId(String id);
 
     public Caso registrarCaso(CasoBody request);
+    
+    public Caso agregarSubMateria(MateriaRequestUpdate request);
 
     public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso);
 

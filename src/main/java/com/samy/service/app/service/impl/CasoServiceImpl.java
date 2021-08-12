@@ -50,13 +50,14 @@ import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
-import com.samy.service.app.external.MateriasDto;
+import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.LambdaMailRequestSendgrid;
+import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -139,9 +140,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso) {
         Caso caso = verPodId(idCaso);
-        if (caso == null) {
-            throw new NotFoundException("El Caso con el ID : " + idCaso + "no existe");
-        }
         return transformMap(registrar(builder.transformActuacion(caso, request)));
     }
 
@@ -190,9 +188,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso) {
         Caso caso = verPodId(idCaso);
-        if (caso == null) {
-            throw new NotFoundException("El Caso con el ID : " + idCaso + " no existe");
-        }
         if (caso.getEmailGenerado() == null) {
             try {
                 LambdaUtils util = new LambdaUtils(lambdaService);
@@ -205,11 +200,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
             }
         }
         try {
-            CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(() -> lambdaService
-                    .enviarCorreo(LambdaMailRequestSendgrid.builder().content(request.getMensaje())
-                            .emailTo(request.getEquipos().get(0).getCorreo())
-                            .emailFrom(caso.getEmailGenerado())
-                            .subject("Asunto : " + request.getDenominacion()).build()));
+            CompletableFuture<JsonObject> completableFuture = CompletableFuture
+                    .supplyAsync(() -> lambdaService.enviarCorreo(
+                            LambdaMailRequestSendgrid.builder().content(request.getMensaje())
+                                    .emailTo(request.getEquipos().get(0).getCorreo())
+                                    .emailFrom(caso.getEmailGenerado())
+                                    .subject("Asunto : " + request.getDenominacion()).build()));
             completableFuture.get();
         } catch (Exception e) {
             log.error("Error al enviar correo " + e.getMessage());
@@ -237,6 +233,19 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .getId() != null;
     }
 
+    /**
+     * MEtodo para registrar la SubMaterias
+     */
+    @Override
+    public Caso agregarSubMateria(MateriaRequestUpdate request) {
+        Caso caso = verPodId(request.getIdCaso());
+        List<MateriaDto> materias = caso.getMaterias();
+        if (materias != null) {
+            materias.clear();
+            caso.setMaterias(builder.materiaDtoBuilderList(request.getMaterias()));
+        }
+        return registrar(caso);
+    }
     /**
      * Metodo que lista los cassos correspondientes a un usuario de la BD.
      */
@@ -327,7 +336,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         }
         List<String> materias = new ArrayList<String>();
         for (Caso caso : casos) {
-            for (MateriasDto materia : caso.getMaterias()) {
+            for (MateriaDto materia : caso.getMaterias()) {
                 if (!materias.contains(materia.getNombreMateria())) {
                     materias.add(materia.getNombreMateria());
                 }
@@ -375,7 +384,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<Map<String, Object>> newCaso = new ArrayList<>();
         Map<String, Object> itemCaso;
         for (Caso caso : casos) {
-            for (MateriasDto materia : caso.getMaterias()) {
+            for (MateriaDto materia : caso.getMaterias()) {
                 if (materia.getNombreMateria().equals(nombreMateria)) {
                     itemCaso = new HashMap<String, Object>();
                     itemCaso.put("nombreCaso", caso.getDescripcionCaso());
@@ -513,9 +522,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .funcionario(funcionario(caso.getActuaciones())).build();
     }
 
-    private List<MateriaPojo> transformToDto(List<MateriasDto> materias) {
+    private List<MateriaPojo> transformToDto(List<MateriaDto> materias) {
         List<MateriaPojo> materiasBd = new ArrayList<MateriaPojo>();
-        for (MateriasDto materia : materias) {
+        for (MateriaDto materia : materias) {
             materiasBd.add(materiaAws.getTable(materia.getId()));
         }
         return materiasBd;
