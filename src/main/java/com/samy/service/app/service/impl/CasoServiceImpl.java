@@ -51,6 +51,7 @@ import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.MateriaDto;
+import com.samy.service.app.external.SubMateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
@@ -246,6 +247,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         }
         return registrar(caso);
     }
+
     /**
      * Metodo que lista los cassos correspondientes a un usuario de la BD.
      */
@@ -519,7 +521,22 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .materias(transformToDto(caso.getMaterias()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones()))
                 .cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
-                .funcionario(funcionario(caso.getActuaciones())).build();
+                .funcionario(funcionario(caso.getActuaciones()))
+                .subMaterias(subMateriasBuild(caso.getMaterias())).build();
+    }
+
+    private List<SubMateriaDto> subMateriasBuild(List<MateriaDto> materias) {
+        List<SubMateriaDto> items = new ArrayList<SubMateriaDto>();
+        for (MateriaDto materia : materias) {
+            MateriaPojo materiaPojo = materiaAws.getTable(materia.getId());
+            for (SubMateriaDto dto : materia.getSubMaterias()) {
+                items.add(SubMateriaDto.builder().idSubMateria(dto.getIdSubMateria())
+                        .idMateria(dto.getIdMateria()).icono(materiaPojo.getIcono())
+                        .color(materiaPojo.getColor())
+                        .nombreSubMateria(dto.getNombreSubMateria()).build());
+            }
+        }
+        return items;
     }
 
     private List<MateriaPojo> transformToDto(List<MateriaDto> materias) {
