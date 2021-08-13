@@ -528,12 +528,15 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private List<SubMateriaDto> subMateriasBuild(List<MateriaDto> materias) {
         List<SubMateriaDto> items = new ArrayList<SubMateriaDto>();
         for (MateriaDto materia : materias) {
+            List<SubMateriaDto> subMaterias = materia.getSubMaterias() != null
+                    ? materia.getSubMaterias()
+                    : new ArrayList<SubMateriaDto>();
             MateriaPojo materiaPojo = materiaAws.getTable(materia.getId());
-            for (SubMateriaDto dto : materia.getSubMaterias()) {
+            for (SubMateriaDto dto : subMaterias) {
                 items.add(SubMateriaDto.builder().idSubMateria(dto.getIdSubMateria())
                         .idMateria(dto.getIdMateria()).icono(materiaPojo.getIcono())
-                        .color(materiaPojo.getColor())
-                        .nombreSubMateria(dto.getNombreSubMateria()).build());
+                        .color(materiaPojo.getColor()).nombreSubMateria(dto.getNombreSubMateria())
+                        .build());
             }
         }
         return items;
