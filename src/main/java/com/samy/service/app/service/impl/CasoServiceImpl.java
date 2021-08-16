@@ -238,14 +238,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      * MEtodo para registrar la SubMaterias
      */
     @Override
-    public Caso agregarSubMateria(MateriaRequestUpdate request) {
+    public DetailCaseResponse agregarSubMateria(MateriaRequestUpdate request) {
         Caso caso = verPodId(request.getIdCaso());
         List<MateriaDto> materias = caso.getMaterias();
         if (materias != null) {
             materias.clear();
             caso.setMaterias(builder.materiaDtoBuilderList(request.getMaterias()));
         }
-        return registrar(caso);
+        return transformFromCaso(registrar(caso));
     }
 
     /**

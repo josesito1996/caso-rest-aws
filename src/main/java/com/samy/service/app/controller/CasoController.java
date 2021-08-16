@@ -116,7 +116,7 @@ public class CasoController {
     }
     
     @PostMapping(path = "/addSubMateriaToCase")
-    public Caso agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
+    public DetailCaseResponse agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
         return service.agregarSubMateria(request);
     }
 

@@ -28,7 +28,7 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public Caso registrarCaso(CasoBody request);
     
-    public Caso agregarSubMateria(MateriaRequestUpdate request);
+    public DetailCaseResponse agregarSubMateria(MateriaRequestUpdate request);
 
     public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso);
 
