@@ -50,15 +50,14 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
                     actuacion);
             actuacionDetalleFileResponse.setIsOpen(contador == 0);
             lista.add(actuacionDetalleFileResponse);
-            contador ++;
+            contador++;
         }
         return lista;
     }
 
     private ActuacionDetalleFileResponse transformActuacionDetalleFileResponse(
             Actuacion actuacion) {
-        return ActuacionDetalleFileResponse.builder()
-                .idActuacion(actuacion.getIdActuacion())
+        return ActuacionDetalleFileResponse.builder().idActuacion(actuacion.getIdActuacion())
                 .fechaRegistro(fechaFormateada(actuacion.getFechaActuacion()))
                 .tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
                 .totalTareasActuacion(actuacion.getTareas().size())
@@ -85,6 +84,7 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
     private DocumentoDetalleResponse transformDocumentoDetalleResponse(
             ArchivoAdjunto archivoAdjunto, String fechaActuacion) {
         return DocumentoDetalleResponse.builder().id(archivoAdjunto.getId())
+                .isChecked(false)
                 .fechaRegistro(fechaActuacion).nombreArchivo(archivoAdjunto.getNombreArchivo())
                 .type(archivoAdjunto.getTipoArchivo()).build();
     }
@@ -110,7 +110,7 @@ public class ActuacionFileServiceImpl implements ActuacionFilesService {
 
     private DocumentoDetalleResponse transformDocumentoDetalle(ArchivoAdjunto archivo,
             String fechaRegistro) {
-        return DocumentoDetalleResponse.builder().id(archivo.getId())
+        return DocumentoDetalleResponse.builder().id(archivo.getId()).isChecked(false)
                 .nombreArchivo(archivo.getNombreArchivo()).fechaRegistro(fechaRegistro)
                 .type(archivo.getTipoArchivo()).build();
     }

@@ -26,4 +26,6 @@ public class DocumentoDetalleResponse {
     
     @JsonProperty("fecha_registro")
     private String fechaRegistro;
+    
+    private Boolean isChecked;
 }
