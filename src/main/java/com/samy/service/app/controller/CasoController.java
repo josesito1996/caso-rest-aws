@@ -77,6 +77,13 @@ public class CasoController {
             @RequestParam(name = "id_actuacion") String idActuacion) {
         return service.registrarTarea(requestBody, idActuacion, idCaso);
     }
+    
+    @PostMapping(path = "/updateTarea")
+    public Caso actualizarTarea(@Valid @RequestBody TareaBody requestBody,
+            @ParameterObject @RequestParam(name = "id_caso") String idCaso,
+            @RequestParam(name = "id_actuacion") String idActuacion) {
+        return service.registrarTarea(requestBody, idActuacion, idCaso);
+    }
 
     @PostMapping(path = "/uploadFileFromTarea")
     public Map<String, Object> registrarArchivoTarea(

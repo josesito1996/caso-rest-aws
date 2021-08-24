@@ -33,6 +33,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso);
 
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
+    
+    public Caso actualizarTarea(TareaBody request, String idActuacion, String idCaso);
 
     public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody);
 

@@ -45,5 +45,8 @@ public class TareaBody {
 
     @NotNull
     private Boolean estado;
+    
+    @Valid
+    private List<ArchivoBody> archivos;
 
 }

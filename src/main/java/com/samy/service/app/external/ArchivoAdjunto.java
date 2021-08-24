@@ -45,4 +45,10 @@ public class ArchivoAdjunto {
 	@JsonProperty("url_archivo")
 	@DynamoDBAttribute(attributeName = "url_archivo")
 	private String url;
+	
+	@NotEmpty
+    @NotNull
+    @JsonProperty("estado_archivo")
+    @DynamoDBAttribute(attributeName = "estado_archivo")
+	private Boolean estado;
 }

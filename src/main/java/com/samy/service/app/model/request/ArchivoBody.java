@@ -3,6 +3,8 @@ package com.samy.service.app.model.request;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +19,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ArchivoBody {
+    
 	@NotNull
 	@NotEmpty
 	private String nombreArchivo;
@@ -26,4 +29,9 @@ public class ArchivoBody {
 	@NotNull
 	@NotEmpty
 	private String tipo;
+	
+	@JsonProperty("id_archivo")
+	private String idArchivo;
+	
+	private Boolean estado;
 }

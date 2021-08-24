@@ -90,7 +90,15 @@ public class CasoRequestBuilder {
         if (tareas.isEmpty()) {
             tareas = Arrays.asList(transformTareaFromBody(request));
         } else {
-            tareas.add(transformTareaFromBody(request));
+            if (request.getIdTarea() != null) {
+                int indice = tareas.indexOf(tareas.stream()
+                        .filter(item -> item.getIdTarea().equals(request.getIdTarea()))
+                        .collect(Collectors.toList()).get(0));
+                tareas.set(indice, transformTareaFromBody(request));
+            } else {
+                request.setIdTarea(uuidGenerado());
+                tareas.add(transformTareaFromBody(request));
+            }
         }
         caso.getActuaciones().get(index).setTareas(tareas);
         return caso;
@@ -208,14 +216,18 @@ public class CasoRequestBuilder {
     private Tarea transformTareaFromBody(TareaBody tareaBody) {
         Tarea tarea = new Tarea();
         tarea.setFechaRegistro(LocalDateTime.now());
-        tarea.setIdTarea(uuidGenerado());
+        tarea.setIdTarea(tareaBody.getIdTarea());
         tarea.setDenominacion(tareaBody.getDenominacion());
         tarea.setFechaVencimiento(
                 LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
         tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
         tarea.setMensaje(tareaBody.getMensaje());
         tarea.setEstado(tareaBody.getEstado());
-        tarea.setArchivos(new ArrayList<ArchivoAdjunto>());
+        if (tareaBody.getIdTarea() != null && tareaBody.getArchivos() != null) {
+            tarea.setArchivos(listArchivoAdjunto(tareaBody.getArchivos()));
+        } else {
+            tarea.setArchivos(new ArrayList<ArchivoAdjunto>());
+        }
         return tarea;
     }
 
@@ -267,6 +279,7 @@ public class CasoRequestBuilder {
 
     private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
         return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
+                .estado(body.getEstado())
                 .tipoArchivo(body.getTipo()).build();
     }
 

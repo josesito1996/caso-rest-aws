@@ -382,6 +382,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return lista;
     }
 
+    @Override
+    public Caso actualizarTarea(TareaBody request, String idActuacion, String idCaso) {
+        return null;
+    }
+
     private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {
         List<Map<String, Object>> newCaso = new ArrayList<>();
         Map<String, Object> itemCaso;
