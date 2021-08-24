@@ -88,6 +88,7 @@ public class CasoRequestBuilder {
         Actuacion actuacionFound = actuaciones.get(index);
         List<Tarea> tareas = actuacionFound.getTareas();
         if (tareas.isEmpty()) {
+            request.setIdTarea(uuidGenerado());
             tareas = Arrays.asList(transformTareaFromBody(request));
         } else {
             if (request.getIdTarea() != null) {
