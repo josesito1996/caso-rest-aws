@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.EquipoDto;
 import com.samy.service.app.model.Personal;
 import com.samy.service.app.repo.GenericRepo;
@@ -27,7 +28,10 @@ public class PersonalServiceImpl extends CrudImpl<Personal, String> implements P
     @Override
     public Personal verUnoPorId(String id) {
         Optional<Personal> optional = verPorId(id);
-        return optional.isPresent() ? optional.get() : new Personal();
+        if (!optional.isPresent()) {
+            throw new NotFoundException("Personal no existe " + id);
+        }
+        return optional.get();
     }
 
     @Override

@@ -29,6 +29,7 @@ import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.service.CasoService;
 
 @RestController
@@ -65,6 +66,13 @@ public class CasoController {
         return service.mostratDetalleDelCasoPorId(id);
     }
 
+    @GetMapping(path = "/findDetailTarea")
+    public UpdateTareaResponse findDetailTareaById(@RequestParam(name = "id_case") String idCase,
+            @RequestParam(name = "id_actuacion") String idActuacion,
+            @RequestParam(name = "id_tarea") String idTarea) {
+        return service.verTareaPorId(idCase, idActuacion, idTarea);
+    }
+
     @PostMapping(path = "/saveActuacion/{idCaso}")
     public Map<String, Object> registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
             @PathVariable String idCaso) {
@@ -77,7 +85,7 @@ public class CasoController {
             @RequestParam(name = "id_actuacion") String idActuacion) {
         return service.registrarTarea(requestBody, idActuacion, idCaso);
     }
-    
+
     @PostMapping(path = "/updateTarea")
     public Caso actualizarTarea(@Valid @RequestBody TareaBody requestBody,
             @ParameterObject @RequestParam(name = "id_caso") String idCaso,
@@ -121,7 +129,7 @@ public class CasoController {
     public List<Map<String, Object>> verTotalesCompletados(@PathVariable String userName) {
         return service.verTotalesCompletados(userName);
     }
-    
+
     @PostMapping(path = "/addSubMateriaToCase")
     public DetailCaseResponse agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
         return service.agregarSubMateria(request);

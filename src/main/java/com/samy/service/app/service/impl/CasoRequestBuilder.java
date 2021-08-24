@@ -232,6 +232,20 @@ public class CasoRequestBuilder {
         return tarea;
     }
 
+    public List<EquipoBody> getEquiposBody(List<EquipoDto> equipoDto) {
+        return equipoDto.stream().map(this::transformEquipoDto).collect(Collectors.toList());
+    }
+
+    private EquipoBody transformEquipoDto(EquipoDto equipoBody) {
+        String idEquipo = equipoBody.getIdEquipo();
+        Personal personal = personalService.verUnoPorId(idEquipo);
+        return EquipoBody.builder()
+                .idEquipo(idEquipo)
+                .correo(personal.getCorreo())
+                .destinatario(personal.getDatos())
+                .build();
+    }
+    
     private List<EquipoDto> getEquipos(List<EquipoBody> equipoBodies) {
         return equipoBodies.stream().map(this::transformEquipoBody).collect(Collectors.toList());
     }
@@ -282,6 +296,18 @@ public class CasoRequestBuilder {
         return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
                 .estado(body.getEstado())
                 .tipoArchivo(body.getTipo()).build();
+    }
+    
+    public List<ArchivoBody> listArchivoBody(List<ArchivoAdjunto> archivos) {
+        return archivos.stream().map(this::getArchivoBody).collect(Collectors.toList());
+    }
+
+    private ArchivoBody getArchivoBody(ArchivoAdjunto body) {
+        return ArchivoBody.builder()
+                .idArchivo(body.getId())
+                .nombreArchivo(body.getNombreArchivo())
+                .estado(body.getEstado())
+                .build();
     }
 
     /**

@@ -70,6 +70,7 @@ import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
@@ -385,6 +386,32 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public Caso actualizarTarea(TareaBody request, String idActuacion, String idCaso) {
         return null;
+    }
+
+    @Override
+    public UpdateTareaResponse verTareaPorId(String idCaso, String idActuacion, String idTarea) {
+        Caso caso = verPodId(idCaso);
+        List<Actuacion> actuaciones = caso.getActuaciones();
+        if (actuaciones.isEmpty()) {
+            throw new NotFoundException("No hay Actuaciones para el Caso " + idCaso);
+        }
+        Actuacion actuacion = actuaciones.stream()
+                .filter(item -> item.getIdActuacion().equals(idActuacion))
+                .collect(Collectors.toList()).get(0);
+        List<Tarea> tareas = actuacion.getTareas().stream()
+                .filter(tarea -> tarea.getIdTarea().equals(idTarea)).collect(Collectors.toList());
+        if (tareas.isEmpty()) {
+            throw new NotFoundException("No hay tareas para la Actuacion");
+        }
+        Tarea tarea = tareas.get(0);
+        return UpdateTareaResponse.builder().idTarea(tarea.getIdTarea())
+                .denominacion(tarea.getDenominacion())
+                .mensaje(tarea.getMensaje())
+                .estado(tarea.getEstado())
+                .fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
+                .equipos(builder.getEquiposBody(tarea.getEquipos()))
+                .archivos(builder.listArchivoBody(tarea.getArchivos()))
+                .build();
     }
 
     private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {

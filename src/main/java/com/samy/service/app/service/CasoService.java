@@ -17,6 +17,7 @@ import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.UpdateTareaResponse;
 
 public interface CasoService extends ICrud<Caso, String> {
 
@@ -27,18 +28,20 @@ public interface CasoService extends ICrud<Caso, String> {
     public Caso verPodId(String id);
 
     public Caso registrarCaso(CasoBody request);
-    
+
     public DetailCaseResponse agregarSubMateria(MateriaRequestUpdate request);
 
     public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso);
 
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
-    
+
     public Caso actualizarTarea(TareaBody request, String idActuacion, String idCaso);
 
     public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody);
 
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
+
+    public UpdateTareaResponse verTareaPorId(String idCaso, String idActuacion, String idTarea);
 
     /**
      * Vista del Dashboard.
