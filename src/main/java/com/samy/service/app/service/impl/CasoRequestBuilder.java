@@ -241,13 +241,10 @@ public class CasoRequestBuilder {
     private EquipoBody transformEquipoDto(EquipoDto equipoBody) {
         String idEquipo = equipoBody.getIdEquipo();
         Personal personal = personalService.verUnoPorId(idEquipo);
-        return EquipoBody.builder()
-                .idEquipo(idEquipo)
-                .correo(personal.getCorreo())
-                .destinatario(personal.getDatos())
-                .build();
+        return EquipoBody.builder().idEquipo(idEquipo).correo(personal.getCorreo())
+                .destinatario(personal.getDatos()).build();
     }
-    
+
     private List<EquipoDto> getEquipos(List<EquipoBody> equipoBodies) {
         return equipoBodies.stream().map(this::transformEquipoBody).collect(Collectors.toList());
     }
@@ -296,20 +293,22 @@ public class CasoRequestBuilder {
 
     private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
         return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
-                .estado(body.getEstado())
-                .tipoArchivo(body.getTipo()).build();
+                .estado(body.getEstado()).tipoArchivo(body.getTipo()).build();
     }
-    
+
     public List<ArchivoBody> listArchivoBody(List<ArchivoAdjunto> archivos) {
         return archivos.stream().map(this::getArchivoBody).collect(Collectors.toList());
     }
 
     private ArchivoBody getArchivoBody(ArchivoAdjunto body) {
-        return ArchivoBody.builder()
-                .idArchivo(body.getId())
-                .nombreArchivo(body.getNombreArchivo())
-                .estado(body.getEstado())
-                .build();
+        boolean estado = true;
+        if (body.getEstado() == null) {
+            estado = true;
+        } else {
+            estado = body.getEstado();
+        }
+        return ArchivoBody.builder().idArchivo(body.getId()).nombreArchivo(body.getNombreArchivo())
+                .estado(estado).build();
     }
 
     /**

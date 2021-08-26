@@ -3,6 +3,7 @@ package com.samy.service.app.model.request;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,6 +21,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
+@JsonIgnoreProperties
 public class ArchivoBody {
     
 	@NotNull
