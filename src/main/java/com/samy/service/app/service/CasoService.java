@@ -43,7 +43,7 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public UpdateTareaResponse verTareaPorId(String idCaso, String idActuacion, String idTarea);
     
-    public UpdateTareaResponse eliminarTareaPorId(String idCaso, String idActuacion, String idTarea);
+    public Caso eliminarTareaPorId(String idCaso, String idActuacion, String idTarea);
 
     /**
      * Vista del Dashboard.

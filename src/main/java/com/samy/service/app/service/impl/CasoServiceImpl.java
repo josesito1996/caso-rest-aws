@@ -22,6 +22,7 @@ import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
+import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getExtension;
 import static com.samy.service.app.util.Utils.getPorcentaje;
@@ -405,24 +406,38 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         }
         Tarea tarea = tareas.get(0);
         return UpdateTareaResponse.builder().idTarea(tarea.getIdTarea())
-                .denominacion(tarea.getDenominacion())
-                .mensaje(tarea.getMensaje())
+                .denominacion(tarea.getDenominacion()).mensaje(tarea.getMensaje())
                 .estado(tarea.getEstado())
-                .fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
+                .fechaVencimiento(fechaFormateadaYYYMMDD(tarea.getFechaVencimiento()))
                 .equipos(builder.getEquiposBody(tarea.getEquipos()))
-                .archivos(builder.listArchivoBody(tarea.getArchivos()))
-                .build();
+                .archivos(builder.listArchivoBody(tarea.getArchivos())).build();
     }
-
-    
 
     @Override
-    public UpdateTareaResponse eliminarTareaPorId(String idCaso, String idActuacion,
+    public Caso eliminarTareaPorId(String idCaso, String idActuacion,
             String idTarea) {
         Caso caso = verPodId(idCaso);
-        return null;
+        List<Actuacion> actuaciones = caso.getActuaciones();
+        if (actuaciones.isEmpty()) {
+            throw new NotFoundException("Este caso no tiene actuaciones");
+        }
+        Actuacion actuacion = actuaciones.stream()
+                .filter(item -> item.getIdActuacion().equals(idActuacion))
+                .collect(Collectors.toList()).get(0);
+        int index = actuaciones.indexOf(actuacion);
+        List<Tarea> tareas = actuacion.getTareas();
+        if (tareas.isEmpty()) {
+            throw new NotFoundException("Esta actuacion no tiene tareas");
+        }
+        Tarea tarea = tareas.stream().filter(item -> item.getIdTarea().equals(idTarea))
+                .collect(Collectors.toList()).get(0);
+        int indexTarea = tareas.indexOf(tarea);
+        tareas.get(indexTarea).setEliminado(true);
+        actuaciones.get(index).setTareas(tareas);
+        caso.setActuaciones(actuaciones);
+        return registrar(caso);
     }
-    
+
     private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {
         List<Map<String, Object>> newCaso = new ArrayList<>();
         Map<String, Object> itemCaso;
