@@ -49,4 +49,7 @@ public class Tarea {
 
     @DynamoDBAttribute
     private Boolean estado;
+    
+    @DynamoDBAttribute
+    private Boolean eliminado;
 }

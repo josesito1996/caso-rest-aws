@@ -414,6 +414,15 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .build();
     }
 
+    
+
+    @Override
+    public UpdateTareaResponse eliminarTareaPorId(String idCaso, String idActuacion,
+            String idTarea) {
+        Caso caso = verPodId(idCaso);
+        return null;
+    }
+    
     private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {
         List<Map<String, Object>> newCaso = new ArrayList<>();
         Map<String, Object> itemCaso;

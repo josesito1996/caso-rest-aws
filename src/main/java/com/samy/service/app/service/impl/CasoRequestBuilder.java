@@ -98,6 +98,7 @@ public class CasoRequestBuilder {
                 tareas.set(indice, transformTareaFromBody(request));
             } else {
                 request.setIdTarea(uuidGenerado());
+                request.setEliminado(false);
                 tareas.add(transformTareaFromBody(request));
             }
         }
@@ -223,6 +224,7 @@ public class CasoRequestBuilder {
                 LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
         tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
         tarea.setMensaje(tareaBody.getMensaje());
+        tarea.setEliminado(tareaBody.getEliminado());
         tarea.setEstado(tareaBody.getEstado());
         if (tareaBody.getIdTarea() != null && tareaBody.getArchivos() != null) {
             tarea.setArchivos(listArchivoAdjunto(tareaBody.getArchivos()));

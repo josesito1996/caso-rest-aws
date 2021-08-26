@@ -46,6 +46,8 @@ public class TareaBody {
     @NotNull
     private Boolean estado;
     
+    private Boolean eliminado;
+    
     @Valid
     private List<ArchivoBody> archivos;
 
