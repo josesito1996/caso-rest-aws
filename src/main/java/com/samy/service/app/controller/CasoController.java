@@ -8,7 +8,6 @@ import javax.validation.Valid;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -94,7 +93,7 @@ public class CasoController {
         return service.registrarTarea(requestBody, idActuacion, idCaso);
     }
 
-    @DeleteMapping(path = "/deleteTarea")
+    @GetMapping(path = "/deleteTarea")
     public Caso eliminarTarea(@RequestParam(name = "id_caso") String idCaso,
             @RequestParam(name = "id_actuacion") String idActuacion,
             @RequestParam(name = "id_tarea") String idTarea) {
