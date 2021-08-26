@@ -308,6 +308,7 @@ public class CasoRequestBuilder {
             estado = body.getEstado();
         }
         return ArchivoBody.builder().idArchivo(body.getId()).nombreArchivo(body.getNombreArchivo())
+                .tipo(body.getTipoArchivo())
                 .estado(estado).build();
     }
 

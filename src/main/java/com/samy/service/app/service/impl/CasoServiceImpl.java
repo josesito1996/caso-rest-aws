@@ -414,8 +414,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     @Override
-    public Caso eliminarTareaPorId(String idCaso, String idActuacion,
-            String idTarea) {
+    public Caso eliminarTareaPorId(String idCaso, String idActuacion, String idTarea) {
         Caso caso = verPodId(idCaso);
         List<Actuacion> actuaciones = caso.getActuaciones();
         if (actuaciones.isEmpty()) {
@@ -539,13 +538,26 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     private Long countTareasRealizadas(List<Tarea> tareas) {
-        return tareas.stream().filter(estado -> estado.getEstado()).count();
+        return tareas.stream()
+                .filter(estado -> estado.getEstado())
+                .count();
     }
 
     private Integer countDocumentosDeTareas(List<Tarea> tareas) {
         int contador = 0;
         for (Tarea tarea : tareas) {
-            contador = contador + (tarea.getArchivos() == null ? 0 : tarea.getArchivos().size());
+            if (tarea.getEliminado() == null) {
+
+            } else if (tarea.getEliminado() == false) {
+                List<ArchivoAdjunto> archivos = tarea.getArchivos();
+                if (archivos == null) {
+                    return 0;
+                }
+                if (archivos.size() > 0) {
+                    int total = (int) archivos.stream().filter(item -> !item.getEstado()).count();
+                    contador = contador + total;
+                }
+            }
         }
         return contador;
     }
@@ -553,12 +565,18 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private List<DetalleActuacionResponse> transformDetalleActuacionResponse(List<Tarea> tareas) {
         List<DetalleActuacionResponse> detalle = new ArrayList<DetalleActuacionResponse>();
         for (Tarea tare : tareas) {
-            detalle.add(transformFromTarea(tare));
+            if (tare.getEliminado() == null) {
+                tare.setEliminado(false);
+                detalle.add(transformFromTarea(tare));
+            } else if (!tare.getEliminado()) {
+                detalle.add(transformFromTarea(tare));
+            }
         }
         return detalle;
     }
 
     private DetalleActuacionResponse transformFromTarea(Tarea tarea) {
+        log.info(tarea.toString());
         return DetalleActuacionResponse.builder().idTarea(tarea.getIdTarea())
                 .nombreTarea(tarea.getDenominacion())
                 .cantidadDocumentos(tarea == null || tarea.getArchivos() == null ? 0
