@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.samy.service.app.external.ArchivoAdjunto;
+import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
@@ -85,16 +86,17 @@ public class ServiceUtils {
      * @param actuaciones
      * @return
      */
-    public static String funcionario(List<Actuacion> actuaciones) {
+    public static FuncionarioDto funcionario(List<Actuacion> actuaciones) {
         if (actuaciones.isEmpty()) {
-            return " --- ";
+            return new FuncionarioDto();
         }
         int actuacionesSize = actuaciones.size();
         Actuacion actuacion = actuaciones.get(actuacionesSize - 1);
         int funcionariosSize = actuacion.getFuncionario().size();
+        FuncionarioDto funcionario = actuacion.getFuncionario().get(0);
         return funcionariosSize > 0
-                ? actuacion.getFuncionario().get(funcionariosSize - 1).getDatosFuncionario()
-                : " --- ";
+                ? new FuncionarioDto(funcionario.getId(), funcionario.getDatosFuncionario())
+                : new FuncionarioDto();
     }
 
     /**

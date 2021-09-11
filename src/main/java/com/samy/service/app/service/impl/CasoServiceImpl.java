@@ -51,6 +51,7 @@ import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
+import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.external.SubMateriaDto;
 import com.samy.service.app.model.Actuacion;
@@ -110,9 +111,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     public Caso verPodId(String id) {
         Optional<Caso> optional = verPorId(id);
         if (!optional.isPresent()) {
-            throw new NotFoundException("El Caso con el ID : " + id + "no existe");
+            throw new NotFoundException("El Caso con el ID : " + id + " no existe");
         }
-        return optional.isPresent() ? optional.get() : new Caso();
+        return optional.get();
     }
 
     /**
@@ -588,6 +589,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     private DetailCaseResponse transformFromCaso(Caso caso) {
+        FuncionarioDto dtoFunci = funcionario(caso.getActuaciones());
         return DetailCaseResponse.builder().idCaso(caso.getId())
                 .nombreCaso(caso.getDescripcionCaso()).descripcion(caso.getDescripcionAdicional())
                 .fechaCreacion(fechaFormateada(caso.getFechaInicio()))
@@ -595,7 +597,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .materias(transformToDto(caso.getMaterias()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones()))
                 .cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
-                .funcionario(funcionario(caso.getActuaciones()))
+                .idFuncionario(dtoFunci.getId())
+                .funcionario(dtoFunci.getDatosFuncionario())
                 .subMaterias(subMateriasBuild(caso.getMaterias())).build();
     }
 

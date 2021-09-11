@@ -35,6 +35,7 @@ public class Actuacion {
 	@DynamoDBTypeConverted( converter = LocalDateConverter.class )
 	private LocalDate fechaActuacion;
 	
+	@DynamoDBAttribute
 	@DynamoDBTypeConverted( converter = LocalDateTimeConverter.class )
 	private LocalDateTime fechaRegistro;
 	

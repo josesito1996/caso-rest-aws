@@ -36,6 +36,8 @@ public class DetailCaseResponse {
 	
 	private Integer cantidadDocumentos;
 	
+	private String idFuncionario;
+	
 	private String funcionario;
 	
 	private List<MateriaPojo> materias;
