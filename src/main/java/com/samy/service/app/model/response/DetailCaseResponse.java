@@ -1,6 +1,7 @@
 package com.samy.service.app.model.response;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -39,6 +40,21 @@ public class DetailCaseResponse {
 	private String idFuncionario;
 	
 	private String funcionario;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Integer trabajadoresInvolucrados;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Map<String, Object> origen;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Double sumaMultaPotencial;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Double sumaProvision;
+	
+	@JsonInclude(Include.NON_NULL)
+	private Map<String, Object> riesgo;
 	
 	private List<MateriaPojo> materias;
 	

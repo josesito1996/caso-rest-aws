@@ -93,7 +93,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private CasoRequestBuilder builder;
 
     @Autowired
-    private ExternalDbAws materiaAws;
+    private ExternalDbAws externalAws;
 
     @Autowired
     private LambdaService lambdaService;
@@ -471,7 +471,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private List<Map<String, Object>> transformToMap(List<Caso> casos) {
         List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
         Map<String, Object> mapa;
-        for (EtapaPojo etapa : materiaAws.getTableEtapa().stream()
+        for (EtapaPojo etapa : externalAws.getTableEtapa().stream()
                 .sorted(Comparator.comparing(EtapaPojo::getNroOrden))
                 .collect(Collectors.toList())) {
             mapa = new HashMap<String, Object>();
@@ -588,8 +588,22 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .estado(tarea.getEstado()).build();
     }
 
+    @SuppressWarnings("unchecked")
     private DetailCaseResponse transformFromCaso(Caso caso) {
         FuncionarioDto dtoFunci = funcionario(caso.getActuaciones());
+        Map<String, Object> mapInfraccion = externalAws.tableInfraccion(caso.getId());
+        Integer trabInvolucrados = null;
+        Double sumaPotencial = null;
+        Double sumaProvision = null;
+        Map<String, Object> mapRiesgo = null;
+        Map<String, Object> mapOrigen = null;
+        if (!mapInfraccion.isEmpty()) {
+            trabInvolucrados = Integer.parseInt(mapInfraccion.get("cantidadInvolucrados").toString());
+            sumaPotencial = Double.parseDouble(mapInfraccion.get("sumaMultaPotencial").toString());
+            sumaProvision = Double.parseDouble(mapInfraccion.get("sumaProvision").toString());
+            mapRiesgo = (Map<String, Object>) mapInfraccion.get("nivelRiesgo");
+            mapOrigen = (Map<String, Object>) mapInfraccion.get("origenCaso");
+        }
         return DetailCaseResponse.builder().idCaso(caso.getId())
                 .nombreCaso(caso.getDescripcionCaso()).descripcion(caso.getDescripcionAdicional())
                 .fechaCreacion(fechaFormateada(caso.getFechaInicio()))
@@ -599,6 +613,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
                 .idFuncionario(dtoFunci.getId())
                 .funcionario(dtoFunci.getDatosFuncionario())
+                .trabajadoresInvolucrados(trabInvolucrados)
+                .sumaMultaPotencial(sumaPotencial)
+                .sumaProvision(sumaProvision)
+                .riesgo(mapRiesgo)
+                .origen(mapOrigen)
                 .subMaterias(subMateriasBuild(caso.getMaterias())).build();
     }
 
@@ -608,7 +627,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
             List<SubMateriaDto> subMaterias = materia.getSubMaterias() != null
                     ? materia.getSubMaterias()
                     : new ArrayList<SubMateriaDto>();
-            MateriaPojo materiaPojo = materiaAws.getTable(materia.getId());
+            MateriaPojo materiaPojo = externalAws.getTable(materia.getId());
             for (SubMateriaDto dto : subMaterias) {
                 items.add(SubMateriaDto.builder().idSubMateria(dto.getIdSubMateria())
                         .idMateria(dto.getIdMateria()).icono(materiaPojo.getIcono())
@@ -622,7 +641,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private List<MateriaPojo> transformToDto(List<MateriaDto> materias) {
         List<MateriaPojo> materiasBd = new ArrayList<MateriaPojo>();
         for (MateriaDto materia : materias) {
-            materiasBd.add(materiaAws.getTable(materia.getId()));
+            materiasBd.add(externalAws.getTable(materia.getId()));
         }
         return materiasBd;
     }
