@@ -94,9 +94,40 @@ public class Utils {
         String regex = "[0-9]+";
         return dni == null ? false : dni.matches(regex) && dni.length() == 8;
     }
-    
+
     public static Boolean telefonoValido(String telefono) {
         String regex = "^\\(?(\\d{2})\\)?[-]?(\\d{7})$";
-        return telefono==null ? false : telefono.matches(regex);
+        return telefono == null ? false : telefono.matches(regex);
+    }
+
+    public static Boolean noTieneEspaciosEnBlanco(String... items) {
+        if (items == null)
+            return false;
+        if (items.length > 0) {
+            for (String item : items) {
+                System.out.println(item);
+                if (item.trim().contains(" ")) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static void registrarData() {
+        String nombres = "JOSE";
+        String apellidoPaterno = "CASTILLO";
+        String apellidoMaterno = "CHALQUE";
+        String direccion = "MZ C LOTE 1 - URB. CIUDAD DE LOS CONSTRUCTORES";
+        String telefono = "01-2867385";
+        String dni = "75624412";
+
+        if (noTieneEspaciosEnBlanco(nombres, apellidoPaterno, apellidoMaterno)) {
+            System.out.println("Cumple con la condicion");
+        }
+
+    }
+    public static void main(String...args) {
+        registrarData();
     }
 }

@@ -17,6 +17,8 @@ import lombok.ToString;
 @ToString
 public class MateriaResponse {
     private String idMateria;
+    private String icono;
+    private String color;
     private String nombreMateria;
     private List<SubMateriaResponse> subMaterias;
 }

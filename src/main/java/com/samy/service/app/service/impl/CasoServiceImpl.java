@@ -634,6 +634,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         for (MateriaPojo dto : materias) {
             materiasResponse.add(MateriaResponse.builder().idMateria(dto.getIdMateria())
                     .nombreMateria(dto.getNombreMateria())
+                    .icono(dto.getIcono())
+                    .color(dto.getColor())
                     .subMaterias(subMaterias.stream().parallel()
                             .filter(item -> item.getIdMateria().equals(dto.getIdMateria()))
                             .map(this::transformSubMateriaResponse).collect(Collectors.toList()))
