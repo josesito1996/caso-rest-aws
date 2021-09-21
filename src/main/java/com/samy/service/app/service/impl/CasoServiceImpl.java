@@ -70,8 +70,10 @@ import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
+import com.samy.service.app.model.response.MateriaResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.SubMateriaResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
@@ -539,9 +541,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     private Long countTareasRealizadas(List<Tarea> tareas) {
-        return tareas.stream()
-                .filter(estado -> estado.getEstado())
-                .count();
+        return tareas.stream().filter(estado -> estado.getEstado()).count();
     }
 
     private Integer countDocumentosDeTareas(List<Tarea> tareas) {
@@ -595,30 +595,56 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         Integer trabInvolucrados = null;
         Double sumaPotencial = null;
         Double sumaProvision = null;
+        Integer totalMaterias = 0;
+        Integer totalSubMaterias = 0;
         Map<String, Object> mapRiesgo = null;
         Map<String, Object> mapOrigen = null;
         if (!mapInfraccion.isEmpty()) {
-            trabInvolucrados = Integer.parseInt(mapInfraccion.get("cantidadInvolucrados").toString());
+            trabInvolucrados = Integer
+                    .parseInt(mapInfraccion.get("cantidadInvolucrados").toString());
             sumaPotencial = Double.parseDouble(mapInfraccion.get("sumaMultaPotencial").toString());
             sumaProvision = Double.parseDouble(mapInfraccion.get("sumaProvision").toString());
             mapRiesgo = (Map<String, Object>) mapInfraccion.get("nivelRiesgo");
             mapOrigen = (Map<String, Object>) mapInfraccion.get("origenCaso");
         }
+        List<MateriaResponse> materias = materiasResponseBuild(transformToDto(caso.getMaterias()),
+                subMateriasBuild(caso.getMaterias()));
+        totalMaterias = materias.size();
+        for (MateriaResponse response : materias) {
+            totalSubMaterias = totalSubMaterias + response.getSubMaterias().size();
+        }
         return DetailCaseResponse.builder().idCaso(caso.getId())
                 .nombreCaso(caso.getDescripcionCaso()).descripcion(caso.getDescripcionAdicional())
                 .fechaCreacion(fechaFormateada(caso.getFechaInicio()))
                 .ordenInspeccion(caso.getOrdenInspeccion())
-                .materias(transformToDto(caso.getMaterias()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones()))
                 .cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
-                .idFuncionario(dtoFunci.getId())
-                .funcionario(dtoFunci.getDatosFuncionario())
-                .trabajadoresInvolucrados(trabInvolucrados)
-                .sumaMultaPotencial(sumaPotencial)
-                .sumaProvision(sumaProvision)
-                .riesgo(mapRiesgo)
-                .origen(mapOrigen)
-                .subMaterias(subMateriasBuild(caso.getMaterias())).build();
+                .idFuncionario(dtoFunci.getId()).funcionario(dtoFunci.getDatosFuncionario())
+                .trabajadoresInvolucrados(trabInvolucrados).sumaMultaPotencial(sumaPotencial)
+                .sumaProvision(sumaProvision).riesgo(mapRiesgo).origen(mapOrigen)
+                .materiasResponse(materias)
+                .totalMaterias(totalMaterias)
+                .totalSubMaterias(totalSubMaterias)
+                .build();
+    }
+
+    private List<MateriaResponse> materiasResponseBuild(List<MateriaPojo> materias,
+            List<SubMateriaDto> subMaterias) {
+        List<MateriaResponse> materiasResponse = new ArrayList<MateriaResponse>();
+        for (MateriaPojo dto : materias) {
+            materiasResponse.add(MateriaResponse.builder().idMateria(dto.getIdMateria())
+                    .nombreMateria(dto.getNombreMateria())
+                    .subMaterias(subMaterias.stream().parallel()
+                            .filter(item -> item.getIdMateria().equals(dto.getIdMateria()))
+                            .map(this::transformSubMateriaResponse).collect(Collectors.toList()))
+                    .build());
+        }
+        return materiasResponse;
+    }
+
+    private SubMateriaResponse transformSubMateriaResponse(SubMateriaDto subMateriaDto) {
+        return SubMateriaResponse.builder().idSubMateria(subMateriaDto.getIdSubMateria())
+                .nombreSubMAteria(subMateriaDto.getNombreSubMateria()).build();
     }
 
     private List<SubMateriaDto> subMateriasBuild(List<MateriaDto> materias) {
@@ -639,11 +665,15 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     private List<MateriaPojo> transformToDto(List<MateriaDto> materias) {
-        List<MateriaPojo> materiasBd = new ArrayList<MateriaPojo>();
-        for (MateriaDto materia : materias) {
-            materiasBd.add(externalAws.getTable(materia.getId()));
-        }
-        return materiasBd;
+        return materias.stream().parallel().map(this::transformMateriaPojo)
+                .collect(Collectors.toList());
+    }
+
+    private MateriaPojo transformMateriaPojo(MateriaDto materiaDto) {
+        MateriaPojo materia = externalAws.getTable(materiaDto.getId());
+        return MateriaPojo.builder().idMateria(materiaDto.getId())
+                .nombreMateria(materia.getNombreMateria()).color(materia.getColor())
+                .icono(materia.getIcono()).estado(materia.getEstado()).build();
     }
 
     private HomeCaseResponse transformToHomeCase(Caso caso) {

@@ -89,4 +89,14 @@ public class Utils {
         DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
         return df.format(money);
     }
+
+    public static Boolean dniValido(String dni) {
+        String regex = "[0-9]+";
+        return dni == null ? false : dni.matches(regex) && dni.length() == 8;
+    }
+    
+    public static Boolean telefonoValido(String telefono) {
+        String regex = "^\\(?(\\d{2})\\)?[-]?(\\d{7})$";
+        return telefono==null ? false : telefono.matches(regex);
+    }
 }

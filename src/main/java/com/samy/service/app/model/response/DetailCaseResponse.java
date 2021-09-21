@@ -5,8 +5,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.samy.service.app.aws.MateriaPojo;
-import com.samy.service.app.external.SubMateriaDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,7 +54,9 @@ public class DetailCaseResponse {
 	@JsonInclude(Include.NON_NULL)
 	private Map<String, Object> riesgo;
 	
-	private List<MateriaPojo> materias;
+	private List<MateriaResponse> materiasResponse;
 	
-	private List<SubMateriaDto> subMaterias;
+	private Integer totalMaterias;
+	
+	private Integer totalSubMaterias;
 }
