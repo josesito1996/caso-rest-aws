@@ -34,19 +34,26 @@ public class ActuacionBody {
 	private String descripcion;
 
 	@Valid
+	@NotNull
 	@Size(min = 1)
 	private List<ReactSelectRequest> funcionarios;
 
 	@JsonProperty("tipo_actuacion")
+	@NotNull
 	private ReactSelectRequest tipoActuacion;
+	
+	@JsonProperty("estado_caso")
+	@NotNull
+	private ReactSelectRequest estadoCaso;
 
 	@Valid
+	@NotNull
 	private List<ArchivoBody> archivos;
 
 	@Valid
 	private List<TareaBody> tareas;
 
-	@Valid
+	@NotNull
 	private ReactSelectRequest etapa;
 
 }

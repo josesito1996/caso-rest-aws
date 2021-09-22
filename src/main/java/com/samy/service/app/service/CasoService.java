@@ -11,6 +11,8 @@ import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.response.ActuacionResponseX2;
+import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
@@ -31,7 +33,7 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public DetailCaseResponse agregarSubMateria(MateriaRequestUpdate request);
 
-    public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso);
+    public ActuacionResponseX2 registrarActuacion(ActuacionBody request, String idCaso);
 
     public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
 
@@ -65,5 +67,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public List<Map<String, Object>> verCasosPorMateria(String userName);
 
     public List<Map<String, Object>> verTotalesCompletados(String userName);
+    
+    
+    public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso);
 
 }

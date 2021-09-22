@@ -65,6 +65,8 @@ import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.model.response.ActuacionResponse;
+import com.samy.service.app.model.response.ActuacionResponseX2;
+import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
@@ -144,18 +146,18 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
      */
     @Transactional
     @Override
-    public Map<String, Object> registrarActuacion(ActuacionBody request, String idCaso) {
+    public ActuacionResponseX2 registrarActuacion(ActuacionBody request, String idCaso) {
         Caso caso = verPodId(idCaso);
         return transformMap(registrar(builder.transformActuacion(caso, request)));
     }
 
-    private Map<String, Object> transformMap(Caso caso) {
-        Map<String, Object> newMap = new HashMap<String, Object>();
+    private ActuacionResponseX2 transformMap(Caso caso) {
         List<Actuacion> actuaciones = caso.getActuaciones();
         int ultimoItem = actuaciones.isEmpty() ? 0 : actuaciones.size() - 1;
-        newMap.put("id", actuaciones.get(ultimoItem).getIdActuacion());
-        newMap.put("archivos", archivos(actuaciones.get(ultimoItem).getArchivos()));
-        return newMap;
+        return ActuacionResponseX2.builder()
+                .id(actuaciones.get(ultimoItem).getIdActuacion())
+                .archivos(archivos(actuaciones.get(ultimoItem).getArchivos()))
+                .build();
     }
 
     private Map<String, Object> transformMapTarea(Caso caso, TareaArchivoBody tareaArchivoBody) {
@@ -440,6 +442,54 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         return registrar(caso);
     }
 
+
+    @Override
+    public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
+        Caso caso = verPodId(idCaso);
+        List<Actuacion> actuaciones = caso.getActuaciones();
+        return actuaciones.stream().map(item -> transformActuacionResponseX3(item,caso.getUsuario())).collect(Collectors.toList());
+    }
+    
+    private ActuacionResponseX3 transformActuacionResponseX3(Actuacion actuacion, String usuario) {
+        List<ArchivoAdjunto> archivos = actuacion.getArchivos();
+        String nombreArchivo = archivos.size()>0 ? archivos.get(0).getNombreArchivo(): "";
+                return ActuacionResponseX3.builder()
+                .idActuacion(actuacion.getIdActuacion())
+                .documentoPrincipal(nombreArchivo)
+                .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
+                .nombreActuacion(actuacion.getDescripcion())
+                .descripcion(actuacion.getDescripcionAux())
+                .subidoPor(usuario)
+                .anexos(0)
+                .funcionarios(transformListFuncionarioMap(actuacion.getFuncionario()))
+                .vencimientos(transformListVencimientoMap(actuacion.getTareas()))//Asumo que son de las tareas.
+                .build();
+    }
+    
+    private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios){
+        return funcionarios.stream().map(this::transformFuncionarioMap).collect(Collectors.toList());
+    }
+    
+    private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto){
+        Map<String, Object> mapFuncionario = new HashMap<String, Object>();
+        mapFuncionario.put("nombre", dto.getDatosFuncionario());
+        mapFuncionario.put("cargo", "Intendente regional");
+        mapFuncionario.put("etapa", "Etapa Sancionadora");
+        return mapFuncionario;
+    }
+    
+    private List<Map<String, Object>> transformListVencimientoMap(List<Tarea> tareas){
+        return tareas.stream().map(this::transformVencimientoMap).collect(Collectors.toList());
+    }
+    
+    private Map<String, Object> transformVencimientoMap(Tarea dto){
+        Map<String, Object> mapFuncionario = new HashMap<String, Object>();
+        mapFuncionario.put("id", dto.getIdTarea());
+        mapFuncionario.put("fecha", fechaFormateada(dto.getFechaVencimiento()));
+        mapFuncionario.put("descripcion", "--");
+        return mapFuncionario;
+    }
+    
     private List<Map<String, Object>> listCasosByMateria(String nombreMateria, List<Caso> casos) {
         List<Map<String, Object>> newCaso = new ArrayList<>();
         Map<String, Object> itemCaso;

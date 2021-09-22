@@ -10,6 +10,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.samy.service.app.config.LocalDateConverter;
 import com.samy.service.app.config.LocalDateTimeConverter;
 import com.samy.service.app.external.ArchivoAdjunto;
+import com.samy.service.app.external.EstadoCasoDto;
 import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.TipoActuacionDto;
@@ -43,6 +44,9 @@ public class Actuacion {
 	private String descripcion;
 	
 	@DynamoDBAttribute
+    private String descripcionAux;
+	
+	@DynamoDBAttribute
 	private List<FuncionarioDto> funcionario;
 	
 	@DynamoDBAttribute
@@ -50,6 +54,9 @@ public class Actuacion {
 	
 	@DynamoDBAttribute
 	private EtapaDto etapa;
+	
+	@DynamoDBAttribute
+	private EstadoCasoDto estadoCaso;
 	
 	@DynamoDBAttribute
 	private List<ArchivoAdjunto> archivos;

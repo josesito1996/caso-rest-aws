@@ -23,17 +23,21 @@ import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.response.ActuacionResponseX2;
+import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
-import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.service.CasoService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @RequestMapping("/api-caso")
+@Slf4j
 public class CasoController {
 
     @Autowired
@@ -44,11 +48,18 @@ public class CasoController {
         return service.listar();
     }
 
+    /**
     @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
     public List<MainActuacionResponse> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
         return service.listarActuacionesPorCaso(idCaso);
     }
-
+    **/
+    @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}" )
+    public List<ActuacionResponseX3> listarActuacionesPorIdCaso(@PathVariable String idCaso){
+        log.info("ActuacionController.verActuacionesPorIdCaso");
+        return service.verActuacionesPorIdCaso(idCaso);
+    }
+    
     @GetMapping(path = "/listAllByUserName/{userName}")
     public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName,
             @ParameterObject @RequestParam(required = true) Integer pageNumber,
@@ -74,8 +85,8 @@ public class CasoController {
     }
 
     @PostMapping(path = "/saveActuacion/{idCaso}")
-    public Map<String, Object> registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
-            @PathVariable String idCaso) {
+    public ActuacionResponseX2 registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
+           @Valid @PathVariable String idCaso) {
         return service.registrarActuacion(requestBody, idCaso);
     }
 

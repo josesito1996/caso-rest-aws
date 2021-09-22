@@ -28,17 +28,17 @@ public class ArchivoBody {
 	@NotEmpty
 	private String nombreArchivo;
 
-	@JsonInclude(content = Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private String base64;
 
 	@NotNull
 	@NotEmpty
-	@JsonInclude(content = Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private String tipo;
 	
 	@JsonProperty("id_archivo")
 	private String idArchivo;
 	
-	@JsonInclude(content = Include.NON_NULL)
+	@JsonInclude(Include.NON_NULL)
 	private Boolean estado;
 }

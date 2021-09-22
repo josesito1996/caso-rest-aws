@@ -100,18 +100,21 @@ public class Utils {
         return telefono == null ? false : telefono.matches(regex);
     }
 
-    public static Boolean noTieneEspaciosEnBlanco(String... items) {
-        if (items == null)
+    public static Boolean noTieneEspaciosEnBlanco(String item) {
+        if (item == null)
             return false;
-        if (items.length > 0) {
-            for (String item : items) {
-                System.out.println(item);
-                if (item.trim().contains(" ")) {
-                    return false;
-                }
-            }
+        if (item.length() > 0 && item.trim().contains(" ")) {
+            return false;
         }
         return true;
+    }
+
+    public static void muestraAlert(String mensaje, String tipo) {
+        System.out.println(tipo.concat(" - ").concat(mensaje));
+    }
+    public static void registrarEnBd(String nombre) {
+        //Logica para registro de BD
+        System.out.println("Se ingresó al usuario correctamente");
     }
 
     public static void registrarData() {
@@ -122,12 +125,30 @@ public class Utils {
         String telefono = "01-2867385";
         String dni = "75624412";
 
-        if (noTieneEspaciosEnBlanco(nombres, apellidoPaterno, apellidoMaterno)) {
-            System.out.println("Cumple con la condicion");
+        if (!dniValido(dni)) {
+            muestraAlert("Verifique el ingreso del Dni", "Aviso");
+            return;
         }
 
-    }
-    public static void main(String...args) {
-        registrarData();
+        if (!telefonoValido(telefono)) {
+            muestraAlert("Verifique el ingreso del Telefono", "Aviso");
+            return;
+        }
+
+        if (!noTieneEspaciosEnBlanco(apellidoPaterno)) {
+            muestraAlert("Verifique el ingreso del Apellido Paterno", "Aviso");
+            return;
+        }
+        if (!noTieneEspaciosEnBlanco(apellidoMaterno)) {
+            muestraAlert("Verifique el ingreso del Apellido Materno", "Aviso");
+            return;
+        }
+        
+        /**
+         * Esto deberia meterse dentro de un Objeto Persona y ahi setear los datos.
+         * 
+         */
+        registrarEnBd(nombres);
+
     }
 }

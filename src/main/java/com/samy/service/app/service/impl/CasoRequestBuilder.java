@@ -18,6 +18,7 @@ import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.EquipoDto;
+import com.samy.service.app.external.EstadoCasoDto;
 import com.samy.service.app.external.EtapaDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.InspectorDto;
@@ -68,6 +69,10 @@ public class CasoRequestBuilder {
         actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
         actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
         actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
+        actuacion.setEstadoCaso(EstadoCasoDto.builder()
+                .idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
+                .nombreEstado(actuacionBody.getEstadoCaso().getLabel())
+                .build());
         actuacion.setTareas(new ArrayList<Tarea>());
         return actuacion;
     }
