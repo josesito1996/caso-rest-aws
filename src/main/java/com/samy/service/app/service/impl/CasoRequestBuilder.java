@@ -1,6 +1,7 @@
 package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.util.Utils.uuidGenerado;
+import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -292,14 +293,6 @@ public class CasoRequestBuilder {
         return tareas.indexOf(tareaAux.get(0));
     }
 
-    private List<ArchivoAdjunto> listArchivoAdjunto(List<ArchivoBody> archivos) {
-        return archivos.stream().map(this::getArchivoAdjunto).collect(Collectors.toList());
-    }
-
-    private ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
-        return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
-                .estado(body.getEstado()).tipoArchivo(body.getTipo()).build();
-    }
 
     public List<ArchivoBody> listArchivoBody(List<ArchivoAdjunto> archivos) {
         return archivos.stream().map(this::getArchivoBody).collect(Collectors.toList());

@@ -23,6 +23,7 @@ import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.request.UpdateFileActuacionRequest;
 import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
@@ -88,6 +89,11 @@ public class CasoController {
     public ActuacionResponseX2 registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
            @Valid @PathVariable String idCaso) {
         return service.registrarActuacion(requestBody, idCaso);
+    }
+    
+    @PostMapping(path = "/updateFileActuacion")
+    public ActuacionResponseX2 actualizarArchivoActuacion(@Valid @RequestBody UpdateFileActuacionRequest requestBody) {
+        return service.añadirArchivoActuacion(requestBody);
     }
 
     @PostMapping(path = "/saveTarea")
