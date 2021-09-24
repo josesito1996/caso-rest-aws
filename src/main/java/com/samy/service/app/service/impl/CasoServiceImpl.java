@@ -517,7 +517,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     Map<String, Object> mapFuncionario = new HashMap<String, Object>();
     mapFuncionario.put("id", dto.getIdTarea());
     mapFuncionario.put("fecha", fechaFormateada(dto.getFechaVencimiento()));
-    mapFuncionario.put("descripcion", "--");
+    mapFuncionario.put("descripcion", dto.getDenominacion());
     return mapFuncionario;
   }
 
