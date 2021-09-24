@@ -35,20 +35,24 @@ public class TareaBody {
     @JsonProperty("fecha_vencimiento")
     private LocalDate fechaVencimiento;
 
-    @NotNull
     @Valid
     private List<EquipoBody> equipos;
 
-    @NotEmpty
-    @NotNull
     private String mensaje;
 
-    @NotNull
-    private Boolean estado;
+    private boolean estado;
     
-    private Boolean eliminado;
+    private boolean eliminado;
     
     @Valid
     private List<ArchivoBody> archivos;
+    
+    @NotNull
+    @Valid
+    private ReactSelectRequest tipoTarea;
+    
+    @Valid
+    @NotNull
+    private RecordatorioRequest recordatorio;
 
 }

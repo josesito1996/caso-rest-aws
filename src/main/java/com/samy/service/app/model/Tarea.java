@@ -9,6 +9,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import com.samy.service.app.config.LocalDateTimeConverter;
 import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.EquipoDto;
+import com.samy.service.app.external.TipoTarea;
+import com.samy.service.app.model.request.RecordatorioRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,6 +42,12 @@ public class Tarea {
     @DynamoDBAttribute
     @DynamoDBTypeConverted(converter = LocalDateTimeConverter.class)
     private LocalDateTime fechaVencimiento;
+    
+    @DynamoDBAttribute
+    private TipoTarea tipoTarea;
+    
+    @DynamoDBAttribute
+    private RecordatorioRequest recordatorio;
 
     @DynamoDBAttribute
     private List<EquipoDto> equipos;

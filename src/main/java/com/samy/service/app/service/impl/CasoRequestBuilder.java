@@ -1,7 +1,7 @@
 package com.samy.service.app.service.impl;
 
-import static com.samy.service.app.util.Utils.uuidGenerado;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
+import static com.samy.service.app.util.Utils.uuidGenerado;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +26,7 @@ import com.samy.service.app.external.InspectorDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.external.SubMateriaDto;
 import com.samy.service.app.external.TipoActuacionDto;
+import com.samy.service.app.external.TipoTarea;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Personal;
@@ -70,10 +71,9 @@ public class CasoRequestBuilder {
         actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
         actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
         actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
-        actuacion.setEstadoCaso(EstadoCasoDto.builder()
-                .idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
-                .nombreEstado(actuacionBody.getEstadoCaso().getLabel())
-                .build());
+        actuacion.setEstadoCaso(
+                EstadoCasoDto.builder().idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
+                        .nombreEstado(actuacionBody.getEstadoCaso().getLabel()).build());
         actuacion.setTareas(new ArrayList<Tarea>());
         return actuacion;
     }
@@ -223,21 +223,35 @@ public class CasoRequestBuilder {
 
     private Tarea transformTareaFromBody(TareaBody tareaBody) {
         Tarea tarea = new Tarea();
+        tarea.setTipoTarea(transformTipoTarea(tareaBody.getTipoTarea()));
+        tarea.setDenominacion(tareaBody.getDenominacion());
         tarea.setFechaRegistro(LocalDateTime.now());
         tarea.setIdTarea(tareaBody.getIdTarea());
-        tarea.setDenominacion(tareaBody.getDenominacion());
+        tarea.setRecordatorio(tareaBody.getRecordatorio());
         tarea.setFechaVencimiento(
                 LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
-        tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
-        tarea.setMensaje(tareaBody.getMensaje());
-        tarea.setEliminado(tareaBody.getEliminado());
-        tarea.setEstado(tareaBody.getEstado());
+        tarea.setEliminado(tareaBody.isEliminado());
+        tarea.setEstado(tareaBody.isEstado());
+        if (tareaBody.getTipoTarea().getLabel().equals("Solicitud")) {
+            tarea.setMensaje(tareaBody.getMensaje());
+            if (tareaBody.getEquipos() == null) {
+                throw new BadRequestException("Se debe registrar destinatarios");
+            }
+            tarea.setEquipos(getEquipos(tareaBody.getEquipos()));   
+        } else {
+            tarea.setEquipos(new ArrayList<EquipoDto>());
+        }
         if (tareaBody.getIdTarea() != null && tareaBody.getArchivos() != null) {
             tarea.setArchivos(listArchivoAdjunto(tareaBody.getArchivos()));
         } else {
             tarea.setArchivos(new ArrayList<ArchivoAdjunto>());
         }
         return tarea;
+    }
+
+    private TipoTarea transformTipoTarea(ReactSelectRequest reactRequest) {
+        return TipoTarea.builder().idTipoTarea(reactRequest.getValue())
+                .nombreTipo(reactRequest.getLabel()).build();
     }
 
     public List<EquipoBody> getEquiposBody(List<EquipoDto> equipoDto) {
@@ -293,7 +307,6 @@ public class CasoRequestBuilder {
         return tareas.indexOf(tareaAux.get(0));
     }
 
-
     public List<ArchivoBody> listArchivoBody(List<ArchivoAdjunto> archivos) {
         return archivos.stream().map(this::getArchivoBody).collect(Collectors.toList());
     }
@@ -306,8 +319,7 @@ public class CasoRequestBuilder {
             estado = body.getEstado();
         }
         return ArchivoBody.builder().idArchivo(body.getId()).nombreArchivo(body.getNombreArchivo())
-                .tipo(body.getTipoArchivo())
-                .estado(estado).build();
+                .tipo(body.getTipoArchivo()).estado(estado).build();
     }
 
     /**
