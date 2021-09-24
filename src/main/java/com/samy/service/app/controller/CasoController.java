@@ -31,6 +31,7 @@ import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.SaveTareaResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.service.CasoService;
 
@@ -97,14 +98,14 @@ public class CasoController {
     }
 
     @PostMapping(path = "/saveTarea")
-    public Caso registrarTarea(@Valid @RequestBody TareaBody requestBody,
+    public SaveTareaResponse registrarTarea(@Valid @RequestBody TareaBody requestBody,
             @ParameterObject @RequestParam(name = "id_caso") String idCaso,
             @RequestParam(name = "id_actuacion") String idActuacion) {
         return service.registrarTarea(requestBody, idActuacion, idCaso);
     }
 
     @PostMapping(path = "/updateTarea")
-    public Caso actualizarTarea(@Valid @RequestBody TareaBody requestBody,
+    public SaveTareaResponse actualizarTarea(@Valid @RequestBody TareaBody requestBody,
             @ParameterObject @RequestParam(name = "id_caso") String idCaso,
             @RequestParam(name = "id_actuacion") String idActuacion) {
         return service.registrarTarea(requestBody, idActuacion, idCaso);

@@ -20,6 +20,7 @@ import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.SaveTareaResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 
 public interface CasoService extends ICrud<Caso, String> {
@@ -38,7 +39,7 @@ public interface CasoService extends ICrud<Caso, String> {
     
     public ActuacionResponseX2 añadirArchivoActuacion(UpdateFileActuacionRequest request);
 
-    public Caso registrarTarea(TareaBody request, String idActuacion, String idCaso);
+    public SaveTareaResponse registrarTarea(TareaBody request, String idActuacion, String idCaso);
 
     public Caso actualizarTarea(TareaBody request, String idActuacion, String idCaso);
 
