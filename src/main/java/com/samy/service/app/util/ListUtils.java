@@ -2,6 +2,7 @@ package com.samy.service.app.util;
 
 import static com.samy.service.app.util.Utils.uuidGenerado;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,8 +23,15 @@ public class ListUtils {
   }
 
   private static ArchivoAdjunto getArchivoAdjunto(ArchivoBody body) {
-    return ArchivoAdjunto.builder().id(uuidGenerado()).nombreArchivo(body.getNombreArchivo())
-        .estado(body.getEstado()).tipoArchivo(body.getTipo()).build();
+    return ArchivoAdjunto
+            .builder()
+            .id(uuidGenerado())
+            .nombreArchivo(body.getNombreArchivo())
+            .fechaRegistro(LocalDateTime.now())
+            .tamaño(body.getTamaño())
+            .estado(body.getEstado())
+            .tipoArchivo(body.getTipo())
+            .build();
   }
 
 }

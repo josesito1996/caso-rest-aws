@@ -40,4 +40,6 @@ public class ActuacionResponseX3 {
     
     private List<Map<String, Object>> vencimientos;
     
+    private List<DocumentoAnexoResponse> documentosAnexos;
+    
 }

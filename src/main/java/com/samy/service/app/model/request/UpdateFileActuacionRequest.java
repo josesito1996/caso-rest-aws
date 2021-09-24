@@ -5,6 +5,7 @@ import static com.samy.service.app.util.Contants.REGEX_UUID;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -33,6 +34,7 @@ public class UpdateFileActuacionRequest implements Serializable {
   @NotNull
   @Pattern(regexp = REGEX_UUID)
   private String idActuacion;
+  @Valid
   @NotNull
   @Size(min = 1)
   private List<ArchivoBody> archivos;

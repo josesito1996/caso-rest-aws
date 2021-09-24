@@ -41,4 +41,8 @@ public class ArchivoBody {
 	
 	@JsonInclude(Include.NON_NULL)
 	private Boolean estado;
+	
+	@NotNull
+    @NotEmpty
+	private String tamaño;
 }
