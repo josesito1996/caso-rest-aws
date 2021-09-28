@@ -56,8 +56,8 @@ public class Tarea {
     private List<ArchivoAdjunto> archivos;
 
     @DynamoDBAttribute
-    private Boolean estado;
+    private boolean estado;
     
     @DynamoDBAttribute
-    private Boolean eliminado;
+    private boolean eliminado;
 }

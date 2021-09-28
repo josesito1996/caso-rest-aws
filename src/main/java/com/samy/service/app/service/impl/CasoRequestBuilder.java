@@ -146,7 +146,7 @@ public class CasoRequestBuilder {
         List<Tarea> tareas = actuaciones.get(indexActuacion).getTareas();
         int indexTarea = getIndexTarea(tareaCambioEstadoBody.getId_tarea(), tareas);
 
-        tareas.get(indexTarea).setEstado(tareaCambioEstadoBody.getEstado());
+        tareas.get(indexTarea).setEstado(tareaCambioEstadoBody.isEstado());
         actuaciones.get(indexActuacion).setTareas(tareas);
         caso.setActuaciones(actuaciones);
         return caso;
@@ -312,14 +312,8 @@ public class CasoRequestBuilder {
     }
 
     private ArchivoBody getArchivoBody(ArchivoAdjunto body) {
-        boolean estado = true;
-        if (body.getEstado() == null) {
-            estado = true;
-        } else {
-            estado = body.getEstado();
-        }
         return ArchivoBody.builder().idArchivo(body.getId()).nombreArchivo(body.getNombreArchivo())
-                .tipo(body.getTipoArchivo()).estado(estado).build();
+                .tipo(body.getTipoArchivo()).estado(body.isEstado()).build();
     }
 
     /**

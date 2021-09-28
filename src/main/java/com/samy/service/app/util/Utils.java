@@ -121,7 +121,7 @@ public class Utils {
         String nombres = "JOSE";
         String apellidoPaterno = "CASTILLO";
         String apellidoMaterno = "CHALQUE";
-        String direccion = "MZ C LOTE 1 - URB. CIUDAD DE LOS CONSTRUCTORES";
+        // String direccion = "MZ C LOTE 1 - URB. CIUDAD DE LOS CONSTRUCTORES";
         String telefono = "01-2867385";
         String dni = "75624412";
 

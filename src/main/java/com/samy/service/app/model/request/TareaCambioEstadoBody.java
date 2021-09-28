@@ -35,6 +35,9 @@ public class TareaCambioEstadoBody implements Serializable {
     private String id_tarea;
     
     @NotNull
-    private Boolean estado;
+    private boolean eliminado;
+    
+    @NotNull
+    private boolean estado;
     
 }

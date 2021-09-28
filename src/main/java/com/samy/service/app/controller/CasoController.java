@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.DocumentoAnexoRequest;
+import com.samy.service.app.model.request.EditarActuacionRequest;
+import com.samy.service.app.model.request.EliminarTareaRequest;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
@@ -28,6 +32,7 @@ import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
+import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
@@ -51,17 +56,29 @@ public class CasoController {
     }
 
     /**
+     * @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}") public
+     *                  List<MainActuacionResponse>
+     *                  listarActuacionesPorIdCaso(@PathVariable String idCaso) {
+     *                  return service.listarActuacionesPorCaso(idCaso); }
+     **/
     @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
-    public List<MainActuacionResponse> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
-        return service.listarActuacionesPorCaso(idCaso);
-    }
-    **/
-    @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}" )
-    public List<ActuacionResponseX3> listarActuacionesPorIdCaso(@PathVariable String idCaso){
+    public List<ActuacionResponseX3> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
         log.info("ActuacionController.verActuacionesPorIdCaso");
         return service.verActuacionesPorIdCaso(idCaso);
     }
+
+    @PutMapping(path = "/deleteTask")
+    public Map<String, Object> eliminarTarea(@Valid @RequestBody EliminarTareaRequest request) {
+        log.info("ActuacionController.eliminarTarea");
+        return service.eliminarTarea(request);
+    }
     
+    @PutMapping(path = "/editActuacion")
+    public ActuacionResponseX3 editarActuacion(@Valid @RequestBody EditarActuacionRequest request) {
+        log.info("ActuacionController.elimieditActuacionnarTarea");
+        return service.editarActuacion(request);
+    }
+
     @GetMapping(path = "/listAllByUserName/{userName}")
     public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName,
             @ParameterObject @RequestParam(required = true) Integer pageNumber,
@@ -88,12 +105,13 @@ public class CasoController {
 
     @PostMapping(path = "/saveActuacion/{idCaso}")
     public ActuacionResponseX2 registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
-           @Valid @PathVariable String idCaso) {
+            @Valid @PathVariable String idCaso) {
         return service.registrarActuacion(requestBody, idCaso);
     }
-    
+
     @PostMapping(path = "/updateFileActuacion")
-    public ActuacionResponseX2 actualizarArchivoActuacion(@Valid @RequestBody UpdateFileActuacionRequest requestBody) {
+    public ActuacionResponseX2 actualizarArchivoActuacion(
+            @Valid @RequestBody UpdateFileActuacionRequest requestBody) {
         return service.añadirArchivoActuacion(requestBody);
     }
 
@@ -102,6 +120,12 @@ public class CasoController {
             @ParameterObject @RequestParam(name = "id_caso") String idCaso,
             @RequestParam(name = "id_actuacion") String idActuacion) {
         return service.registrarTarea(requestBody, idActuacion, idCaso);
+    }
+
+    @PutMapping(path = "/updatePrincipalFile")
+    public DocumentoAnexoResponse cambiarArchivoPrincipal(
+            @Valid @RequestBody DocumentoAnexoRequest request) {
+        return service.cambiarPrincipal(request);
     }
 
     @PostMapping(path = "/updateTarea")

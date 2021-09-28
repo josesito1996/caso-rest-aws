@@ -7,6 +7,9 @@ import java.util.Map;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.CasoBody;
+import com.samy.service.app.model.request.DocumentoAnexoRequest;
+import com.samy.service.app.model.request.EditarActuacionRequest;
+import com.samy.service.app.model.request.EliminarTareaRequest;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
@@ -16,6 +19,7 @@ import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
+import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
@@ -36,7 +40,7 @@ public interface CasoService extends ICrud<Caso, String> {
     public DetailCaseResponse agregarSubMateria(MateriaRequestUpdate request);
 
     public ActuacionResponseX2 registrarActuacion(ActuacionBody request, String idCaso);
-    
+
     public ActuacionResponseX2 añadirArchivoActuacion(UpdateFileActuacionRequest request);
 
     public SaveTareaResponse registrarTarea(TareaBody request, String idActuacion, String idCaso);
@@ -48,7 +52,7 @@ public interface CasoService extends ICrud<Caso, String> {
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
 
     public UpdateTareaResponse verTareaPorId(String idCaso, String idActuacion, String idTarea);
-    
+
     public Caso eliminarTareaPorId(String idCaso, String idActuacion, String idTarea);
 
     /**
@@ -71,8 +75,17 @@ public interface CasoService extends ICrud<Caso, String> {
     public List<Map<String, Object>> verCasosPorMateria(String userName);
 
     public List<Map<String, Object>> verTotalesCompletados(String userName);
-    
-    
+
     public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso);
 
+    /**
+     * Documento Anexo REsponse
+     */
+
+    public DocumentoAnexoResponse cambiarPrincipal(DocumentoAnexoRequest request);
+    
+    public Map<String, Object> eliminarTarea(EliminarTareaRequest request);
+    
+    public ActuacionResponseX3 editarActuacion(EditarActuacionRequest request);
+    
 }

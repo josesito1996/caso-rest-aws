@@ -68,7 +68,7 @@ public class ArchivoAdjunto {
     @JsonProperty("estado_archivo")
     @DynamoDBAttribute(attributeName = "estado_archivo")
 	@JsonInclude(Include.NON_NULL)
-	private Boolean estado;
+	private boolean estado;
 	
 	
     @JsonProperty("es_principal")

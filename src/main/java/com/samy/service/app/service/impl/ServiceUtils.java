@@ -144,7 +144,7 @@ public class ServiceUtils {
         int contadorPendientes = 0;
         for (Actuacion actuacion : caso.getActuaciones()) {
             for (Tarea tarea : actuacion.getTareas()) {
-                contadorPendientes = contadorPendientes + (tarea.getEstado() == estado ? 0 : 1);
+                contadorPendientes = contadorPendientes + (tarea.isEstado() == estado ? 0 : 1);
             }
         }
         return contadorPendientes;
@@ -226,7 +226,7 @@ public class ServiceUtils {
             int cantidad = 0;
             for (Actuacion actuacion : caso.getActuaciones()) {
                 cantidad = cantidad + (int) actuacion.getTareas().stream()
-                        .filter(tarea -> tarea.getEstado() == estado).count();
+                        .filter(tarea -> tarea.isEstado() == estado).count();
                 if (cantidad > 0) {
                     totalCompletas++;
                 }
@@ -262,7 +262,7 @@ public class ServiceUtils {
         for (Caso caso : casos) {
             for (Actuacion actuacion : caso.getActuaciones()) {
                 for (Tarea tarea : actuacion.getTareas()) {
-                    if (tarea.getEstado() == estado) {
+                    if (tarea.isEstado() == estado) {
                         contador++;
                     }
                 }
