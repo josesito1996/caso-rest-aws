@@ -23,6 +23,8 @@ public class SaveTareaResponse implements Serializable {
 
   private static final long serialVersionUID = -6072201226536728822L;
 
+  private String idTarea;
+  
   private String tipoTarea;
   
   private String descripcion;

@@ -237,7 +237,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<Tarea> tareas = actuaciones.get(0).getTareas();
         int tareasSize = tareas.size();
         Tarea tarea = tareas.get(tareasSize - 1);
-        return SaveTareaResponse.builder().tipoTarea(tarea.getTipoTarea().getNombreTipo())
+        return SaveTareaResponse.builder()
+                .idTarea(tarea.getIdTarea())
+                .tipoTarea(tarea.getTipoTarea().getNombreTipo())
                 .descripcion(tarea.getDenominacion())
                 .destinatario(request.getEquipos().stream().map(item -> item.getDestinatario())
                         .collect(Collectors.toList()))
