@@ -549,7 +549,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                     "No hay tareas registradas con el ID_ACTUACION  : " + request.getIdActuacion());
         }
         Tarea tarea = tareas.get(0);
-        int indexTarea = tareas.indexOf(tarea);
+        int indexTarea = actuacion.getTareas().indexOf(tarea);
         int indexActuacion = caso.getActuaciones().indexOf(actuacion);
         tarea.setEliminado(request.isEliminado());
         actuacion.getTareas().set(indexTarea, tarea);
