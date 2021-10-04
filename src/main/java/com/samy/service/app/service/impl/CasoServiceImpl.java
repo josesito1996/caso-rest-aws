@@ -585,6 +585,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 ? fechaFormateada(archivo.getFechaRegistro())
                 : null;
         return DocumentoAnexoResponse.builder().idArchivo(archivo.getId())
+                .type(archivo.getTipoArchivo())
                 .nombreArchivo(archivo.getNombreArchivo()).tamaño(archivo.getTamaño())
                 .fechaRegistro(fechaRegistro).esPrincipal(archivo.isEsPrincipal()).build();
     }

@@ -29,6 +29,8 @@ public class DocumentoAnexoResponse implements Serializable {
     @JsonInclude(Include.NON_NULL)
     private String tamaño;
     
+    private String type;
+    
     @JsonInclude(Include.NON_NULL)
     private String fechaRegistro;
     
