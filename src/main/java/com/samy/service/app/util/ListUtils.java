@@ -29,7 +29,7 @@ public class ListUtils {
             .nombreArchivo(body.getNombreArchivo())
             .fechaRegistro(LocalDateTime.now())
             .tamaño(body.getTamaño())
-            .estado(body.getEstado())
+            .estado(body.isEstado())
             .tipoArchivo(body.getTipo())
             .build();
   }

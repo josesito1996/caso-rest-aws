@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -42,5 +43,13 @@ public class ControllerAdvice {
         });
         return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), LocalDateTime.now(),
                 "Validacion de campos", details);
+    }
+    
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentNotValid(HttpMessageNotReadableException ex) {
+        log.error("Error de DefaultHandlerExceptionResolver : " + ex.getMessage());
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), LocalDateTime.now(),
+                ex.getMessage(), null);
     }
 }

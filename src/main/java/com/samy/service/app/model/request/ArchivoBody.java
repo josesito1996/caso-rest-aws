@@ -40,7 +40,7 @@ public class ArchivoBody {
 	private String idArchivo;
 	
 	@JsonInclude(Include.NON_NULL)
-	private Boolean estado;
+	private boolean estado;
 	
 	@NotNull
     @NotEmpty
