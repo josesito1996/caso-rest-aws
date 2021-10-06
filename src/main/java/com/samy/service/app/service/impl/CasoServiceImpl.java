@@ -25,7 +25,6 @@ import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
-import static com.samy.service.app.util.Utils.getExtension;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
 
@@ -192,7 +191,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
     private ArchivoAdjunto transform(ArchivoAdjunto archivo) {
         return ArchivoAdjunto.builder()
-                .id(archivo.getId().concat(getExtension(archivo.getNombreArchivo())))
+                //.id(archivo.getId().concat(getExtension(archivo.getNombreArchivo())))
+                .id(archivo.getId())
                 .nombreArchivo(archivo.getNombreArchivo()).tipoArchivo(archivo.getTipoArchivo())
                 .build();
     }
