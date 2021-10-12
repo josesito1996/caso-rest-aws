@@ -5,7 +5,6 @@ import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasAVenc
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasDelCasoGeneral;
 import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
-import static com.samy.service.app.service.impl.ServiceUtils.funcionario;
 import static com.samy.service.app.service.impl.ServiceUtils.nroOrdenEtapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
@@ -784,7 +783,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
   private List<FuncionarioResponse> funcionariosResponseList(List<Actuacion> actuaciones) {
     List<FuncionarioResponse> funcionarios = new ArrayList<>();
-    actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro));
+    actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro).reversed());
     for (Actuacion actuacion : actuaciones) {
       for (FuncionarioDto func : actuacion.getFuncionario()) {
         funcionarios.add(FuncionarioResponse.builder()
