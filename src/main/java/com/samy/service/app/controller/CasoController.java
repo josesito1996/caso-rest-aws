@@ -27,6 +27,7 @@ import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.request.UpdateCasoResumenRequest;
 import com.samy.service.app.model.request.UpdateFileActuacionRequest;
 import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
@@ -37,6 +38,7 @@ import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.model.response.SaveTareaResponse;
+import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.service.CasoService;
 
@@ -47,141 +49,146 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CasoController {
 
-    @Autowired
-    private CasoService service;
+  @Autowired
+  private CasoService service;
 
-    @GetMapping(path = "/listAll")
-    public List<Caso> listCasos() {
-        return service.listar();
-    }
+  @GetMapping(path = "/listAll")
+  public List<Caso> listCasos() {
+    return service.listar();
+  }
 
-    /**
-     * @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}") public
-     *                  List<MainActuacionResponse>
-     *                  listarActuacionesPorIdCaso(@PathVariable String idCaso) {
-     *                  return service.listarActuacionesPorCaso(idCaso); }
-     **/
-    @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
-    public List<ActuacionResponseX3> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
-        log.info("ActuacionController.verActuacionesPorIdCaso");
-        return service.verActuacionesPorIdCaso(idCaso);
-    }
+  /**
+   * @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}") public
+   *                  List<MainActuacionResponse>
+   *                  listarActuacionesPorIdCaso(@PathVariable String idCaso) {
+   *                  return service.listarActuacionesPorCaso(idCaso); }
+   **/
+  @GetMapping(path = "/listActuacionesByIdCaso/{idCaso}")
+  public List<ActuacionResponseX3> listarActuacionesPorIdCaso(@PathVariable String idCaso) {
+    log.info("ActuacionController.verActuacionesPorIdCaso");
+    return service.verActuacionesPorIdCaso(idCaso);
+  }
 
-    @PutMapping(path = "/deleteTask")
-    public Map<String, Object> eliminarTarea(@Valid @RequestBody EliminarTareaRequest request) {
-        log.info("ActuacionController.eliminarTarea");
-        return service.eliminarTarea(request);
-    }
-    
-    @PutMapping(path = "/editActuacion")
-    public ActuacionResponseX3 editarActuacion(@Valid @RequestBody EditarActuacionRequest request) {
-        log.info("ActuacionController.elimieditActuacionnarTarea");
-        return service.editarActuacion(request);
-    }
+  @PutMapping(path = "/deleteTask")
+  public Map<String, Object> eliminarTarea(@Valid @RequestBody EliminarTareaRequest request) {
+    log.info("ActuacionController.eliminarTarea");
+    return service.eliminarTarea(request);
+  }
 
-    @GetMapping(path = "/listAllByUserName/{userName}")
-    public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName,
-            @ParameterObject @RequestParam(required = true) Integer pageNumber,
-            @RequestParam(required = true) Integer pageSize) {
-        return service.listadoDeCasosPorUserName(userName, pageNumber, pageSize);
-    }
+  @PutMapping(path = "/editActuacion")
+  public ActuacionResponseX3 editarActuacion(@Valid @RequestBody EditarActuacionRequest request) {
+    log.info("ActuacionController.elimieditActuacionnarTarea");
+    return service.editarActuacion(request);
+  }
 
-    @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Caso registrarCaso(@Valid @RequestBody CasoBody requestBody) {
-        return service.registrarCaso(requestBody);
-    }
+  @GetMapping(path = "/listAllByUserName/{userName}")
+  public List<HomeCaseResponse> listarCasosPorNombreDeUsuario(@PathVariable String userName,
+      @ParameterObject @RequestParam(required = true) Integer pageNumber,
+      @RequestParam(required = true) Integer pageSize) {
+    return service.listadoDeCasosPorUserName(userName, pageNumber, pageSize);
+  }
 
-    @GetMapping(path = "/findById/{id}")
-    public DetailCaseResponse findById(@PathVariable String id) {
-        return service.mostratDetalleDelCasoPorId(id);
-    }
+  @PostMapping(path = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public Caso registrarCaso(@Valid @RequestBody CasoBody requestBody) {
+    return service.registrarCaso(requestBody);
+  }
 
-    @GetMapping(path = "/findDetailTarea")
-    public UpdateTareaResponse findDetailTareaById(@RequestParam(name = "id_case") String idCase,
-            @RequestParam(name = "id_actuacion") String idActuacion,
-            @RequestParam(name = "id_tarea") String idTarea) {
-        return service.verTareaPorId(idCase, idActuacion, idTarea);
-    }
+  @GetMapping(path = "/findById/{id}")
+  public DetailCaseResponse findById(@PathVariable String id) {
+    return service.mostratDetalleDelCasoPorId(id);
+  }
 
-    @PostMapping(path = "/saveActuacion/{idCaso}")
-    public ActuacionResponseX2 registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
-            @Valid @PathVariable String idCaso) {
-        return service.registrarActuacion(requestBody, idCaso);
-    }
+  @PutMapping(path = "/updateResumen")
+  public UpdateCasoResumenResponse updateResumen(@RequestBody @Valid UpdateCasoResumenRequest request) {
+    return service.updateResumen(request);
+  }
 
-    @PostMapping(path = "/updateFileActuacion")
-    public ActuacionResponseX2 actualizarArchivoActuacion(
-            @Valid @RequestBody UpdateFileActuacionRequest requestBody) {
-        return service.añadirArchivoActuacion(requestBody);
-    }
+  @GetMapping(path = "/findDetailTarea")
+  public UpdateTareaResponse findDetailTareaById(@RequestParam(name = "id_case") String idCase,
+      @RequestParam(name = "id_actuacion") String idActuacion,
+      @RequestParam(name = "id_tarea") String idTarea) {
+    return service.verTareaPorId(idCase, idActuacion, idTarea);
+  }
 
-    @PostMapping(path = "/saveTarea")
-    public SaveTareaResponse registrarTarea(@Valid @RequestBody TareaBody requestBody,
-            @ParameterObject @RequestParam(name = "id_caso") String idCaso,
-            @RequestParam(name = "id_actuacion") String idActuacion) {
-        return service.registrarTarea(requestBody, idActuacion, idCaso);
-    }
+  @PostMapping(path = "/saveActuacion/{idCaso}")
+  public ActuacionResponseX2 registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
+      @Valid @PathVariable String idCaso) {
+    return service.registrarActuacion(requestBody, idCaso);
+  }
 
-    @PutMapping(path = "/updatePrincipalFile")
-    public DocumentoAnexoResponse cambiarArchivoPrincipal(
-            @Valid @RequestBody DocumentoAnexoRequest request) {
-        return service.cambiarPrincipal(request);
-    }
+  @PostMapping(path = "/updateFileActuacion")
+  public ActuacionResponseX2 actualizarArchivoActuacion(
+      @Valid @RequestBody UpdateFileActuacionRequest requestBody) {
+    return service.añadirArchivoActuacion(requestBody);
+  }
 
-    @PostMapping(path = "/updateTarea")
-    public SaveTareaResponse actualizarTarea(@Valid @RequestBody TareaBody requestBody,
-            @ParameterObject @RequestParam(name = "id_caso") String idCaso,
-            @RequestParam(name = "id_actuacion") String idActuacion) {
-        return service.registrarTarea(requestBody, idActuacion, idCaso);
-    }
+  @PostMapping(path = "/saveTarea")
+  public SaveTareaResponse registrarTarea(@Valid @RequestBody TareaBody requestBody,
+      @ParameterObject @RequestParam(name = "id_caso") String idCaso,
+      @RequestParam(name = "id_actuacion") String idActuacion) {
+    return service.registrarTarea(requestBody, idActuacion, idCaso);
+  }
 
-    @GetMapping(path = "/deleteTarea")
-    public Caso eliminarTarea(@RequestParam(name = "id_caso") String idCaso,
-            @RequestParam(name = "id_actuacion") String idActuacion,
-            @RequestParam(name = "id_tarea") String idTarea) {
-        return service.eliminarTareaPorId(idCaso, idActuacion, idTarea);
-    }
+  @PutMapping(path = "/updatePrincipalFile")
+  public DocumentoAnexoResponse cambiarArchivoPrincipal(
+      @Valid @RequestBody DocumentoAnexoRequest request) {
+    return service.cambiarPrincipal(request);
+  }
 
-    @PostMapping(path = "/uploadFileFromTarea")
-    public Map<String, Object> registrarArchivoTarea(
-            @Valid @RequestBody TareaArchivoBody requestBody) {
-        return service.registrarArchivoTarea(requestBody);
-    }
+  @PostMapping(path = "/updateTarea")
+  public SaveTareaResponse actualizarTarea(@Valid @RequestBody TareaBody requestBody,
+      @ParameterObject @RequestParam(name = "id_caso") String idCaso,
+      @RequestParam(name = "id_actuacion") String idActuacion) {
+    return service.registrarTarea(requestBody, idActuacion, idCaso);
+  }
 
-    @PostMapping(path = "/changeStatusTarea")
-    public Boolean cambiarEstadoTarea(@Valid @RequestBody TareaCambioEstadoBody requestBody) {
-        return service.cambiarEstadoTarea(requestBody);
-    }
+  @GetMapping(path = "/deleteTarea")
+  public Caso eliminarTarea(@RequestParam(name = "id_caso") String idCaso,
+      @RequestParam(name = "id_actuacion") String idActuacion,
+      @RequestParam(name = "id_tarea") String idTarea) {
+    return service.eliminarTareaPorId(idCaso, idActuacion, idTarea);
+  }
 
-    @GetMapping(path = "/listNotifVenciByUserName/{userName}")
-    public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientosPorNombreUsuario(
-            @PathVariable String userName) {
-        return service.listarNotificacionesVencimientos(userName);
-    }
+  @PostMapping(path = "/uploadFileFromTarea")
+  public Map<String, Object> registrarArchivoTarea(
+      @Valid @RequestBody TareaArchivoBody requestBody) {
+    return service.registrarArchivoTarea(requestBody);
+  }
 
-    @GetMapping(path = "/listCarteraByUserName/{userName}")
-    public MiCarteraResponse verCarteraResponse(@PathVariable String userName) {
-        return service.verCarteraResponse(userName);
-    }
+  @PostMapping(path = "/changeStatusTarea")
+  public Boolean cambiarEstadoTarea(@Valid @RequestBody TareaCambioEstadoBody requestBody) {
+    return service.cambiarEstadoTarea(requestBody);
+  }
 
-    @GetMapping(path = "/viewCriticidadByUserName/{userName}")
-    public CriticidadCasosResponse verCriticidadResponse(@PathVariable String userName) {
-        return service.verCriticidadResponse(userName);
-    }
+  @GetMapping(path = "/listNotifVenciByUserName/{userName}")
+  public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientosPorNombreUsuario(
+      @PathVariable String userName) {
+    return service.listarNotificacionesVencimientos(userName);
+  }
 
-    @GetMapping(path = "/viewCasoPorMateriaByUserName/{userName}")
-    public List<Map<String, Object>> verCasoPorMateriaResponse(@PathVariable String userName) {
-        return service.verCasosPorMateria(userName);
-    }
+  @GetMapping(path = "/listCarteraByUserName/{userName}")
+  public MiCarteraResponse verCarteraResponse(@PathVariable String userName) {
+    return service.verCarteraResponse(userName);
+  }
 
-    @GetMapping(path = "/viewTotalesCompletados/{userName}")
-    public List<Map<String, Object>> verTotalesCompletados(@PathVariable String userName) {
-        return service.verTotalesCompletados(userName);
-    }
+  @GetMapping(path = "/viewCriticidadByUserName/{userName}")
+  public CriticidadCasosResponse verCriticidadResponse(@PathVariable String userName) {
+    return service.verCriticidadResponse(userName);
+  }
 
-    @PostMapping(path = "/addSubMateriaToCase")
-    public DetailCaseResponse agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
-        return service.agregarSubMateria(request);
-    }
+  @GetMapping(path = "/viewCasoPorMateriaByUserName/{userName}")
+  public List<Map<String, Object>> verCasoPorMateriaResponse(@PathVariable String userName) {
+    return service.verCasosPorMateria(userName);
+  }
+
+  @GetMapping(path = "/viewTotalesCompletados/{userName}")
+  public List<Map<String, Object>> verTotalesCompletados(@PathVariable String userName) {
+    return service.verTotalesCompletados(userName);
+  }
+
+  @PostMapping(path = "/addSubMateriaToCase")
+  public DetailCaseResponse agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
+    return service.agregarSubMateria(request);
+  }
 
 }

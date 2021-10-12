@@ -68,6 +68,7 @@ import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.request.UpdateCasoResumenRequest;
 import com.samy.service.app.model.request.UpdateFileActuacionRequest;
 import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.ActuacionResponseX2;
@@ -84,6 +85,7 @@ import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.model.response.SaveTareaResponse;
 import com.samy.service.app.model.response.SubMateriaResponse;
+import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
@@ -786,10 +788,16 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro).reversed());
     for (Actuacion actuacion : actuaciones) {
       for (FuncionarioDto func : actuacion.getFuncionario()) {
-        funcionarios.add(FuncionarioResponse.builder()
-            .idFuncionario(func.getId())
-            .nombreFuncionario(func.getDatosFuncionario())
-            .etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
+        List<FuncionarioResponse> funcis = funcionarios.stream()
+            .filter(item -> item.getIdFuncionario().equals(func.getId()))
+            .collect(Collectors.toList());
+        if (!funcis.isEmpty()) {
+          funcionarios.add(funcis.get(0));
+        } else {
+          funcionarios.add(FuncionarioResponse.builder().idFuncionario(func.getId())
+              .nombreFuncionario(func.getDatosFuncionario())
+              .etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
+        }
       }
     }
     return funcionarios.stream().distinct().collect(Collectors.toList());
@@ -968,5 +976,13 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     Caso casoEdit = modificar(caso);
     return transformActuacionResponseX3(casoEdit.getActuaciones().get(indexActuacion),
         casoEdit.getUsuario());
+  }
+
+  @Override
+  public UpdateCasoResumenResponse updateResumen(UpdateCasoResumenRequest request) {
+    Caso caso = verPodId(request.getIdCaso());
+    caso.setDescripcionAdicional(request.getResumen());
+    return UpdateCasoResumenResponse.builder().resumen(modificar(caso).getDescripcionAdicional())
+        .build();
   }
 }

@@ -14,6 +14,7 @@ import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
+import com.samy.service.app.model.request.UpdateCasoResumenRequest;
 import com.samy.service.app.model.request.UpdateFileActuacionRequest;
 import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
@@ -25,6 +26,7 @@ import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.model.response.SaveTareaResponse;
+import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 
 public interface CasoService extends ICrud<Caso, String> {
@@ -87,5 +89,7 @@ public interface CasoService extends ICrud<Caso, String> {
     public Map<String, Object> eliminarTarea(EliminarTareaRequest request);
     
     public ActuacionResponseX3 editarActuacion(EditarActuacionRequest request);
+    
+    public UpdateCasoResumenResponse updateResumen(UpdateCasoResumenRequest request);
     
 }
