@@ -35,9 +35,7 @@ public class DetailCaseResponse {
 	
 	private Integer cantidadDocumentos;
 	
-	private String idFuncionario;
-	
-	private String funcionario;
+	private List<FuncionarioResponse> funcionarios;
 	
 	@JsonInclude(Include.NON_NULL)
 	private Integer trabajadoresInvolucrados;
