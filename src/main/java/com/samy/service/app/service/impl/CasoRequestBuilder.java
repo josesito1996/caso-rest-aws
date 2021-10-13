@@ -206,7 +206,7 @@ public class CasoRequestBuilder {
             etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
                     1);
             break;
-        case "Sancionadora":
+        case "Sancionador":
             etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
                     3);
             break;
