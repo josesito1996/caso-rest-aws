@@ -777,13 +777,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .ordenInspeccion(caso.getOrdenInspeccion())
         .tipoActuacion(tipoActuacion(caso.getActuaciones()))
         .cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
-        .funcionarios(funcionariosResponseList(caso.getActuaciones()))
+        .funcionarios(funcionariosResponseList(caso))
         .trabajadoresInvolucrados(trabInvolucrados).sumaMultaPotencial(sumaPotencial)
         .sumaProvision(sumaProvision).riesgo(mapRiesgo).origen(mapOrigen).materiasResponse(materias)
         .totalMaterias(totalMaterias).totalSubMaterias(totalSubMaterias).build();
   }
 
-  private List<FuncionarioResponse> funcionariosResponseList(List<Actuacion> actuaciones) {
+  private List<FuncionarioResponse> funcionariosResponseList(Caso caso) {
+    List<Actuacion> actuaciones = caso.getActuaciones();
     List<FuncionarioResponse> funcionarios = new ArrayList<>();
     actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro).reversed());
     for (Actuacion actuacion : actuaciones) {

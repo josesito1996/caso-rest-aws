@@ -44,7 +44,10 @@ import com.samy.service.app.model.request.TareaCambioEstadoBody;
 import com.samy.service.app.service.PersonalService;
 import com.samy.service.app.util.Utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Component
+@Slf4j
 public class CasoRequestBuilder {
 
     @Autowired
@@ -62,6 +65,7 @@ public class CasoRequestBuilder {
     }
 
     private Actuacion transformActuacionFromBody(ActuacionBody actuacionBody) {
+      log.info("...."+ actuacionBody.getEtapa());
         Actuacion actuacion = new Actuacion();
         actuacion.setIdActuacion(uuidGenerado());
         actuacion.setFechaActuacion(actuacionBody.getFechaActuacion());
@@ -194,11 +198,11 @@ public class CasoRequestBuilder {
     private EtapaDto toEtapaDto(ReactSelectRequest reactSelectRequest) {
         EtapaDto etapaDto = null;
         switch (reactSelectRequest.getLabel()) {
-        case "Instruccion":
+        case "Instrucción":
             etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
                     2);
             break;
-        case "Investigacion":
+        case "Investigación":
             etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
                     1);
             break;
