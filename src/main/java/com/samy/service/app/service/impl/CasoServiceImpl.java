@@ -55,7 +55,6 @@ import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
-import com.samy.service.app.external.SubMateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.Tarea;
@@ -473,8 +472,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
   public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
     Caso caso = verPodId(idCaso);
     List<Actuacion> actuaciones = caso.getActuaciones();
-    return actuaciones.stream().map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
+    List<ActuacionResponseX3> response = actuaciones.stream().map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
+        .sorted(Comparator.comparing(ActuacionResponseX3::getFechaActuacion).reversed())
         .collect(Collectors.toList());
+    if (response.isEmpty()) {
+      return response;
+    }
+    response.get(0).setPrimerItem(true);
+    return response;
   }
 
   @Override
@@ -565,6 +570,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
         .nombreActuacion(actuacion.getDescripcion()).descripcion(actuacion.getDescripcionAux())
         .subidoPor(usuario).anexos(0)
+        .tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
         .funcionarios(transformListFuncionarioMap(actuacion.getFuncionario()))
         .vencimientos(transformListVencimientoMap(actuacion.getTareas()))// Asumo que son de
                                                                          // las
@@ -778,7 +784,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .sumaMultaPotencial(mapInfraccion.getSumaMultaPotencial())
         .sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
         .origen(mapInfraccion.getOrigenCaso()).materiasResponse(materias)
-        .totalMaterias(totalMaterias).totalSubMaterias(totalSubMaterias).estadoCaso(estadoCaso).build();
+        .totalMaterias(totalMaterias).totalSubMaterias(totalSubMaterias).estadoCaso(estadoCaso)
+        .build();
   }
 
   private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
@@ -794,7 +801,54 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
               .idSubMateria(subMateria.getValue()).nombreSubMAteria(subMateria.getLabel()).build()))
           .build());
     }
-    return materias;
+    List<MateriaResponse> newMaterias = new ArrayList<>();
+    for (MateriaResponse mat : materias) {
+      List<SubMateriaResponse> subMaterias = new ArrayList<>();
+      if (!validateMat(newMaterias, mat.getIdMateria())) {
+        for (SubMateriaResponse subMateria : mat.getSubMaterias()) {
+          if (!validateSub(subMaterias, subMateria.getIdSubMateria())) {
+            subMaterias.add(subMateria);
+          }
+        }
+        mat.setSubMaterias(subMaterias);
+        newMaterias.add(mat);
+      } else {
+        int index = 0;
+        for (int i = 0; i <= newMaterias.size(); i++) {
+          if (newMaterias.get(i).getIdMateria().equals(mat.getIdMateria())) {
+            index = i;
+            break;
+          }
+        }
+        List<SubMateriaResponse> lisAux = newMaterias.get(index).getSubMaterias();
+        for (SubMateriaResponse subMateria : mat.getSubMaterias()) {
+          if (!validateSub(lisAux, subMateria.getIdSubMateria())) {
+            lisAux.add(subMateria);
+          }
+        }
+        mat.setSubMaterias(lisAux);
+        newMaterias.set(index, mat);
+      }
+    }
+    return newMaterias;
+  }
+
+  private boolean validateMat(List<MateriaResponse> materias, String idMateria) {
+    for (MateriaResponse mat : materias) {
+      if (mat.getIdMateria().equals(idMateria)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean validateSub(List<SubMateriaResponse> subMaterias, String idSubMateria) {
+    for (SubMateriaResponse sub : subMaterias) {
+      if (sub.getIdSubMateria().equals(idSubMateria)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private List<FuncionarioResponse> funcionariosResponseList(Caso caso) {
@@ -817,52 +871,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
     return funcionarios.stream().distinct().collect(Collectors.toList());
   }
-
-  private List<MateriaResponse> materiasResponseBuild(List<MateriaPojo> materias,
-      List<SubMateriaDto> subMaterias) {
-    List<MateriaResponse> materiasResponse = new ArrayList<MateriaResponse>();
-    for (MateriaPojo dto : materias) {
-      materiasResponse.add(MateriaResponse.builder().idMateria(dto.getIdMateria())
-          .nombreMateria(dto.getNombreMateria()).icono(dto.getIcono()).color(dto.getColor())
-          .subMaterias(subMaterias.stream().parallel()
-              .filter(item -> item.getIdMateria().equals(dto.getIdMateria()))
-              .map(this::transformSubMateriaResponse).collect(Collectors.toList()))
-          .build());
-    }
-    return materiasResponse;
-  }
-
-  private SubMateriaResponse transformSubMateriaResponse(SubMateriaDto subMateriaDto) {
-    return SubMateriaResponse.builder().idSubMateria(subMateriaDto.getIdSubMateria())
-        .nombreSubMAteria(subMateriaDto.getNombreSubMateria()).build();
-  }
-
-  private List<SubMateriaDto> subMateriasBuild(List<MateriaDto> materias) {
-    List<SubMateriaDto> items = new ArrayList<SubMateriaDto>();
-    for (MateriaDto materia : materias) {
-      List<SubMateriaDto> subMaterias = materia.getSubMaterias() != null ? materia.getSubMaterias()
-          : new ArrayList<SubMateriaDto>();
-      MateriaPojo materiaPojo = externalAws.getTable(materia.getId());
-      for (SubMateriaDto dto : subMaterias) {
-        items.add(SubMateriaDto.builder().idSubMateria(dto.getIdSubMateria())
-            .idMateria(dto.getIdMateria()).icono(materiaPojo.getIcono())
-            .color(materiaPojo.getColor()).nombreSubMateria(dto.getNombreSubMateria()).build());
-      }
-    }
-    return items;
-  }
-
-  private List<MateriaPojo> transformToDto(List<MateriaDto> materias) {
-    return materias.stream().parallel().map(this::transformMateriaPojo)
-        .collect(Collectors.toList());
-  }
-
-  private MateriaPojo transformMateriaPojo(MateriaDto materiaDto) {
-    MateriaPojo materia = externalAws.getTable(materiaDto.getId());
-    return MateriaPojo.builder().idMateria(materiaDto.getId())
-        .nombreMateria(materia.getNombreMateria()).color(materia.getColor())
-        .icono(materia.getIcono()).estado(materia.getEstado()).build();
-  }
+  
 
   private HomeCaseResponse transformToHomeCase(Caso caso) {
     return HomeCaseResponse.builder().idCaso(caso.getId())

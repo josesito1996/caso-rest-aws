@@ -34,6 +34,8 @@ public class ActuacionResponseX3 {
     
     private String subidoPor;
     
+    private String tipoActuacion;
+    
     private int anexos;
     
     private List<Map<String, Object>> funcionarios;
@@ -41,5 +43,7 @@ public class ActuacionResponseX3 {
     private List<Map<String, Object>> vencimientos;
     
     private List<DocumentoAnexoResponse> documentosAnexos;
+    
+    private boolean primerItem;
     
 }
