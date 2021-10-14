@@ -14,7 +14,6 @@ import lombok.ToString;
 @Setter
 @ToString
 public class SubMateriaResponse {
-
     private String idSubMateria;
     private String nombreSubMAteria;
     

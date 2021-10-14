@@ -1,8 +1,7 @@
 package com.samy.service.app.aws;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,41 +16,46 @@ import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class ExternalDbAws {
 
-    @Autowired
-    private DynamoDB dynamoDB;
-    
-    @Autowired
-    private AmazonDynamoDB awsDynamoBD;
+  @Autowired
+  private DynamoDB dynamoDB;
 
-    public MateriaPojo getTable(String idMateria) {
-        final ObjectMapper mapper = new ObjectMapper();
-        Table tableMaterias = dynamoDB.getTable("materias");
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_materia", idMateria);
-        Item materiaItem = tableMaterias.getItem(spec);
-        return mapper.convertValue(materiaItem.asMap(), MateriaPojo.class);
-    }
-    
-    public Map<String, Object> tableInfraccion(String idAnalisis) {
-        Table tableMaterias = dynamoDB.getTable("analisis-riesgo");
-        GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_analisis", idAnalisis);
-        Item materiaItem = tableMaterias.getItem(spec);
-        if (materiaItem == null) {
-            return new HashMap<String, Object>();
-        }
-        return materiaItem.asMap();
-    }
+  @Autowired
+  private AmazonDynamoDB awsDynamoBD;
 
-    public List<EtapaPojo> getTableEtapa() {
-        DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder()
-                .withTableNameOverride(
-                        DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("etapas"))
-                .build();
-        DynamoDBMapper mapper = new DynamoDBMapper(awsDynamoBD, mapperConfig);
-        DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
-        List<EtapaPojo> scanResult = mapper.scan(EtapaPojo.class, scanExpression);
-        return scanResult;
+  public MateriaPojo getTable(String idMateria) {
+    log.info("ExternalDbAws.getTable");
+    final ObjectMapper mapper = new ObjectMapper();
+    Table tableMaterias = dynamoDB.getTable("materias");
+    GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_materia", idMateria);
+    Item materiaItem = tableMaterias.getItem(spec);
+    return mapper.convertValue(materiaItem.asMap(), MateriaPojo.class);
+  }
+
+  public AnalisisRiesgoPojo tableInfraccion(String idAnalisis) {
+    log.info("ExternalDbAws.tableInfraccion");
+    Table tableMaterias = dynamoDB.getTable("analisis-riesgo");
+    GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_analisis", idAnalisis);
+    Item materiaItem = tableMaterias.getItem(spec);
+    if (materiaItem == null) {
+      return AnalisisRiesgoPojo.builder().infracciones(new ArrayList<>()).build();
     }
+    final ObjectMapper mapper = new ObjectMapper();
+    return mapper.convertValue(materiaItem.asMap(), AnalisisRiesgoPojo.class);
+  }
+
+  public List<EtapaPojo> getTableEtapa() {
+    log.info("ExternalDbAws.getTableEtapa");
+    DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder().withTableNameOverride(
+        DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("etapas")).build();
+    DynamoDBMapper mapper = new DynamoDBMapper(awsDynamoBD, mapperConfig);
+    DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+    List<EtapaPojo> scanResult = mapper.scan(EtapaPojo.class, scanExpression);
+    return scanResult;
+  }
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.samy.service.app.model.request.ReactSelectRequest;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,7 +42,7 @@ public class DetailCaseResponse {
 	private Integer trabajadoresInvolucrados;
 	
 	@JsonInclude(Include.NON_NULL)
-	private Map<String, Object> origen;
+	private ReactSelectRequest origen;
 	
 	@JsonInclude(Include.NON_NULL)
 	private Double sumaMultaPotencial;
@@ -50,7 +51,7 @@ public class DetailCaseResponse {
 	private Double sumaProvision;
 	
 	@JsonInclude(Include.NON_NULL)
-	private Map<String, Object> riesgo;
+	private ReactSelectRequest riesgo;
 	
 	private List<MateriaResponse> materiasResponse;
 	

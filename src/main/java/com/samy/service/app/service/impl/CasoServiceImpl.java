@@ -45,8 +45,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.JsonObject;
+import com.samy.service.app.aws.AnalisisRiesgoPojo;
 import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
+import com.samy.service.app.aws.InfraccionItemPojo;
 import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
@@ -65,6 +67,7 @@ import com.samy.service.app.model.request.EditarActuacionRequest;
 import com.samy.service.app.model.request.EliminarTareaRequest;
 import com.samy.service.app.model.request.LambdaMailRequestSendgrid;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
+import com.samy.service.app.model.request.ReactSelectRequest;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
 import com.samy.service.app.model.request.TareaCambioEstadoBody;
@@ -748,25 +751,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .build();
   }
 
-  @SuppressWarnings("unchecked")
   private DetailCaseResponse transformFromCaso(Caso caso) {
-    Map<String, Object> mapInfraccion = externalAws.tableInfraccion(caso.getId());
-    Integer trabInvolucrados = null;
-    Double sumaPotencial = null;
-    Double sumaProvision = null;
+    AnalisisRiesgoPojo mapInfraccion = externalAws.tableInfraccion(caso.getId());
     Integer totalMaterias = 0;
     Integer totalSubMaterias = 0;
-    Map<String, Object> mapRiesgo = null;
-    Map<String, Object> mapOrigen = null;
-    if (!mapInfraccion.isEmpty()) {
-      trabInvolucrados = Integer.parseInt(mapInfraccion.get("cantidadInvolucrados").toString());
-      sumaPotencial = Double.parseDouble(mapInfraccion.get("sumaMultaPotencial").toString());
-      sumaProvision = Double.parseDouble(mapInfraccion.get("sumaProvision").toString());
-      mapRiesgo = (Map<String, Object>) mapInfraccion.get("nivelRiesgo");
-      mapOrigen = (Map<String, Object>) mapInfraccion.get("origenCaso");
-    }
-    List<MateriaResponse> materias = materiasResponseBuild(transformToDto(caso.getMaterias()),
-        subMateriasBuild(caso.getMaterias()));
+    // List<MateriaResponse> materias =
+    // materiasResponseBuild(transformToDto(caso.getMaterias()),
+    // subMateriasBuild(caso.getMaterias()));
+    List<MateriaResponse> materias = materias(mapInfraccion.getInfracciones());
     totalMaterias = materias.size();
     for (MateriaResponse response : materias) {
       totalSubMaterias = totalSubMaterias + response.getSubMaterias().size();
@@ -778,9 +770,31 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .tipoActuacion(tipoActuacion(caso.getActuaciones()))
         .cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
         .funcionarios(funcionariosResponseList(caso))
-        .trabajadoresInvolucrados(trabInvolucrados).sumaMultaPotencial(sumaPotencial)
-        .sumaProvision(sumaProvision).riesgo(mapRiesgo).origen(mapOrigen).materiasResponse(materias)
+        .trabajadoresInvolucrados(mapInfraccion.getCantidadInvolucrados())
+        .sumaMultaPotencial(mapInfraccion.getSumaMultaPotencial())
+        .sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
+        .origen(mapInfraccion.getOrigenCaso()).materiasResponse(materias)
         .totalMaterias(totalMaterias).totalSubMaterias(totalSubMaterias).build();
+  }
+
+  private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
+    List<MateriaResponse> materias = new ArrayList<>();
+    for (InfraccionItemPojo item : items) {
+      MateriaPojo materiaPojo = externalAws.getTable(item.getMateria().getValue());
+      ReactSelectRequest materia = item.getMateria();
+      ReactSelectRequest subMateria = item.getSubMaterias();
+      materias.add(MateriaResponse.builder()
+      .idMateria(materia.getValue())
+      .color(materiaPojo.getColor())
+      .icono(materiaPojo.getIcono())
+      .nombreMateria(materia.getLabel())
+      .subMaterias(Arrays.asList(SubMateriaResponse.builder()
+          .idSubMateria(subMateria.getValue())
+          .nombreSubMAteria(subMateria.getLabel())
+          .build()))
+      .build());
+    }
+    return materias;
   }
 
   private List<FuncionarioResponse> funcionariosResponseList(Caso caso) {
