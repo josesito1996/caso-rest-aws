@@ -3,6 +3,7 @@ package com.samy.service.app.model.response;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -26,6 +27,9 @@ public class ActuacionResponseX3 {
     private String documentoPrincipal;
     
     private String fechaActuacion;
+    
+    @JsonIgnore
+    private String fechaRegistro;
     
     private String nombreActuacion;
     

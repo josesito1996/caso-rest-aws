@@ -38,6 +38,13 @@ public class Utils {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
         return fecha.format(formatter);
     }
+    
+    public static String fechaFormateadaOther(LocalDateTime fecha) {
+      // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY
+      // hh:mm:s");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY hh:mm:s");
+      return fecha.format(formatter);
+  }
 
     public static String fechaFormateada(LocalDate fecha) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");

@@ -22,6 +22,7 @@ import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
+import static com.samy.service.app.util.Utils.fechaFormateadaOther;
 import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getPorcentaje;
@@ -473,7 +474,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     Caso caso = verPodId(idCaso);
     List<Actuacion> actuaciones = caso.getActuaciones();
     List<ActuacionResponseX3> response = actuaciones.stream().map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
-        .sorted(Comparator.comparing(ActuacionResponseX3::getFechaActuacion).reversed())
+        .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
         .collect(Collectors.toList());
     if (response.isEmpty()) {
       return response;
@@ -567,6 +568,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     String nombreArchivo = archivos.size() > 0 ? archivos.get(0).getNombreArchivo() : "";
     return ActuacionResponseX3.builder().idActuacion(actuacion.getIdActuacion())
         .documentoPrincipal(nombreArchivo)
+        .fechaRegistro(fechaFormateadaOther(actuacion.getFechaRegistro()))
         .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
         .nombreActuacion(actuacion.getDescripcion()).descripcion(actuacion.getDescripcionAux())
         .subidoPor(usuario).anexos(0)
