@@ -763,6 +763,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     for (MateriaResponse response : materias) {
       totalSubMaterias = totalSubMaterias + response.getSubMaterias().size();
     }
+    List<Actuacion> actuaciones = caso.getActuaciones();
+    int sizeActuaciones = actuaciones.size();
+    String estadoCaso = actuaciones.isEmpty() ? ""
+        : actuaciones.get(sizeActuaciones - 1).getEtapa().getNombreEtapa();
     return DetailCaseResponse.builder().idCaso(caso.getId()).nombreCaso(caso.getDescripcionCaso())
         .descripcion(caso.getDescripcionAdicional())
         .fechaCreacion(fechaFormateada(caso.getFechaInicio()))
@@ -774,7 +778,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .sumaMultaPotencial(mapInfraccion.getSumaMultaPotencial())
         .sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
         .origen(mapInfraccion.getOrigenCaso()).materiasResponse(materias)
-        .totalMaterias(totalMaterias).totalSubMaterias(totalSubMaterias).build();
+        .totalMaterias(totalMaterias).totalSubMaterias(totalSubMaterias).estadoCaso(estadoCaso).build();
   }
 
   private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
@@ -783,16 +787,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
       MateriaPojo materiaPojo = externalAws.getTable(item.getMateria().getValue());
       ReactSelectRequest materia = item.getMateria();
       ReactSelectRequest subMateria = item.getSubMaterias();
-      materias.add(MateriaResponse.builder()
-      .idMateria(materia.getValue())
-      .color(materiaPojo.getColor())
-      .icono(materiaPojo.getIcono())
-      .nombreMateria(materia.getLabel())
-      .subMaterias(Arrays.asList(SubMateriaResponse.builder()
-          .idSubMateria(subMateria.getValue())
-          .nombreSubMAteria(subMateria.getLabel())
-          .build()))
-      .build());
+      materias.add(MateriaResponse.builder().idMateria(materia.getValue())
+          .color(materiaPojo.getColor()).icono(materiaPojo.getIcono())
+          .nombreMateria(materia.getLabel())
+          .subMaterias(Arrays.asList(SubMateriaResponse.builder()
+              .idSubMateria(subMateria.getValue()).nombreSubMAteria(subMateria.getLabel()).build()))
+          .build());
     }
     return materias;
   }

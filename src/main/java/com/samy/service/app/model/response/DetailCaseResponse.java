@@ -28,6 +28,8 @@ public class DetailCaseResponse {
 	@JsonInclude(Include.NON_NULL)
 	private String descripcion;
 	
+	private String estadoCaso;
+	
 	private String fechaCreacion;
 	
 	private String ordenInspeccion;
