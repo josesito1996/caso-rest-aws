@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+
 public class Utils {
 
     public static String uuidGenerado() {
@@ -43,7 +44,8 @@ public class Utils {
       // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY
       // hh:mm:s");
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY hh:mm:s");
-      return fecha.format(formatter);
+      String fechaFormateada = fecha.format(formatter);
+      return fechaFormateada;
   }
 
     public static String fechaFormateada(LocalDate fecha) {

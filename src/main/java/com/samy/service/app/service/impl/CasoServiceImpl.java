@@ -570,7 +570,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .documentoPrincipal(nombreArchivo)
         .fechaRegistro(fechaFormateadaOther(actuacion.getFechaRegistro()))
         .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
-        .nombreActuacion(actuacion.getDescripcion()).descripcion(actuacion.getDescripcionAux())
+        .nombreActuacion(actuacion.getDescripcion())
+        .descripcion(actuacion.getDescripcionAux())
         .subidoPor(usuario).anexos(0)
         .tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
         .funcionarios(transformListFuncionarioMap(actuacion.getFuncionario()))
@@ -997,7 +998,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
     Actuacion actuacion = actuaciones.get(0);
     int indexActuacion = caso.getActuaciones().indexOf(actuacion);
-    actuacion.setDescripcionAux(request.getDescripcionActuacion());
+    actuacion.setDescripcion(request.getDescripcionActuacion());
     caso.getActuaciones().set(indexActuacion, actuacion);
     Caso casoEdit = modificar(caso);
     return transformActuacionResponseX3(casoEdit.getActuaciones().get(indexActuacion),
