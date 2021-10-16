@@ -10,6 +10,7 @@ import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.DocumentoAnexoRequest;
 import com.samy.service.app.model.request.EditarActuacionRequest;
 import com.samy.service.app.model.request.EliminarTareaRequest;
+import com.samy.service.app.model.request.ListActuacionesRequestFilter;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
@@ -79,6 +80,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public List<Map<String, Object>> verTotalesCompletados(String userName);
 
     public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso);
+    
+    public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso, ListActuacionesRequestFilter params);
 
     /**
      * Documento Anexo REsponse

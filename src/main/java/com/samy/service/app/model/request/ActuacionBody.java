@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -29,8 +28,6 @@ public class ActuacionBody {
 	@JsonProperty("fecha_actuacion")
 	private LocalDate fechaActuacion;
 
-	@NotNull
-	@NotEmpty
 	private String descripcion;
 
 	@Valid

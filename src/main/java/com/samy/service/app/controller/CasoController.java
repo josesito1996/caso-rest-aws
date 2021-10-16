@@ -23,6 +23,7 @@ import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.DocumentoAnexoRequest;
 import com.samy.service.app.model.request.EditarActuacionRequest;
 import com.samy.service.app.model.request.EliminarTareaRequest;
+import com.samy.service.app.model.request.ListActuacionesRequestFilter;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.TareaArchivoBody;
 import com.samy.service.app.model.request.TareaBody;
@@ -69,6 +70,13 @@ public class CasoController {
     return service.verActuacionesPorIdCaso(idCaso);
   }
 
+  @PostMapping(path = "/listActuacionesByIdCasoWithParams/{idCaso}")
+  public List<ActuacionResponseX3> listarActuacionesPorIdCasoConParametros(
+      @PathVariable String idCaso,@RequestBody @Valid ListActuacionesRequestFilter params) {
+    log.info("ActuacionController.verActuacionesPorIdCaso");
+    return service.verActuacionesPorIdCaso(idCaso, params);
+  }
+
   @PutMapping(path = "/deleteTask")
   public Map<String, Object> eliminarTarea(@Valid @RequestBody EliminarTareaRequest request) {
     log.info("ActuacionController.eliminarTarea");
@@ -99,7 +107,8 @@ public class CasoController {
   }
 
   @PutMapping(path = "/updateResumen")
-  public UpdateCasoResumenResponse updateResumen(@RequestBody @Valid UpdateCasoResumenRequest request) {
+  public UpdateCasoResumenResponse updateResumen(
+      @RequestBody @Valid UpdateCasoResumenRequest request) {
     return service.updateResumen(request);
   }
 

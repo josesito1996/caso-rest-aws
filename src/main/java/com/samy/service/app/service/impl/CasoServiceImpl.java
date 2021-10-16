@@ -66,6 +66,7 @@ import com.samy.service.app.model.request.DocumentoAnexoRequest;
 import com.samy.service.app.model.request.EditarActuacionRequest;
 import com.samy.service.app.model.request.EliminarTareaRequest;
 import com.samy.service.app.model.request.LambdaMailRequestSendgrid;
+import com.samy.service.app.model.request.ListActuacionesRequestFilter;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
 import com.samy.service.app.model.request.ReactSelectRequest;
 import com.samy.service.app.model.request.TareaArchivoBody;
@@ -357,6 +358,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
   @Override
   public CriticidadCasosResponse verCriticidadResponse(String userName) {
     List<Caso> casos = listarCasosPorUserName(userName);
+    if (casos.isEmpty()) {
+      return CriticidadCasosResponse.builder().build();
+    }
     BigDecimal suma = casos.stream().map(item -> item.getMultaPotencial()).reduce(BigDecimal.ZERO,
         BigDecimal::add);
     double mayor = casos.stream().max(Comparator.comparing(Caso::getMultaPotencial)).get()
@@ -473,7 +477,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
   public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
     Caso caso = verPodId(idCaso);
     List<Actuacion> actuaciones = caso.getActuaciones();
-    List<ActuacionResponseX3> response = actuaciones.stream().map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
+    List<ActuacionResponseX3> response = actuaciones.stream()
+        .map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
         .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
         .collect(Collectors.toList());
     if (response.isEmpty()) {
@@ -570,8 +575,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         .documentoPrincipal(nombreArchivo)
         .fechaRegistro(fechaFormateadaOther(actuacion.getFechaRegistro()))
         .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
-        .nombreActuacion(actuacion.getDescripcion())
-        .descripcion(actuacion.getDescripcionAux())
+        .nombreActuacion(actuacion.getDescripcion()).descripcion(actuacion.getDescripcionAux())
         .subidoPor(usuario).anexos(0)
         .tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
         .funcionarios(transformListFuncionarioMap(actuacion.getFuncionario()))
@@ -874,7 +878,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
     return funcionarios.stream().distinct().collect(Collectors.toList());
   }
-  
 
   private HomeCaseResponse transformToHomeCase(Caso caso) {
     return HomeCaseResponse.builder().idCaso(caso.getId())
@@ -1011,5 +1014,48 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     caso.setDescripcionAdicional(request.getResumen());
     return UpdateCasoResumenResponse.builder().resumen(modificar(caso).getDescripcionAdicional())
         .build();
+  }
+
+  @Override
+  public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso,
+      ListActuacionesRequestFilter params) {
+    Caso caso = verPodId(idCaso);
+    List<Actuacion> actuaciones = caso.getActuaciones();
+    List<ActuacionResponseX3> response = actuaciones.stream()
+        .filter(item -> evaluateArrays(item, params))
+        .map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
+        .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
+        .collect(Collectors.toList());
+    if (response.isEmpty()) {
+      return response;
+    }
+    response.get(0).setPrimerItem(true);
+    return response;
+  }
+
+  private boolean evaluateArrays(Actuacion item, ListActuacionesRequestFilter params) {
+    if (params.getTipoActuacion().isEmpty() && !params.getEtapaActuacion().isEmpty()) {
+      return containsEtapa(item.getEtapa().getId(), params);
+    } else if (params.getEtapaActuacion().isEmpty() && !params.getTipoActuacion().isEmpty()) {
+      return containsTipoActuacion(item.getTipoActuacion().getId(), params);
+    } else if (!params.getTipoActuacion().isEmpty() && !params.getEtapaActuacion().isEmpty()) {
+      return containsEtapa(item.getEtapa().getId(), params)
+          && containsTipoActuacion(item.getTipoActuacion().getId(), params);
+    } else {
+      return true;
+    }
+  }
+
+  private boolean containsEtapa(String idEtapa, ListActuacionesRequestFilter params) {
+    long cantEtapas = params.getEtapaActuacion().stream()
+        .filter(item -> item.getValue().equals(idEtapa)).count();
+    return cantEtapas > 0;
+  }
+
+  private boolean containsTipoActuacion(String idTipoActuacion,
+      ListActuacionesRequestFilter params) {
+    long cantTipos = params.getTipoActuacion().stream()
+        .filter(item -> item.getValue().equals(idTipoActuacion)).count();
+    return cantTipos > 0;
   }
 }
