@@ -24,5 +24,8 @@ public class EquipoDto {
     
     @DynamoDBAttribute(attributeName = "nombre")
     private String nombre;
+    
+    @DynamoDBAttribute(attributeName = "correo")
+    private String correo;
 
 }

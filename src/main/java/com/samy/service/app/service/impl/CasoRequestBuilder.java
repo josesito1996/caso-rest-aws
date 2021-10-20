@@ -279,7 +279,8 @@ public class CasoRequestBuilder {
         return EquipoDto.builder()
                 .idEquipo(personal
                         .getIdPersonal())
-                .nombre(personal.getDatos())
+                .correo(equipoBody.getCorreo())
+                .nombre(equipoBody.getDestinatario())
                 .build();
     }
 

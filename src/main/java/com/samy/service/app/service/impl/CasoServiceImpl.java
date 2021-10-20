@@ -1096,7 +1096,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .descripcion(tarea.getDenominacion())
                 .destinatario(tarea.getEquipos().stream().map(item -> item.getNombre())
                         .collect(Collectors.toList()))
-                .correo(tarea.getEquipos().stream().map(item -> item.getNombre())
+                .correo(tarea.getEquipos().stream().map(item -> item.getCorreo())
                         .collect(Collectors.toList()))
                 .recordatorio(tarea.getRecordatorio().getDia()).mensaje(tarea.getMensaje())
                 .fechaRegistro(fechaFormateada(tarea.getFechaRegistro()))
