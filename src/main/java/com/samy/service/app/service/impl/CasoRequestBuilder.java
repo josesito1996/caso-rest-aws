@@ -274,10 +274,12 @@ public class CasoRequestBuilder {
     }
 
     private EquipoDto transformEquipoBody(EquipoBody equipoBody) {
+        Personal personal = personalService.registrarPersonal(
+                new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()));
         return EquipoDto.builder()
-                .idEquipo(personalService.registrarPersonal(
-                        new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()))
+                .idEquipo(personal
                         .getIdPersonal())
+                .nombre(personal.getDatos())
                 .build();
     }
 

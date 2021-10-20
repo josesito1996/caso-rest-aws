@@ -47,6 +47,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public ActuacionResponseX2 añadirArchivoActuacion(UpdateFileActuacionRequest request);
 
     public SaveTareaResponse registrarTarea(TareaBody request, String idActuacion, String idCaso);
+    
+    public SaveTareaResponse verTareaPorIdV2(String idCaso, String idActuacion, String idTarea);
 
     public Caso actualizarTarea(TareaBody request, String idActuacion, String idCaso);
 
@@ -54,6 +56,7 @@ public interface CasoService extends ICrud<Caso, String> {
 
     public Boolean cambiarEstadoTarea(TareaCambioEstadoBody tareaCambioEstadoBody);
 
+    @Deprecated
     public UpdateTareaResponse verTareaPorId(String idCaso, String idActuacion, String idTarea);
 
     public Caso eliminarTareaPorId(String idCaso, String idActuacion, String idTarea);

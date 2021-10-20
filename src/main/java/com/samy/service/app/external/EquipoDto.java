@@ -21,5 +21,8 @@ public class EquipoDto {
 
     @DynamoDBAttribute(attributeName = "id_equipo")
     private String idEquipo;
+    
+    @DynamoDBAttribute(attributeName = "nombre")
+    private String nombre;
 
 }
