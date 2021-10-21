@@ -621,7 +621,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
     private List<Map<String, Object>> transformListVencimientoMap(List<Tarea> tareas) {
         return tareas.stream().filter(tarea -> !tarea.isEliminado())
-                .sorted(Comparator.comparing(Tarea::getFechaVencimiento).reversed())
+                .sorted(Comparator.comparing(Tarea::getFechaVencimiento))
                 .map(this::transformVencimientoMap).collect(Collectors.toList());
     }
 
