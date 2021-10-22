@@ -794,7 +794,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         Map<String, Object> mapEstado = new HashMap<String, Object>();
         EstadoCasoDto estado = actuaciones.isEmpty() ? EstadoCasoDto.builder().build()
                 : actuaciones.get(sizeActuaciones - 1).getEstadoCaso();
-        mapEstado.put("numero", "<b>" + estado.getOrden() + "</b>");
+        mapEstado.put("numero", estado.getOrden());
         mapEstado.put("estadoCaso", estado.getNombreEstado());
 
         return DetailCaseResponse.builder().idCaso(caso.getId())
