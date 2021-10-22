@@ -108,9 +108,10 @@ public class ServiceUtils {
     public static Integer cantidadTareasDelCasoGeneral(Caso caso) {
         int contadorTareas = 0;
         for (Actuacion actuacion : caso.getActuaciones()) {
-            for (@SuppressWarnings("unused")
-            Tarea tarea : actuacion.getTareas()) {
-                contadorTareas++;
+            for (Tarea tarea : actuacion.getTareas()) {
+                if (!tarea.isEliminado()) {
+                    contadorTareas++;
+                }
             }
         }
         return contadorTareas;
