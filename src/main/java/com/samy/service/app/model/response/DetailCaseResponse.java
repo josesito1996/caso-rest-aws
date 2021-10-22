@@ -1,6 +1,7 @@
 package com.samy.service.app.model.response;
 
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -27,7 +28,9 @@ public class DetailCaseResponse {
 	@JsonInclude(Include.NON_NULL)
 	private String descripcion;
 	
-	private String estadoCaso;
+	private Map<String, Object> estadoCaso;
+	
+	private String etapa;
 	
 	private String fechaCreacion;
 	

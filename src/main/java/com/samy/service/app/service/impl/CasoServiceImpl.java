@@ -54,6 +54,7 @@ import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
+import com.samy.service.app.external.EstadoCasoDto;
 import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.model.Actuacion;
@@ -788,8 +789,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         }
         List<Actuacion> actuaciones = caso.getActuaciones();
         int sizeActuaciones = actuaciones.size();
-        String estadoCaso = actuaciones.isEmpty() ? ""
+        String etapaActuacion = actuaciones.isEmpty() ? ""
                 : actuaciones.get(sizeActuaciones - 1).getEtapa().getNombreEtapa();
+        Map<String, Object> mapEstado = new HashMap<String, Object>();
+        EstadoCasoDto estado = actuaciones.isEmpty() ? EstadoCasoDto.builder().build()
+                : actuaciones.get(sizeActuaciones - 1).getEstadoCaso();
+        mapEstado.put("numero", "<b>" + estado.getOrden() + "</b>");
+        mapEstado.put("estadoCaso", estado.getNombreEstado());
+
         return DetailCaseResponse.builder().idCaso(caso.getId())
                 .nombreCaso(caso.getDescripcionCaso()).descripcion(caso.getDescripcionAdicional())
                 .fechaCreacion(fechaFormateada(caso.getFechaInicio()))
@@ -802,7 +809,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .sumaProvision(mapInfraccion.getSumaProvision())
                 .riesgo(mapInfraccion.getNivelRiesgo()).origen(mapInfraccion.getOrigenCaso())
                 .materiasResponse(materias).totalMaterias(totalMaterias)
-                .totalSubMaterias(totalSubMaterias).estadoCaso(estadoCaso).build();
+                .totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
+                .build();
     }
 
     private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {

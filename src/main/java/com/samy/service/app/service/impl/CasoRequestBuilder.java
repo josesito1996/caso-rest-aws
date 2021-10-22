@@ -65,7 +65,7 @@ public class CasoRequestBuilder {
     }
 
     private Actuacion transformActuacionFromBody(ActuacionBody actuacionBody) {
-      log.info("...."+ actuacionBody.getEtapa());
+        log.info("...." + actuacionBody.getEtapa());
         Actuacion actuacion = new Actuacion();
         actuacion.setIdActuacion(uuidGenerado());
         actuacion.setFechaActuacion(actuacionBody.getFechaActuacion());
@@ -75,9 +75,10 @@ public class CasoRequestBuilder {
         actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
         actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
         actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
-        actuacion.setEstadoCaso(
-                EstadoCasoDto.builder().idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
-                        .nombreEstado(actuacionBody.getEstadoCaso().getLabel()).build());
+        actuacion.setEstadoCaso(EstadoCasoDto.builder()
+                .orden(Integer.parseInt(actuacionBody.getEstadoCaso().getCampoAux()))
+                .idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
+                .nombreEstado(actuacionBody.getEstadoCaso().getLabel()).build());
         actuacion.setTareas(new ArrayList<Tarea>());
         return actuacion;
     }
@@ -241,7 +242,7 @@ public class CasoRequestBuilder {
             if (tareaBody.getEquipos() == null) {
                 throw new BadRequestException("Se debe registrar destinatarios");
             }
-            tarea.setEquipos(getEquipos(tareaBody.getEquipos()));   
+            tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
         } else {
             tarea.setEquipos(new ArrayList<EquipoDto>());
         }
@@ -276,12 +277,8 @@ public class CasoRequestBuilder {
     private EquipoDto transformEquipoBody(EquipoBody equipoBody) {
         Personal personal = personalService.registrarPersonal(
                 new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()));
-        return EquipoDto.builder()
-                .idEquipo(personal
-                        .getIdPersonal())
-                .correo(equipoBody.getCorreo())
-                .nombre(equipoBody.getDestinatario())
-                .build();
+        return EquipoDto.builder().idEquipo(personal.getIdPersonal()).correo(equipoBody.getCorreo())
+                .nombre(equipoBody.getDestinatario()).build();
     }
 
     public List<String> getEquiposString(List<EquipoDto> equipos) {

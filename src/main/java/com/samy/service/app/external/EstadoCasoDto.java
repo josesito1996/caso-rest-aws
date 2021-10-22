@@ -29,4 +29,6 @@ public class EstadoCasoDto implements Serializable  {
     @DynamoDBAttribute
     private String nombreEstado;
     
+    @DynamoDBAttribute
+    private Integer orden;
 }
