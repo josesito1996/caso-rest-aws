@@ -22,4 +22,6 @@ public class ReactSelectRequest {
 	@NotEmpty(message = "no debe estar vacio")
 	@NotNull(message = "no debe ser nulo")
 	private String label;
+	
+	private String campoAux;
 }
