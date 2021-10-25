@@ -27,6 +27,7 @@ import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
+import static com.samy.service.app.util.Utils.transformToLocalTime;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -485,7 +486,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<Actuacion> actuaciones = caso.getActuaciones();
         List<ActuacionResponseX3> response = actuaciones.stream()
                 .map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
-                .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
+                .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro))
                 .collect(Collectors.toList());
         if (response.isEmpty()) {
             return response;
@@ -579,7 +580,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         String nombreArchivo = archivos.size() > 0 ? archivos.get(0).getNombreArchivo() : "";
         return ActuacionResponseX3.builder().idActuacion(actuacion.getIdActuacion())
                 .documentoPrincipal(nombreArchivo)
-                .fechaRegistro(fechaFormateadaOther(actuacion.getFechaRegistro()))
+                .fechaRegistro(fechaFormateadaOther(transformToLocalTime(
+                        actuacion.getFechaActuacion(), actuacion.getFechaRegistro().toLocalTime())))
                 .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
                 .nombreActuacion(actuacion.getDescripcion())
                 .descripcion(actuacion.getDescripcionAux()).subidoPor(usuario).anexos(0)

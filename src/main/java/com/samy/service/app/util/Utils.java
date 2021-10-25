@@ -3,6 +3,7 @@ package com.samy.service.app.util;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -47,6 +48,10 @@ public class Utils {
       String fechaFormateada = fecha.format(formatter);
       return fechaFormateada;
   }
+    
+    public static LocalDateTime transformToLocalTime(LocalDate date,LocalTime time) {
+        return LocalDateTime.of(date, time);
+    }
 
     public static String fechaFormateada(LocalDate fecha) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY");
