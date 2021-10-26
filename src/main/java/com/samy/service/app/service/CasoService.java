@@ -90,7 +90,7 @@ public interface CasoService extends ICrud<Caso, String> {
      * Documento Anexo REsponse
      */
 
-    public DocumentoAnexoResponse cambiarPrincipal(DocumentoAnexoRequest request);
+    public List<DocumentoAnexoResponse> cambiarPrincipal(DocumentoAnexoRequest request);
     
     public Map<String, Object> eliminarTarea(EliminarTareaRequest request);
     

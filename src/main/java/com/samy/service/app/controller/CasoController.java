@@ -139,7 +139,7 @@ public class CasoController {
     }
 
     @PutMapping(path = "/updatePrincipalFile")
-    public DocumentoAnexoResponse cambiarArchivoPrincipal(
+    public List<DocumentoAnexoResponse> cambiarArchivoPrincipal(
             @Valid @RequestBody DocumentoAnexoRequest request) {
         return service.cambiarPrincipal(request);
     }

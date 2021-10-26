@@ -41,6 +41,4 @@ public class DocumentoAnexoRequest implements Serializable {
     private String idArchivo;
     
     private boolean esPrincipal;
-    
-    private boolean eliminado;
 }

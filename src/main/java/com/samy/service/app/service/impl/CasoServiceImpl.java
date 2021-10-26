@@ -496,7 +496,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     @Override
-    public DocumentoAnexoResponse cambiarPrincipal(DocumentoAnexoRequest request) {
+    public List<DocumentoAnexoResponse> cambiarPrincipal(DocumentoAnexoRequest request) {
         log.info("CasoServiceImpl.cambiarPrincipal");
         Caso caso = verPodId(request.getIdCaso());
         if (caso.getActuaciones().isEmpty()) {
@@ -511,34 +511,31 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                     "No hay actuaciones registradas con el ID  : " + request.getIdActuacion());
         }
         Actuacion actuacion = actuaciones.get(0);
-        List<ArchivoAdjunto> newArchivos = actuacion.getArchivos().stream().flatMap(item -> {
+        List<ArchivoAdjunto> archivos = actuacion.getArchivos().stream().flatMap(item -> {
             if (item.getId().equals(request.getIdArchivo())) {
                 item.setEsPrincipal(request.isEsPrincipal());
-                item.setEstado(request.isEliminado());
+                //item.setEstado(request.isEliminado());
             } else {
                 item.setEsPrincipal(!request.isEsPrincipal());
-                item.setEstado(!request.isEliminado());
+                //item.setEstado(!item.isEstado());
             }
             return Stream.of(item);
         }).collect(Collectors.toList());
-        log.info("newArchivos : {}", newArchivos);
-        List<ArchivoAdjunto> archivos = newArchivos.stream()
-                .filter(archivo -> archivo.getId().equals(request.getIdArchivo()))
-                .collect(Collectors.toList());
-        if (archivos.isEmpty()) {
+        
+        List<ArchivoAdjunto> newArchivos = archivos
+                .stream()
+                .filter(item -> item.getId().equals(request.getIdArchivo())).collect(Collectors.toList());   
+        if (newArchivos.isEmpty()) {
             throw new NotFoundException(
                     "No hay archivos registrados con el ID  : " + request.getIdArchivo());
         }
-        ArchivoAdjunto archivo = archivos.get(0);
+        ArchivoAdjunto archivo = newArchivos.get(0);
         int indexArchivo = actuacion.getArchivos().indexOf(archivo);
         int indexActuacion = caso.getActuaciones().indexOf(actuacion);
-        // archivo.setEsPrincipal(request.isEsPrincipal());
-        // archivo.setEstado(request.isEliminado());
-        actuacion.getArchivos().set(indexArchivo, archivo);
-        caso.getActuaciones().set(indexActuacion, actuacion);
+        caso.getActuaciones().get(indexActuacion).getArchivos().set(indexArchivo, archivo);
         Caso caseModified = modificar(caso);
-        return transfomrDocumentoAnexoResponse(
-                caseModified.getActuaciones().get(indexActuacion).getArchivos().get(indexArchivo));
+        return transformDocumentosAnexos(
+                caseModified.getActuaciones().get(indexActuacion).getArchivos());
     }
 
     @Override
