@@ -592,6 +592,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
     private List<DocumentoAnexoResponse> transformDocumentosAnexos(List<ArchivoAdjunto> archivos) {
         return archivos.stream().map(this::transfomrDocumentoAnexoResponse)
+                .sorted(Comparator.comparing(DocumentoAnexoResponse::isEsPrincipal).reversed())
                 .collect(Collectors.toList());
     }
 
