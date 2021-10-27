@@ -25,6 +25,6 @@ public class ListActuacionesRequestFilter {
   @NotNull
   private List<ReactSelectRequest> etapaActuacion;
   
-  private List<ReactSelectRequest> ordenarPor;
+  private ReactSelectRequest ordenarPor;
   
 }

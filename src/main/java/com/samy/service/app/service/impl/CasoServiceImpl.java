@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -514,17 +515,17 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<ArchivoAdjunto> archivos = actuacion.getArchivos().stream().flatMap(item -> {
             if (item.getId().equals(request.getIdArchivo())) {
                 item.setEsPrincipal(request.isEsPrincipal());
-                //item.setEstado(request.isEliminado());
+                // item.setEstado(request.isEliminado());
             } else {
                 item.setEsPrincipal(!request.isEsPrincipal());
-                //item.setEstado(!item.isEstado());
+                // item.setEstado(!item.isEstado());
             }
             return Stream.of(item);
         }).collect(Collectors.toList());
-        
-        List<ArchivoAdjunto> newArchivos = archivos
-                .stream()
-                .filter(item -> item.getId().equals(request.getIdArchivo())).collect(Collectors.toList());   
+
+        List<ArchivoAdjunto> newArchivos = archivos.stream()
+                .filter(item -> item.getId().equals(request.getIdArchivo()))
+                .collect(Collectors.toList());
         if (newArchivos.isEmpty()) {
             throw new NotFoundException(
                     "No hay archivos registrados con el ID  : " + request.getIdArchivo());
@@ -574,14 +575,23 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
     private ActuacionResponseX3 transformActuacionResponseX3(Actuacion actuacion, String usuario) {
         List<ArchivoAdjunto> archivos = actuacion.getArchivos();
-        String nombreArchivo = archivos.size() > 0 ? archivos.get(0).getNombreArchivo() : "";
+        String nombreArchivo = "";
+        if (!archivos.isEmpty()) {
+            for (ArchivoAdjunto adj : archivos) {
+                if (adj.isEsPrincipal()) {
+                    nombreArchivo = adj.getNombreArchivo();
+                    break;
+                }
+            }
+        }
         return ActuacionResponseX3.builder().idActuacion(actuacion.getIdActuacion())
                 .documentoPrincipal(nombreArchivo)
                 .fechaRegistro(fechaFormateadaOther(transformToLocalTime(
                         actuacion.getFechaActuacion(), actuacion.getFechaRegistro().toLocalTime())))
                 .fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
                 .nombreActuacion(actuacion.getDescripcion())
-                .descripcion(actuacion.getDescripcionAux()).subidoPor(usuario).anexos(0)
+                .descripcion(actuacion.getDescripcionAux()).subidoPor(usuario)
+                .anexos((int)actuacion.getArchivos().stream().filter(item -> item.isEstado()).count())
                 .tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
                 .funcionarios(transformListFuncionarioMap(actuacion.getFuncionario()))
                 .vencimientos(transformListVencimientoMap(actuacion.getTareas()))// Asumo que son de
@@ -1044,13 +1054,45 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     @Override
     public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso,
             ListActuacionesRequestFilter params) {
+        log.info("Params : {}",params);
         Caso caso = verPodId(idCaso);
         List<Actuacion> actuaciones = caso.getActuaciones();
-        List<ActuacionResponseX3> response = actuaciones.stream()
+        List<ActuacionResponseX3> response = new ArrayList<ActuacionResponseX3>();
+        Supplier<Stream<ActuacionResponseX3>> stream = () -> actuaciones.stream()
                 .filter(item -> evaluateArrays(item, params))
-                .map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
-                .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
-                .collect(Collectors.toList());
+                .map(item -> transformActuacionResponseX3(item, caso.getUsuario()));
+        Comparator<ActuacionResponseX3> comparator = new Comparator<ActuacionResponseX3>() {
+            @Override
+            public int compare(ActuacionResponseX3 o1, ActuacionResponseX3 o2) {
+                return 0;
+            }
+        };
+        if (params.getOrdenarPor() != null) {
+            if (params.getOrdenarPor().getLabel() == null) {  
+                comparator = Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed();
+            } else {
+                switch (params.getOrdenarPor().getValue()) {
+                case "asc":
+                    comparator =  Comparator.comparing(ActuacionResponseX3::getFechaRegistro);
+                    break;
+                case "desc":
+                    comparator = Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed();
+                    break;
+                case "masAnexo":
+                    comparator = Comparator.comparing(ActuacionResponseX3::getAnexos).reversed();
+                    break;
+                case "menosAnexo":
+                    comparator = Comparator.comparing(ActuacionResponseX3::getAnexos);
+                    break;
+                default:
+                    comparator = Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed();
+                    break;
+                }
+            }
+        } else {
+            comparator = Comparator.comparing(ActuacionResponseX3::getFechaRegistro);
+        }
+        response = stream.get().sorted(comparator).collect(Collectors.toList());
         if (response.isEmpty()) {
             return response;
         }
@@ -1062,10 +1104,13 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         if (params.getTipoActuacion().isEmpty() && !params.getEtapaActuacion().isEmpty()) {
             return containsEtapa(item.getEtapa().getId(), params);
         } else if (params.getEtapaActuacion().isEmpty() && !params.getTipoActuacion().isEmpty()) {
-            return containsTipoActuacion(item.getTipoActuacion().getId(), params);
+            boolean rpta = containsTipoActuacion(item.getTipoActuacion().getId(), params);
+            return rpta;
         } else if (!params.getTipoActuacion().isEmpty() && !params.getEtapaActuacion().isEmpty()) {
-            return containsEtapa(item.getEtapa().getId(), params)
-                    && containsTipoActuacion(item.getTipoActuacion().getId(), params);
+            boolean rpta = (containsEtapa(item.getEtapa().getId(), params)
+                    && containsTipoActuacion(item.getTipoActuacion().getId(), params));
+            ;
+            return rpta;
         } else {
             return true;
         }
@@ -1074,14 +1119,16 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     private boolean containsEtapa(String idEtapa, ListActuacionesRequestFilter params) {
         long cantEtapas = params.getEtapaActuacion().stream()
                 .filter(item -> item.getValue().equals(idEtapa)).count();
-        return cantEtapas > 0;
+        log.info("CAntidad Etapas : {}", cantEtapas);
+        return cantEtapas == 1;
     }
 
     private boolean containsTipoActuacion(String idTipoActuacion,
             ListActuacionesRequestFilter params) {
         long cantTipos = params.getTipoActuacion().stream()
                 .filter(item -> item.getValue().equals(idTipoActuacion)).count();
-        return cantTipos > 0;
+        log.info("CAntidad Tipos : {}", cantTipos);
+        return cantTipos == 1;
     }
 
     @Override
