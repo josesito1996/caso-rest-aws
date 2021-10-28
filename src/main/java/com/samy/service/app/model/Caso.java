@@ -72,16 +72,13 @@ public class Caso {
     private List<DynamoBodyGenerico> sedes;
 
     @DynamoDBAttribute
-    private String origenInspeccion;
+    private DynamoBodyGenerico origenInspeccion;
 
     @DynamoDBAttribute
     private Integer trabajadoresInvolucrados;
 
     @DynamoDBAttribute
     private String emailGenerado;
-
-    @DynamoDBAttribute
-    private String resumen;
 
     @DynamoDBAttribute
     private Boolean estadoCaso;

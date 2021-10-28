@@ -180,13 +180,16 @@ public class CasoRequestBuilder {
                 ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
                         .label(request.getEmpresa()).build())
                 : new ArrayList<DynamoBodyGenerico>());
-        caso.setOrigenInspeccion(request.getOrigenInspeccion());
+        caso.setOrigenInspeccion(DynamoBodyGenerico.builder()
+                .value(request.getOrigenInspeccion().getValue())
+                .label(request.getOrigenInspeccion().getLabel())
+                .build());
         caso.setTrabajadoresInvolucrados(request.getTrabajadoresInvolucrados());
         caso.setSedes(request.getSedesInvolucradas() != null
                 ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
                         .label(request.getSedesInvolucradas()).build())
                 : new ArrayList<DynamoBodyGenerico>());
-        caso.setResumen(request.getResumenCaso());
+        caso.setDescripcionAdicional(request.getResumenCaso());
         return caso;
     }
 

@@ -29,9 +29,6 @@ public class CasoBody {
 	@NotNull
 	@JsonProperty("descripcion_caso")
 	private String descripcionCaso;
-	
-	@JsonProperty("descripcion_adicional")
-	private String descripcionAdicional;
 
 	@NotNull
 	private LocalDate fechaInicio;
@@ -69,7 +66,7 @@ public class CasoBody {
 	private String empresa;
 	
 	@JsonProperty("origen_inspeccion")
-	private String origenInspeccion;
+	private ReactSelectRequest origenInspeccion;
 	
 	@JsonProperty("trabajadores_involucrados")
 	private Integer trabajadoresInvolucrados;
