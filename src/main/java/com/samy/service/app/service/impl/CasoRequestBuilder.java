@@ -29,6 +29,7 @@ import com.samy.service.app.external.TipoActuacionDto;
 import com.samy.service.app.external.TipoTarea;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
+import com.samy.service.app.model.DynamoBodyGenerico;
 import com.samy.service.app.model.Personal;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
@@ -171,6 +172,21 @@ public class CasoRequestBuilder {
         caso.setEstadoCaso(request.getEstado());
         caso.setActuaciones(new ArrayList<Actuacion>());
         caso.setUsuario(request.getUsuario());
+        caso.setIntendencias(request.getIntendencia() != null
+                ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
+                        .label(request.getIntendencia()).build())
+                : new ArrayList<DynamoBodyGenerico>());
+        caso.setEmpresas(request.getEmpresa() != null
+                ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
+                        .label(request.getEmpresa()).build())
+                : new ArrayList<DynamoBodyGenerico>());
+        caso.setOrigenInspeccion(request.getOrigenInspeccion());
+        caso.setTrabajadoresInvolucrados(request.getTrabajadoresInvolucrados());
+        caso.setSedes(request.getSedesInvolucradas() != null
+                ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
+                        .label(request.getSedesInvolucradas()).build())
+                : new ArrayList<DynamoBodyGenerico>());
+        caso.setResumen(request.getResumenCaso());
         return caso;
     }
 

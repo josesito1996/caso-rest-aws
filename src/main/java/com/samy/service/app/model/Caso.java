@@ -63,7 +63,25 @@ public class Caso {
     private List<Actuacion> actuaciones;
 
     @DynamoDBAttribute
+    private List<DynamoBodyGenerico> intendencias;
+
+    @DynamoDBAttribute
+    private List<DynamoBodyGenerico> empresas;
+
+    @DynamoDBAttribute
+    private List<DynamoBodyGenerico> sedes;
+
+    @DynamoDBAttribute
+    private String origenInspeccion;
+
+    @DynamoDBAttribute
+    private Integer trabajadoresInvolucrados;
+
+    @DynamoDBAttribute
     private String emailGenerado;
+
+    @DynamoDBAttribute
+    private String resumen;
 
     @DynamoDBAttribute
     private Boolean estadoCaso;

@@ -54,7 +54,6 @@ public class CasoBody {
 	@Size(min = 1)
 	private List<String> materias;
 
-	
 	@Valid
 	private List<ActuacionBody> actuacionBody;
 
@@ -64,5 +63,21 @@ public class CasoBody {
 
 	@NotNull
 	private Boolean estado;
+	
+	private String intendencia;
+	
+	private String empresa;
+	
+	@JsonProperty("origen_inspeccion")
+	private String origenInspeccion;
+	
+	@JsonProperty("trabajadores_involucrados")
+	private Integer trabajadoresInvolucrados;
+	
+	@JsonProperty("sedes_involucradas")
+	private String sedesInvolucradas;
+	
+	@JsonProperty("resumen_caso")
+	private String resumenCaso;
 
 }
