@@ -487,7 +487,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
         List<Actuacion> actuaciones = caso.getActuaciones();
         List<ActuacionResponseX3> response = actuaciones.stream()
                 .map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
-                .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro))
+                .sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
                 .collect(Collectors.toList());
         if (response.isEmpty()) {
             return response;
