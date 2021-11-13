@@ -44,7 +44,7 @@ public class Utils {
     public static String fechaFormateadaOther(LocalDateTime fecha) {
       // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY
       // hh:mm:s");
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY hh:mm:s");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMYYYYhh:mm:s");
       String fechaFormateada = fecha.format(formatter);
       return fechaFormateada;
   }

@@ -9,6 +9,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,11 +32,13 @@ public class RecordatorioRequest  implements Serializable {
     @NotEmpty
     @NotNull
     @DynamoDBAttribute(attributeName = "dias_texto")
+    @Schema(title = "Texto",example = "7")
     private String texto;
     
     @JsonProperty("numero_dias")
     @NotNull
     @DynamoDBAttribute(attributeName = "dias_numero")
+    @Schema(title = "Dia",example = "7")
     private Integer dia;
     
 }
