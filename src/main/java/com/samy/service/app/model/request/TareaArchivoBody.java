@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,14 +27,17 @@ public class TareaArchivoBody implements Serializable {
 
     @NotEmpty
     @NotNull
+    @Schema(title = "ID Caso", example = "6eb40afa-32d8-4fc1-af41-3297ec617798")
     private String id_caso;
 
     @NotEmpty
     @NotNull
+    @Schema(title = "ID Actuacion", example = "f3b4067a-52d8-4e23-a9c3-d32458d888f7")
     private String id_actuacion;
 
     @NotEmpty
     @NotNull
+    @Schema(title = "ID Tarea", example = "3dd71db6-3bf8-47da-8da3-655d2f5397ad")
     private String id_tarea;
 
     @NotNull

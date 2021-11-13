@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,14 +30,17 @@ public class EquipoBody implements Serializable {
 
     @JsonProperty("id_equipo")
     @JsonInclude(content = Include.NON_NULL)
+    @Schema(title = "Id equipo", description = "276ffcaa-e051-4568-aac8-ea3086782259")
     private String idEquipo;
     
     @NotNull
     @NotEmpty
     @Pattern(regexp = REGEX_EMAIL)
+    @Schema(title = "Id equipo", description = "shfiestas@gmail.com")
     private String correo;
 
     @NotNull
     @NotEmpty
+    @Schema(title = "Id equipo", description = "jcastilloc@gmail.com")
     private String destinatario;
 }
