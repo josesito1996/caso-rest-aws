@@ -15,6 +15,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosPend
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralPorEstado;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVencerCasos;
+import static com.samy.service.app.service.impl.ServiceUtils.colorProximoVencimiento;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
@@ -47,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.amazonaws.services.s3.internal.Constants;
 import com.google.gson.JsonObject;
 import com.samy.service.app.aws.AnalisisRiesgoPojo;
 import com.samy.service.app.aws.EtapaPojo;
@@ -61,6 +63,7 @@ import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
+import com.samy.service.app.model.DynamoBodyGenerico;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.ArchivoBody;
@@ -98,6 +101,7 @@ import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
+import com.samy.service.app.util.Contants;
 import com.samy.service.app.util.LambdaUtils;
 import com.samy.service.app.util.ListPagination;
 
@@ -911,18 +915,28 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
     }
 
     private HomeCaseResponse transformToHomeCase(Caso caso) {
+    	String nombreEmpresa = caso.getEmpresas()
+    			.stream()
+    			.map(item -> item.getLabel())
+    			.findFirst()
+    			.orElse("");
+    	AnalisisRiesgoPojo pojoAnalisis = externalAws.tableInfraccion(caso.getId());
+    	String nivelRiesgo = pojoAnalisis.getIdAnalisis() != null ? pojoAnalisis.getNivelRiesgo().getLabel() : "";
+    	String colorRiesgo = Contants.mapRiesgo.get(nivelRiesgo);
+    	String siguienteVencimiento = siguienteVencimientoDelCaso(caso.getActuaciones());
         return HomeCaseResponse.builder().idCaso(caso.getId())
-                .fechaInicio(fechaFormateada(caso.getFechaInicio()))
-                .nroOrden(nroOrdenEtapaActuacion(caso.getActuaciones()))
-                .etapaActuacion(etapaActuacion(caso.getActuaciones())).riesgo(null)
-                .nombreCaso(caso.getDescripcionCaso()).ordenInspeccion(caso.getOrdenInspeccion())
+                .idCaso(caso.getId())
+                .nombreEmpresa(nombreEmpresa)
+                .nombreCaso(caso.getDescripcionCaso())
+                .nroOrdenInspeccion(caso.getOrdenInspeccion())
                 .utltimaActuacion(fechaActuacion(caso.getActuaciones()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones()))
-                .totalTareas(cantidadTareasDelCasoGeneral(caso))
-                .tareasPendientes(totalTareasDelCaso(caso, false))
-                .aVencer(cantidadTareasAVencerDelCaso(caso))
-                .siguienteVencimiento(siguienteVencimientoDelCaso(caso.getActuaciones()))
-                .iconoCampana(0).build();
+                .etapaActuacion(etapaActuacion(caso.getActuaciones()))
+                .riesgo(nivelRiesgo)
+                .colorRiesgo(colorRiesgo)
+                .siguienteVencimiento(siguienteVencimiento)
+                .colorVencimiento(colorProximoVencimiento(siguienteVencimiento))
+        		.build();
     }
 
     public int getIndexActuacion(String idActuacion, List<Actuacion> actuaciones) {

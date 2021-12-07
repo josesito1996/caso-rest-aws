@@ -21,30 +21,23 @@ public class HomeCaseResponse implements Serializable {
 	
 	private String idCaso;
 	
-	private String fechaInicio;
-	
-	private Integer nroOrden;
-	
-	private String etapaActuacion;
-	
-	private String riesgo;
+	private String nombreEmpresa;
 	
 	private String nombreCaso;
 	
-	private String ordenInspeccion;
+	private String nroOrdenInspeccion;
 	
 	private String utltimaActuacion;
 	
 	private String tipoActuacion;
 	
-	private Integer totalTareas;
+	private String etapaActuacion;
 	
-	private Integer tareasPendientes;
+	private String riesgo;
 	
-	private Integer aVencer;
+	private String colorRiesgo;
 	
 	private String siguienteVencimiento;
 	
-	private Integer iconoCampana;
-
+	private String colorVencimiento;
 }
