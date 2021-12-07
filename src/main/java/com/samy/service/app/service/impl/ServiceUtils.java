@@ -202,13 +202,13 @@ public class ServiceUtils {
 		return " --- ";
 	}
 
-	public static String colorProximoVencimiento(String fecha) {
+	public static boolean estaVencido(String fecha) {
 		if (fecha.matches(REGEX_DDMMYYYY)) {
 			System.out.println(fecha);
 			LocalDate fechaProxima = toLocalDate(fecha);
-			return fechaProxima.isAfter(LocalDate.now().plusDays(diasPlazoVencimiento)) ? "black" : "red";
+			return !fechaProxima.isAfter(LocalDate.now().plusDays(diasPlazoVencimiento));
 		}
-		return "black";
+		return false;
 	}
 
 	/**

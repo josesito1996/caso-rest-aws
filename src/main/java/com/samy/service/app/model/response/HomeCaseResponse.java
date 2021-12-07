@@ -31,6 +31,8 @@ public class HomeCaseResponse implements Serializable {
 	
 	private String tipoActuacion;
 	
+	private Integer nroEtapa;
+	
 	private String etapaActuacion;
 	
 	private String riesgo;
@@ -39,5 +41,5 @@ public class HomeCaseResponse implements Serializable {
 	
 	private String siguienteVencimiento;
 	
-	private String colorVencimiento;
+	private boolean estaVencido;
 }

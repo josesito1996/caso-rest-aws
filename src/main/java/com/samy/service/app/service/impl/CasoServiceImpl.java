@@ -1,8 +1,7 @@
 package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentos;
-import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasAVencerDelCaso;
-import static com.samy.service.app.service.impl.ServiceUtils.cantidadTareasDelCasoGeneral;
+import static com.samy.service.app.service.impl.ServiceUtils.estaVencido;
 import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.nroOrdenEtapaActuacion;
@@ -12,10 +11,8 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalActuacionesCom
 import static com.samy.service.app.service.impl.ServiceUtils.totalCasosPorEstado;
 import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosGenerales;
 import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosPendientes;
-import static com.samy.service.app.service.impl.ServiceUtils.totalTareasDelCaso;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralPorEstado;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVencerCasos;
-import static com.samy.service.app.service.impl.ServiceUtils.colorProximoVencimiento;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
@@ -48,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amazonaws.services.s3.internal.Constants;
 import com.google.gson.JsonObject;
 import com.samy.service.app.aws.AnalisisRiesgoPojo;
 import com.samy.service.app.aws.EtapaPojo;
@@ -63,7 +59,6 @@ import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
-import com.samy.service.app.model.DynamoBodyGenerico;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.ArchivoBody;
@@ -931,11 +926,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
                 .nroOrdenInspeccion(caso.getOrdenInspeccion())
                 .utltimaActuacion(fechaActuacion(caso.getActuaciones()))
                 .tipoActuacion(tipoActuacion(caso.getActuaciones()))
+                .nroEtapa(nroOrdenEtapaActuacion(caso.getActuaciones()))
                 .etapaActuacion(etapaActuacion(caso.getActuaciones()))
                 .riesgo(nivelRiesgo)
                 .colorRiesgo(colorRiesgo)
                 .siguienteVencimiento(siguienteVencimiento)
-                .colorVencimiento(colorProximoVencimiento(siguienteVencimiento))
+                .estaVencido(estaVencido(siguienteVencimiento))
         		.build();
     }
 
