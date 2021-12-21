@@ -51,320 +51,320 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CasoRequestBuilder {
 
-    @Autowired
-    private PersonalService personalService;
+	@Autowired
+	private PersonalService personalService;
 
-    public Caso transformActuacion(Caso caso, ActuacionBody request) {
-        List<Actuacion> actuaciones = caso.getActuaciones();
-        if (actuaciones.size() > 0) {
-            actuaciones.add(transformActuacionFromBody(request));
-        } else {
-            actuaciones = Arrays.asList(transformActuacionFromBody(request));
-        }
-        caso.setActuaciones(actuaciones);
-        return caso;
-    }
+	public Caso transformActuacion(Caso caso, ActuacionBody request) {
+		List<Actuacion> actuaciones = caso.getActuaciones();
+		if (actuaciones.size() > 0) {
+			actuaciones.add(transformActuacionFromBody(request));
+		} else {
+			actuaciones = Arrays.asList(transformActuacionFromBody(request));
+		}
+		caso.setActuaciones(actuaciones);
+		return caso;
+	}
 
-    private Actuacion transformActuacionFromBody(ActuacionBody actuacionBody) {
-        log.info("...." + actuacionBody.getEtapa());
-        Actuacion actuacion = new Actuacion();
-        actuacion.setIdActuacion(uuidGenerado());
-        actuacion.setFechaActuacion(actuacionBody.getFechaActuacion());
-        actuacion.setFechaRegistro(LocalDateTime.now());
-        actuacion.setDescripcion(actuacionBody.getDescripcion());
-        actuacion.setFuncionario(transformToFuncionarioDto(actuacionBody.getFuncionarios()));
-        actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
-        actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
-        actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
-        actuacion.setEstadoCaso(EstadoCasoDto.builder()
-                .orden(Integer.parseInt(actuacionBody.getEstadoCaso().getCampoAux()))
-                .idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
-                .nombreEstado(actuacionBody.getEstadoCaso().getLabel()).build());
-        actuacion.setTareas(new ArrayList<Tarea>());
-        return actuacion;
-    }
+	private Actuacion transformActuacionFromBody(ActuacionBody actuacionBody) {
+		log.info("...." + actuacionBody.getEtapa());
+		Actuacion actuacion = new Actuacion();
+		actuacion.setIdActuacion(uuidGenerado());
+		actuacion.setFechaActuacion(actuacionBody.getFechaActuacion());
+		actuacion.setFechaRegistro(LocalDateTime.now());
+		actuacion.setDescripcion(actuacionBody.getDescripcion());
+		actuacion.setFuncionario(transformToFuncionarioDto(actuacionBody.getFuncionarios()));
+		actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
+		actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
+		actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
+		actuacion.setEstadoCaso(transformTransform(
+				EstadoCasoDto.builder().orden(Integer.parseInt(actuacionBody.getEstadoCaso().getCampoAux()))
+						.idEstadoCaso(actuacionBody.getEstadoCaso().getValue())
+						.nombreEstado(actuacionBody.getEstadoCaso().getLabel()).build()));
+		actuacion.setTareas(new ArrayList<Tarea>());
+		return actuacion;
+	}
 
-    @Transactional
-    public Caso transformTarea(Caso caso, TareaBody request, String idActuacion) {
-        List<Actuacion> actuaciones = caso.getActuaciones();
-        if (actuaciones.isEmpty()) {
-            throw new BadRequestException("Este caso no tiene actuaciones registradas");
-        }
-        Integer index = 0;
-        for (int i = 0; i < actuaciones.size(); i++) {
-            if (actuaciones.get(i).getIdActuacion().equals(idActuacion)) {
-                index = i;
-                break;
-            }
-        }
-        Actuacion actuacionFound = actuaciones.get(index);
-        List<Tarea> tareas = actuacionFound.getTareas();
-        if (tareas.isEmpty()) {
-            request.setIdTarea(uuidGenerado());
-            tareas = Arrays.asList(transformTareaFromBody(request));
-        } else {
-            if (request.getIdTarea() != null) {
-                int indice = tareas.indexOf(tareas.stream()
-                        .filter(item -> item.getIdTarea().equals(request.getIdTarea()))
-                        .collect(Collectors.toList()).get(0));
-                tareas.set(indice, transformTareaFromBody(request));
-            } else {
-                request.setIdTarea(uuidGenerado());
-                request.setEliminado(false);
-                tareas.add(transformTareaFromBody(request));
-            }
-        }
-        caso.getActuaciones().get(index).setTareas(tareas);
-        return caso;
-    }
+	private EstadoCasoDto transformTransform(EstadoCasoDto dto) {
+		String nombreMateria = dto.getNombreEstado();
+		String nuevoNombre = "";
+		if (nombreMateria.contains("-")) {
+			String[] array = nombreMateria.split("-");
+			nuevoNombre = array[1];
+		} else {
+			nuevoNombre = nombreMateria;
+		}
+		dto.setNombreEstado(nuevoNombre);
+		return dto;
+	}
 
-    public Caso transformUpdateTarea(Caso caso, TareaArchivoBody tareaArchivoBody) {
-        List<Actuacion> actuaciones = caso.getActuaciones();
-        int indexActuacion = getIndexActuacion(tareaArchivoBody.getId_actuacion(), actuaciones);
+	@Transactional
+	public Caso transformTarea(Caso caso, TareaBody request, String idActuacion) {
+		List<Actuacion> actuaciones = caso.getActuaciones();
+		if (actuaciones.isEmpty()) {
+			throw new BadRequestException("Este caso no tiene actuaciones registradas");
+		}
+		Integer index = 0;
+		for (int i = 0; i < actuaciones.size(); i++) {
+			if (actuaciones.get(i).getIdActuacion().equals(idActuacion)) {
+				index = i;
+				break;
+			}
+		}
+		Actuacion actuacionFound = actuaciones.get(index);
+		List<Tarea> tareas = actuacionFound.getTareas();
+		if (tareas.isEmpty()) {
+			request.setIdTarea(uuidGenerado());
+			tareas = Arrays.asList(transformTareaFromBody(request));
+		} else {
+			if (request.getIdTarea() != null) {
+				int indice = tareas
+						.indexOf(tareas.stream().filter(item -> item.getIdTarea().equals(request.getIdTarea()))
+								.collect(Collectors.toList()).get(0));
+				tareas.set(indice, transformTareaFromBody(request));
+			} else {
+				request.setIdTarea(uuidGenerado());
+				request.setEliminado(false);
+				tareas.add(transformTareaFromBody(request));
+			}
+		}
+		caso.getActuaciones().get(index).setTareas(tareas);
+		return caso;
+	}
 
-        List<Tarea> tareas = actuaciones.get(indexActuacion).getTareas();
-        int indexTarea = getIndexTarea(tareaArchivoBody.getId_tarea(), tareas);
+	public Caso transformUpdateTarea(Caso caso, TareaArchivoBody tareaArchivoBody) {
+		List<Actuacion> actuaciones = caso.getActuaciones();
+		int indexActuacion = getIndexActuacion(tareaArchivoBody.getId_actuacion(), actuaciones);
 
-        List<ArchivoAdjunto> archivos = tareas.get(indexTarea).getArchivos();
-        if (archivos.isEmpty()) {
-            //////////
-            archivos = listArchivoAdjunto(tareaArchivoBody.getArchivos());
-            // archivos =
-            // fileService.uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
-        } else {
-            // List<ArchivoAdjunto> archivosAux = fileService
-            // .uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
-            for (ArchivoAdjunto archivo : listArchivoAdjunto(tareaArchivoBody.getArchivos())) {
-                archivos.add(archivo);
-            }
-        }
-        tareas.get(indexTarea).setArchivos(archivos);
-        actuaciones.get(indexActuacion).setTareas(tareas);
-        caso.setActuaciones(actuaciones);
-        return caso;
-    }
+		List<Tarea> tareas = actuaciones.get(indexActuacion).getTareas();
+		int indexTarea = getIndexTarea(tareaArchivoBody.getId_tarea(), tareas);
 
-    public Caso transformCambioEstadoTarea(Caso caso, TareaCambioEstadoBody tareaCambioEstadoBody) {
-        List<Actuacion> actuaciones = caso.getActuaciones();
-        int indexActuacion = getIndexActuacion(tareaCambioEstadoBody.getId_actuacion(),
-                actuaciones);
+		List<ArchivoAdjunto> archivos = tareas.get(indexTarea).getArchivos();
+		if (archivos.isEmpty()) {
+			//////////
+			archivos = listArchivoAdjunto(tareaArchivoBody.getArchivos());
+			// archivos =
+			// fileService.uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
+		} else {
+			// List<ArchivoAdjunto> archivosAux = fileService
+			// .uploadFile(fileBuilder.getFiles(tareaArchivoBody.getArchivos()));
+			for (ArchivoAdjunto archivo : listArchivoAdjunto(tareaArchivoBody.getArchivos())) {
+				archivos.add(archivo);
+			}
+		}
+		tareas.get(indexTarea).setArchivos(archivos);
+		actuaciones.get(indexActuacion).setTareas(tareas);
+		caso.setActuaciones(actuaciones);
+		return caso;
+	}
 
-        List<Tarea> tareas = actuaciones.get(indexActuacion).getTareas();
-        int indexTarea = getIndexTarea(tareaCambioEstadoBody.getId_tarea(), tareas);
+	public Caso transformCambioEstadoTarea(Caso caso, TareaCambioEstadoBody tareaCambioEstadoBody) {
+		List<Actuacion> actuaciones = caso.getActuaciones();
+		int indexActuacion = getIndexActuacion(tareaCambioEstadoBody.getId_actuacion(), actuaciones);
 
-        tareas.get(indexTarea).setEstado(tareaCambioEstadoBody.isEstado());
-        actuaciones.get(indexActuacion).setTareas(tareas);
-        caso.setActuaciones(actuaciones);
-        return caso;
-    }
+		List<Tarea> tareas = actuaciones.get(indexActuacion).getTareas();
+		int indexTarea = getIndexTarea(tareaCambioEstadoBody.getId_tarea(), tareas);
 
-    public Caso transformFromBody(CasoBody request) {
-        Caso caso = new Caso();
-        caso.setId(request.getIdCaso());
-        caso.setFechaInicio(request.getFechaInicio());
-        caso.setOrdenInspeccion(request.getOrdenInspeccion());
-        caso.setMultaPotencial(BigDecimal.valueOf(Math.random() * 10000));// VAlor aleatorio
-        caso.setInspectorTrabajo(getInspectorDto(request.getInspectorTrabajo()));
-        caso.setInspectorAuxiliar(getInspectorDto(request.getInspectorAuxiliar()));
-        caso.setMaterias(getMateriaDto(request.getMaterias()));
-        caso.setDescripcionCaso(request.getDescripcionCaso());
-        caso.setRegistro(LocalDateTime.now());
-        caso.setEstadoCaso(request.getEstado());
-        caso.setActuaciones(new ArrayList<Actuacion>());
-        caso.setUsuario(request.getUsuario());
-        caso.setIntendencias(request.getIntendencia() != null
-                ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
-                        .label(request.getIntendencia()).build())
-                : new ArrayList<DynamoBodyGenerico>());
-        caso.setEmpresas(request.getEmpresa() != null
-                ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
-                        .label(request.getEmpresa()).build())
-                : new ArrayList<DynamoBodyGenerico>());
-        caso.setOrigenInspeccion(DynamoBodyGenerico.builder()
-                .value(request.getOrigenInspeccion().getValue())
-                .label(request.getOrigenInspeccion().getLabel())
-                .build());
-        caso.setTrabajadoresInvolucrados(request.getTrabajadoresInvolucrados());
-        caso.setSedes(request.getSedesInvolucradas() != null
-                ? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
-                        .label(request.getSedesInvolucradas()).build())
-                : new ArrayList<DynamoBodyGenerico>());
-        caso.setDescripcionAdicional(request.getResumenCaso());
-        return caso;
-    }
+		tareas.get(indexTarea).setEstado(tareaCambioEstadoBody.isEstado());
+		actuaciones.get(indexActuacion).setTareas(tareas);
+		caso.setActuaciones(actuaciones);
+		return caso;
+	}
 
-    private List<InspectorDto> getInspectorDto(List<ReactSelectRequest> listReact) {
-        return listReact.stream().map(this::transformFromReact).collect(Collectors.toList());
-    }
+	public Caso transformFromBody(CasoBody request) {
+		Caso caso = new Caso();
+		caso.setId(request.getIdCaso());
+		caso.setFechaInicio(request.getFechaInicio());
+		caso.setOrdenInspeccion(request.getOrdenInspeccion());
+		caso.setMultaPotencial(BigDecimal.valueOf(Math.random() * 10000));// VAlor aleatorio
+		caso.setInspectorTrabajo(getInspectorDto(request.getInspectorTrabajo()));
+		caso.setInspectorAuxiliar(getInspectorDto(request.getInspectorAuxiliar()));
+		caso.setMaterias(getMateriaDto(request.getMaterias()));
+		caso.setDescripcionCaso(request.getDescripcionCaso());
+		caso.setRegistro(LocalDateTime.now());
+		caso.setEstadoCaso(request.getEstado());
+		caso.setActuaciones(new ArrayList<Actuacion>());
+		caso.setUsuario(request.getUsuario());
+		caso.setIntendencias(request.getIntendencia() != null
+				? Arrays.asList(
+						DynamoBodyGenerico.builder().value(uuidGenerado()).label(request.getIntendencia()).build())
+				: new ArrayList<DynamoBodyGenerico>());
+		caso.setEmpresas(request.getEmpresa() != null
+				? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado()).label(request.getEmpresa()).build())
+				: new ArrayList<DynamoBodyGenerico>());
+		caso.setOrigenInspeccion(DynamoBodyGenerico.builder().value(request.getOrigenInspeccion().getValue())
+				.label(request.getOrigenInspeccion().getLabel()).build());
+		caso.setTrabajadoresInvolucrados(request.getTrabajadoresInvolucrados());
+		caso.setSedes(
+				request.getSedesInvolucradas() != null
+						? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado())
+								.label(request.getSedesInvolucradas()).build())
+						: new ArrayList<DynamoBodyGenerico>());
+		caso.setDescripcionAdicional(request.getResumenCaso());
+		return caso;
+	}
 
-    private InspectorDto transformFromReact(ReactSelectRequest reactSelectRequest) {
-        return new InspectorDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
-    }
+	private List<InspectorDto> getInspectorDto(List<ReactSelectRequest> listReact) {
+		return listReact.stream().map(this::transformFromReact).collect(Collectors.toList());
+	}
 
-    private List<MateriaDto> getMateriaDto(List<String> materias) {
-        return materias.stream().map(item -> Utils.convertFromString(item, MateriaDto.class))
-                .map(this::initSubMateria).collect(Collectors.toList());
-    }
+	private InspectorDto transformFromReact(ReactSelectRequest reactSelectRequest) {
+		return new InspectorDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
+	}
 
-    private MateriaDto initSubMateria(MateriaDto materia) {
-        materia.setSubMaterias(new ArrayList<SubMateriaDto>());
-        return materia;
-    }
+	private List<MateriaDto> getMateriaDto(List<String> materias) {
+		return materias.stream().map(item -> Utils.convertFromString(item, MateriaDto.class)).map(this::initSubMateria)
+				.collect(Collectors.toList());
+	}
 
-    private TipoActuacionDto toTipoActuacion(ReactSelectRequest reactSelectRequest) {
-        return new TipoActuacionDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
-    }
+	private MateriaDto initSubMateria(MateriaDto materia) {
+		materia.setSubMaterias(new ArrayList<SubMateriaDto>());
+		return materia;
+	}
 
-    private EtapaDto toEtapaDto(ReactSelectRequest reactSelectRequest) {
-        EtapaDto etapaDto = null;
-        switch (reactSelectRequest.getLabel()) {
-        case "Instrucción":
-            etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
-                    2);
-            break;
-        case "Investigación":
-            etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
-                    1);
-            break;
-        case "Sancionador":
-            etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(),
-                    3);
-            break;
-        default:
-            break;
-        }
-        return etapaDto;
-    }
+	private TipoActuacionDto toTipoActuacion(ReactSelectRequest reactSelectRequest) {
+		return new TipoActuacionDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
+	}
 
-    private List<FuncionarioDto> transformToFuncionarioDto(
-            List<ReactSelectRequest> reactSelectRequests) {
-        return reactSelectRequests.stream().map(this::transformDto).collect(Collectors.toList());
-    }
+	private EtapaDto toEtapaDto(ReactSelectRequest reactSelectRequest) {
+		EtapaDto etapaDto = null;
+		switch (reactSelectRequest.getLabel()) {
+		case "Instrucción":
+			etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(), 2);
+			break;
+		case "Investigación":
+			etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(), 1);
+			break;
+		case "Sancionador":
+			etapaDto = new EtapaDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel(), 3);
+			break;
+		default:
+			break;
+		}
+		return etapaDto;
+	}
 
-    private FuncionarioDto transformDto(ReactSelectRequest reactSelectRequest) {
-        return new FuncionarioDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
-    }
+	private List<FuncionarioDto> transformToFuncionarioDto(List<ReactSelectRequest> reactSelectRequests) {
+		return reactSelectRequests.stream().map(this::transformDto).collect(Collectors.toList());
+	}
 
-    private Tarea transformTareaFromBody(TareaBody tareaBody) {
-        Tarea tarea = new Tarea();
-        tarea.setTipoTarea(transformTipoTarea(tareaBody.getTipoTarea()));
-        tarea.setDenominacion(tareaBody.getDenominacion());
-        tarea.setFechaRegistro(LocalDateTime.now());
-        tarea.setIdTarea(tareaBody.getIdTarea());
-        tarea.setRecordatorio(tareaBody.getRecordatorio());
-        tarea.setFechaVencimiento(
-                LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
-        tarea.setEliminado(tareaBody.isEliminado());
-        tarea.setEstado(tareaBody.isEstado());
-        if (tareaBody.getTipoTarea().getLabel().equals("Solicitud")) {
-            tarea.setMensaje(tareaBody.getMensaje());
-            if (tareaBody.getEquipos() == null) {
-                throw new BadRequestException("Se debe registrar destinatarios");
-            }
-            tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
-        } else {
-            tarea.setEquipos(new ArrayList<EquipoDto>());
-        }
-        if (tareaBody.getIdTarea() != null && tareaBody.getArchivos() != null) {
-            tarea.setArchivos(listArchivoAdjunto(tareaBody.getArchivos()));
-        } else {
-            tarea.setArchivos(new ArrayList<ArchivoAdjunto>());
-        }
-        return tarea;
-    }
+	private FuncionarioDto transformDto(ReactSelectRequest reactSelectRequest) {
+		return new FuncionarioDto(reactSelectRequest.getValue(), reactSelectRequest.getLabel());
+	}
 
-    private TipoTarea transformTipoTarea(ReactSelectRequest reactRequest) {
-        return TipoTarea.builder().idTipoTarea(reactRequest.getValue())
-                .nombreTipo(reactRequest.getLabel()).build();
-    }
+	private Tarea transformTareaFromBody(TareaBody tareaBody) {
+		Tarea tarea = new Tarea();
+		tarea.setTipoTarea(transformTipoTarea(tareaBody.getTipoTarea()));
+		tarea.setDenominacion(tareaBody.getDenominacion());
+		tarea.setFechaRegistro(LocalDateTime.now());
+		tarea.setIdTarea(tareaBody.getIdTarea());
+		tarea.setRecordatorio(tareaBody.getRecordatorio());
+		tarea.setFechaVencimiento(LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
+		tarea.setEliminado(tareaBody.isEliminado());
+		tarea.setEstado(tareaBody.isEstado());
+		if (tareaBody.getTipoTarea().getLabel().equals("Solicitud")) {
+			tarea.setMensaje(tareaBody.getMensaje());
+			if (tareaBody.getEquipos() == null) {
+				throw new BadRequestException("Se debe registrar destinatarios");
+			}
+			tarea.setEquipos(getEquipos(tareaBody.getEquipos()));
+		} else {
+			tarea.setEquipos(new ArrayList<EquipoDto>());
+		}
+		if (tareaBody.getIdTarea() != null && tareaBody.getArchivos() != null) {
+			tarea.setArchivos(listArchivoAdjunto(tareaBody.getArchivos()));
+		} else {
+			tarea.setArchivos(new ArrayList<ArchivoAdjunto>());
+		}
+		return tarea;
+	}
 
-    public List<EquipoBody> getEquiposBody(List<EquipoDto> equipoDto) {
-        return equipoDto.stream().map(this::transformEquipoDto).collect(Collectors.toList());
-    }
+	private TipoTarea transformTipoTarea(ReactSelectRequest reactRequest) {
+		return TipoTarea.builder().idTipoTarea(reactRequest.getValue()).nombreTipo(reactRequest.getLabel()).build();
+	}
 
-    private EquipoBody transformEquipoDto(EquipoDto equipoBody) {
-        String idEquipo = equipoBody.getIdEquipo();
-        Personal personal = personalService.verUnoPorId(idEquipo);
-        return EquipoBody.builder().idEquipo(idEquipo).correo(personal.getCorreo())
-                .destinatario(personal.getDatos()).build();
-    }
+	public List<EquipoBody> getEquiposBody(List<EquipoDto> equipoDto) {
+		return equipoDto.stream().map(this::transformEquipoDto).collect(Collectors.toList());
+	}
 
-    private List<EquipoDto> getEquipos(List<EquipoBody> equipoBodies) {
-        return equipoBodies.stream().map(this::transformEquipoBody).collect(Collectors.toList());
-    }
+	private EquipoBody transformEquipoDto(EquipoDto equipoBody) {
+		String idEquipo = equipoBody.getIdEquipo();
+		Personal personal = personalService.verUnoPorId(idEquipo);
+		return EquipoBody.builder().idEquipo(idEquipo).correo(personal.getCorreo()).destinatario(personal.getDatos())
+				.build();
+	}
 
-    private EquipoDto transformEquipoBody(EquipoBody equipoBody) {
-        Personal personal = personalService.registrarPersonal(
-                new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()));
-        return EquipoDto.builder().idEquipo(personal.getIdPersonal()).correo(equipoBody.getCorreo())
-                .nombre(equipoBody.getDestinatario()).build();
-    }
+	private List<EquipoDto> getEquipos(List<EquipoBody> equipoBodies) {
+		return equipoBodies.stream().map(this::transformEquipoBody).collect(Collectors.toList());
+	}
 
-    public List<String> getEquiposString(List<EquipoDto> equipos) {
-        return personalService.listarPersonal(equipos);
-    }
+	private EquipoDto transformEquipoBody(EquipoBody equipoBody) {
+		Personal personal = personalService
+				.registrarPersonal(new Personal(null, equipoBody.getDestinatario(), equipoBody.getCorreo()));
+		return EquipoDto.builder().idEquipo(personal.getIdPersonal()).correo(equipoBody.getCorreo())
+				.nombre(equipoBody.getDestinatario()).build();
+	}
 
-    private int getIndexActuacion(String idActuacion, List<Actuacion> actuaciones) {
-        if (actuaciones.isEmpty()) {
-            throw new BadRequestException("Este caso no tiene actuaciones registradas");
-        }
-        List<Actuacion> actuacionAux = actuaciones.stream()
-                .filter(item -> item.getIdActuacion().equals(idActuacion))
-                .collect(Collectors.toList());
-        if (actuacionAux.isEmpty()) {
-            throw new NotFoundException("El id : " + idActuacion + " no se encuentra registrado");
-        }
-        return actuaciones.indexOf(actuacionAux.get(0));
-    }
+	public List<String> getEquiposString(List<EquipoDto> equipos) {
+		return personalService.listarPersonal(equipos);
+	}
 
-    private int getIndexTarea(String idTarea, List<Tarea> tareas) {
-        if (tareas.isEmpty()) {
-            throw new BadRequestException("Esta actuacion no tiene tareas registradas");
-        }
-        List<Tarea> tareaAux = tareas.stream().filter(item -> item.getIdTarea().equals(idTarea))
-                .collect(Collectors.toList());
-        if (tareaAux.isEmpty()) {
-            throw new NotFoundException(
-                    "El id de tarea : " + idTarea + " no se encuentra registrado");
-        }
-        return tareas.indexOf(tareaAux.get(0));
-    }
+	private int getIndexActuacion(String idActuacion, List<Actuacion> actuaciones) {
+		if (actuaciones.isEmpty()) {
+			throw new BadRequestException("Este caso no tiene actuaciones registradas");
+		}
+		List<Actuacion> actuacionAux = actuaciones.stream().filter(item -> item.getIdActuacion().equals(idActuacion))
+				.collect(Collectors.toList());
+		if (actuacionAux.isEmpty()) {
+			throw new NotFoundException("El id : " + idActuacion + " no se encuentra registrado");
+		}
+		return actuaciones.indexOf(actuacionAux.get(0));
+	}
 
-    public List<ArchivoBody> listArchivoBody(List<ArchivoAdjunto> archivos) {
-        return archivos.stream().map(this::getArchivoBody).collect(Collectors.toList());
-    }
+	private int getIndexTarea(String idTarea, List<Tarea> tareas) {
+		if (tareas.isEmpty()) {
+			throw new BadRequestException("Esta actuacion no tiene tareas registradas");
+		}
+		List<Tarea> tareaAux = tareas.stream().filter(item -> item.getIdTarea().equals(idTarea))
+				.collect(Collectors.toList());
+		if (tareaAux.isEmpty()) {
+			throw new NotFoundException("El id de tarea : " + idTarea + " no se encuentra registrado");
+		}
+		return tareas.indexOf(tareaAux.get(0));
+	}
 
-    private ArchivoBody getArchivoBody(ArchivoAdjunto body) {
-        return ArchivoBody.builder().idArchivo(body.getId()).nombreArchivo(body.getNombreArchivo())
-                .tipo(body.getTipoArchivo()).estado(body.isEstado()).build();
-    }
+	public List<ArchivoBody> listArchivoBody(List<ArchivoAdjunto> archivos) {
+		return archivos.stream().map(this::getArchivoBody).collect(Collectors.toList());
+	}
 
-    /**
-     * Util para registrar la SubMAteria en las materias del Caso.
-     * 
-     * @param materias
-     * @return
-     */
-    public List<MateriaDto> materiaDtoBuilderList(List<MateriaRequest> materias) {
-        return materias.stream().map(this::materiaDtoBuilder).collect(Collectors.toList());
-    }
+	private ArchivoBody getArchivoBody(ArchivoAdjunto body) {
+		return ArchivoBody.builder().idArchivo(body.getId()).nombreArchivo(body.getNombreArchivo())
+				.tipo(body.getTipoArchivo()).estado(body.isEstado()).build();
+	}
 
-    private MateriaDto materiaDtoBuilder(MateriaRequest request) {
-        return MateriaDto.builder().id(request.getIdMateria())
-                .subMaterias(subMateriaListBuilder(request)).build();
-    }
+	/**
+	 * Util para registrar la SubMAteria en las materias del Caso.
+	 * 
+	 * @param materias
+	 * @return
+	 */
+	public List<MateriaDto> materiaDtoBuilderList(List<MateriaRequest> materias) {
+		return materias.stream().map(this::materiaDtoBuilder).collect(Collectors.toList());
+	}
 
-    private List<SubMateriaDto> subMateriaListBuilder(MateriaRequest request) {
-        List<SubMateriaDto> newList = new ArrayList<SubMateriaDto>();
-        for (SubMateriaCheck sub : request.getSubMateriasCheck()) {
-            newList.add(SubMateriaDto.builder().idSubMateria(sub.getIdSubMateria())
-                    .nombreSubMateria(sub.getSubMateria()).idMateria(request.getIdMateria())
-                    .build());
-        }
-        for (ReactSelectRequest react : request.getSubMateriasSelect()) {
-            newList.add(SubMateriaDto.builder().idSubMateria(react.getValue())
-                    .nombreSubMateria(react.getLabel()).idMateria(request.getIdMateria()).build());
-        }
-        return newList;
-    }
+	private MateriaDto materiaDtoBuilder(MateriaRequest request) {
+		return MateriaDto.builder().id(request.getIdMateria()).subMaterias(subMateriaListBuilder(request)).build();
+	}
+
+	private List<SubMateriaDto> subMateriaListBuilder(MateriaRequest request) {
+		List<SubMateriaDto> newList = new ArrayList<SubMateriaDto>();
+		for (SubMateriaCheck sub : request.getSubMateriasCheck()) {
+			newList.add(SubMateriaDto.builder().idSubMateria(sub.getIdSubMateria())
+					.nombreSubMateria(sub.getSubMateria()).idMateria(request.getIdMateria()).build());
+		}
+		for (ReactSelectRequest react : request.getSubMateriasSelect()) {
+			newList.add(SubMateriaDto.builder().idSubMateria(react.getValue()).nombreSubMateria(react.getLabel())
+					.idMateria(request.getIdMateria()).build());
+		}
+		return newList;
+	}
 }
