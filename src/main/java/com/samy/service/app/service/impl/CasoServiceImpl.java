@@ -570,7 +570,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.subidoPor(usuario)
 				.anexos((int) actuacion.getArchivos().stream().filter(item -> item.isEstado()).count())
 				.tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
-				.funcionarios(transformListFuncionarioMap(actuacion.getFuncionario()))
+				.funcionarios(transformListFuncionarioMap(actuacion.getFuncionario(),actuacion.getEtapa().getNombreEtapa()))
 				.vencimientos(transformListVencimientoMap(actuacion.getTareas()))// Asumo que son de
 																					// las
 																					// tareas.
@@ -590,15 +590,16 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.esPrincipal(archivo.isEsPrincipal()).build();
 	}
 
-	private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios) {
-		return funcionarios.stream().map(this::transformFuncionarioMap).collect(Collectors.toList());
+	private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios,String etapa) {
+		return funcionarios.stream().map(item -> transformFuncionarioMap(item,etapa)).collect(Collectors.toList());
 	}
 
-	private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto) {
+	private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto, String etapa) {
+		InspectorPojo inspectorPojo = externalAws.tableInspector(dto.getId());
 		Map<String, Object> mapFuncionario = new HashMap<String, Object>();
 		mapFuncionario.put("nombre", dto.getDatosFuncionario());
-		mapFuncionario.put("cargo", "Intendente regional");
-		mapFuncionario.put("etapa", "Etapa Sancionadora");
+		mapFuncionario.put("cargo", inspectorPojo.getCargo());
+		mapFuncionario.put("etapa", etapa);
 		return mapFuncionario;
 	}
 
