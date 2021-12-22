@@ -50,6 +50,7 @@ import com.samy.service.app.aws.AnalisisRiesgoPojo;
 import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.InfraccionItemPojo;
+import com.samy.service.app.aws.InspectorPojo;
 import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
@@ -874,11 +875,19 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			for (FuncionarioDto func : actuacion.getFuncionario()) {
 				List<FuncionarioResponse> funcis = funcionarios.stream()
 						.filter(item -> item.getIdFuncionario().equals(func.getId())).collect(Collectors.toList());
+				InspectorPojo inspectorPojo = externalAws.tableInspector(func.getId());
+				log.info("Table" + inspectorPojo);
 				if (!funcis.isEmpty()) {
-					funcionarios.add(funcis.get(0));
+					funcionarios.add(FuncionarioResponse.builder()
+							.idFuncionario(inspectorPojo.getId())
+							.nombreFuncionario(inspectorPojo.getNombreInspector())
+							.cargo(inspectorPojo.getCargo())
+							.etapaActuacion(actuacion.getEtapa().getNombreEtapa())
+							.build());
 				} else {
 					funcionarios.add(FuncionarioResponse.builder().idFuncionario(func.getId())
-							.nombreFuncionario(func.getDatosFuncionario())
+							.nombreFuncionario(inspectorPojo.getNombreInspector())
+							.cargo(inspectorPojo.getCargo())
 							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
 				}
 			}

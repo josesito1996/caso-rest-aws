@@ -14,6 +14,7 @@ import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -58,4 +59,17 @@ public class ExternalDbAws {
     List<EtapaPojo> scanResult = mapper.scan(EtapaPojo.class, scanExpression);
     return scanResult;
   }
+  
+  public InspectorPojo tableInspector(String idInspector) {
+	    log.info("ExternalDbAws.tableInspector");
+	    Table tableInspector = dynamoDB.getTable("inspectores");
+	    GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_inspector", idInspector);
+	    Item inspectorItem = tableInspector.getItem(spec);
+	    if (inspectorItem == null) {
+	      return InspectorPojo.builder().build();
+	    }
+	    final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+	    return mapper.convertValue(inspectorItem.asMap(), InspectorPojo.class);
+	  }
+  
 }

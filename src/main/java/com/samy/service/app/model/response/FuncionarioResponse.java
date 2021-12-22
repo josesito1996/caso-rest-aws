@@ -25,5 +25,6 @@ public class FuncionarioResponse implements Serializable {
   private static final long serialVersionUID = 2514218572878642674L;
   private String idFuncionario;
   private String nombreFuncionario;
+  private String cargo;
   private String etapaActuacion;
 }
