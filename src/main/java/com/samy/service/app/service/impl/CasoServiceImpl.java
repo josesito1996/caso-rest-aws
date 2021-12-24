@@ -597,6 +597,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto, String etapa) {
 		InspectorPojo inspectorPojo = externalAws.tableInspector(dto.getId());
 		Map<String, Object> mapFuncionario = new HashMap<String, Object>();
+		mapFuncionario.put("idFuncionario", dto.getId());
 		mapFuncionario.put("nombre", dto.getDatosFuncionario());
 		mapFuncionario.put("cargo", inspectorPojo.getCargo());
 		mapFuncionario.put("etapa", etapa);
