@@ -39,6 +39,11 @@ public class Utils {
     	return LocalDate.parse(fecha, formatter);
     }
     
+    public static LocalDate toLocalDateYYYYMMDD(String fecha) {
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
+    	return LocalDate.parse(fecha, formatter);
+    }
+    
     public static String fechaFormateada(LocalDateTime fecha) {
         // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY
         // hh:mm:s");

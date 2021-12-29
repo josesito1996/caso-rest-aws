@@ -570,7 +570,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.subidoPor(usuario)
 				.anexos((int) actuacion.getArchivos().stream().filter(item -> item.isEstado()).count())
 				.tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
-				.funcionarios(transformListFuncionarioMap(actuacion.getFuncionario(),actuacion.getEtapa().getNombreEtapa()))
+				.funcionarios(
+						transformListFuncionarioMap(actuacion.getFuncionario(), actuacion.getEtapa().getNombreEtapa()))
 				.vencimientos(transformListVencimientoMap(actuacion.getTareas()))// Asumo que son de
 																					// las
 																					// tareas.
@@ -590,8 +591,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.esPrincipal(archivo.isEsPrincipal()).build();
 	}
 
-	private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios,String etapa) {
-		return funcionarios.stream().map(item -> transformFuncionarioMap(item,etapa)).collect(Collectors.toList());
+	private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios, String etapa) {
+		return funcionarios.stream().map(item -> transformFuncionarioMap(item, etapa)).collect(Collectors.toList());
 	}
 
 	private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto, String etapa) {
@@ -668,9 +669,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		int contadorCasos = 0;
 		for (Caso caso : casos) {
 			int contadorActuaciones = 0;
-			for (Actuacion actuacion : caso.getActuaciones()) {
-				if (actuacion.getEtapa().getId().equals(idEtapa)) {
-					contadorActuaciones++;
+			List<Actuacion> actuaciones = caso.getActuaciones();
+			if (actuaciones != null) {
+				if (!actuaciones.isEmpty()) {
+					int sizeActuaciones = actuaciones.size();
+					Actuacion actuacion = actuaciones.get(sizeActuaciones - 1);
+					if (actuacion.getEtapa().getId().equals(idEtapa)) {
+						contadorActuaciones++;
+					}
 				}
 			}
 			if (contadorActuaciones > 0) {
@@ -772,13 +778,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				materiasNew.add(materiaResponse);
 			} else {
 				MateriaPojo matPojo = externalAws.getTable(id);
-				materiasNew.add(MateriaResponse.builder()
-						.idMateria(matPojo.getIdMateria())
-						.nombreMateria(matPojo.getNombreMateria())
-						.color(matPojo.getColor())
-						.icono(matPojo.getIcono())
-						.subMaterias(new ArrayList<>())
-						.build());
+				materiasNew.add(MateriaResponse.builder().idMateria(matPojo.getIdMateria())
+						.nombreMateria(matPojo.getNombreMateria()).color(matPojo.getColor()).icono(matPojo.getIcono())
+						.subMaterias(new ArrayList<>()).build());
 			}
 		}
 		totalMaterias = materiasNew.size();
@@ -880,16 +882,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				InspectorPojo inspectorPojo = externalAws.tableInspector(func.getId());
 				log.info("Table" + inspectorPojo);
 				if (!funcis.isEmpty()) {
-					funcionarios.add(FuncionarioResponse.builder()
-							.idFuncionario(inspectorPojo.getId())
-							.nombreFuncionario(inspectorPojo.getNombreInspector())
-							.cargo(inspectorPojo.getCargo())
-							.etapaActuacion(actuacion.getEtapa().getNombreEtapa())
-							.build());
+					funcionarios.add(FuncionarioResponse.builder().idFuncionario(inspectorPojo.getId())
+							.nombreFuncionario(inspectorPojo.getNombreInspector()).cargo(inspectorPojo.getCargo())
+							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
 				} else {
 					funcionarios.add(FuncionarioResponse.builder().idFuncionario(func.getId())
-							.nombreFuncionario(inspectorPojo.getNombreInspector())
-							.cargo(inspectorPojo.getCargo())
+							.nombreFuncionario(inspectorPojo.getNombreInspector()).cargo(inspectorPojo.getCargo())
 							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
 				}
 			}
