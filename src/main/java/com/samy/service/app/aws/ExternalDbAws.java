@@ -85,8 +85,19 @@ public class ExternalDbAws {
 		ScanRequest scan = new ScanRequest();
 		scan.setTableName("usuarios");
 		scan.setFilterExpression("nombreUsuario = :userName");
+		scan.setExpressionAttributeValues(expresionAttributte);
 		ScanResult scanResult = awsDynamoBD.scan(scan);
-		log.info(scanResult.getItems().toString());
+		int cantidad = scanResult.getCount();
+		if (cantidad > 0) {
+			for (Map<String, AttributeValue> item : scanResult.getItems()) {
+				return UsuarioPojo.builder()
+						.idUsuario(item.get("id_usuario").getS())
+						.nombres(item.get("nombres").getS())
+						.apellidos(item.get("apellidos").getS())
+						.build();
+			}
+		}
+		
 		return UsuarioPojo.builder().build();
 	}
 

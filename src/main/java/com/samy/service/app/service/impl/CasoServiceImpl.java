@@ -26,6 +26,7 @@ import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
+import static com.samy.service.app.util.Utils.nombrePersona;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -52,6 +53,7 @@ import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.InfraccionItemPojo;
 import com.samy.service.app.aws.InspectorPojo;
 import com.samy.service.app.aws.MateriaPojo;
+import com.samy.service.app.aws.UsuarioPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
@@ -469,12 +471,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
 		Caso caso = verPodId(idCaso);
-		// log.info("Usuario {}", externalAws.tableUsuario(caso.getUsuario()));
+		UsuarioPojo usuarioPojo = externalAws.tableUsuario(caso.getUsuario());
 		List<Actuacion> actuaciones = caso.getActuaciones();
 		List<ActuacionResponseX3> response = actuaciones.stream()
 				// .peek(item -> System.out.println(item))
-				.map(item -> transformActuacionResponseX3(item, caso.getUsuario()))
-				// .peek(item -> System.out.println(item.getFechaRegistro() + " - " + item.getFechaActuacion()))
+				.map(item -> transformActuacionResponseX3(item,
+						nombrePersona(usuarioPojo.getNombres(), usuarioPojo.getApellidos())))
+				// .peek(item -> System.out.println(item.getFechaRegistro() + " - " +
+				// item.getFechaActuacion()))
 				.sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
 				.collect(Collectors.toList());
 		if (response.isEmpty()) {
