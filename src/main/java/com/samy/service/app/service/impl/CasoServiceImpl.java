@@ -13,6 +13,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosGene
 import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosPendientes;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralPorEstado;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVencerCasos;
+import static com.samy.service.app.util.Contants.correoSami;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
@@ -25,8 +26,8 @@ import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
-import static com.samy.service.app.util.Utils.transformToLocalTime;
 import static com.samy.service.app.util.Utils.nombrePersona;
+import static com.samy.service.app.util.Utils.transformToLocalTime;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -100,7 +101,6 @@ import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
 import com.samy.service.app.util.Contants;
-import com.samy.service.app.util.LambdaUtils;
 import com.samy.service.app.util.ListPagination;
 
 import lombok.extern.slf4j.Slf4j;
@@ -148,10 +148,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		Caso casoRegistrado = registrar(builder.transformFromBody(request));
 		if (casoRegistrado != null) {
 			try {
-				LambdaUtils util = new LambdaUtils(lambdaService);
-				String email;
-				email = util.mailGeneradoLambda(casoRegistrado);
-				casoRegistrado.setEmailGenerado(email);
+				// LambdaUtils util = new LambdaUtils(lambdaService);
+				// String email;
+				// email = util.mailGeneradoLambda(casoRegistrado);
+				casoRegistrado.setEmailGenerado(correoSami);
 				return modificar(casoRegistrado);
 			} catch (Exception e) {
 				log.error(e.getMessage());
@@ -213,6 +213,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public SaveTareaResponse registrarTarea(TareaBody request, String idActuacion, String idCaso) {
 		Caso caso = verPodId(idCaso);
+		/**
 		if (caso.getEmailGenerado() == null) {
 			try {
 				LambdaUtils util = new LambdaUtils(lambdaService);
@@ -224,6 +225,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				log.error("Error al crear el correo registrando la tarea " + e.getMessage());
 			}
 		}
+		**/
 		try {
 			CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
 					() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder().content(request.getMensaje())
