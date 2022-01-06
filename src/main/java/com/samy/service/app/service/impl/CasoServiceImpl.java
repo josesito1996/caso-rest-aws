@@ -1152,7 +1152,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			int cantidad = entry.getValue().intValue();
 			listResponse.add(ItemsPorCantidadResponse.builder().nombreItem(entry.getKey())
 					.cantidadNumber(getPorcentaje(cantidad, mayor))
-					.cantidad(String.format("%02d", entry.getValue().intValue())).build());
+					.cantidad(cantidad).build());
 		}
 		return listResponse;
 	}
@@ -1174,7 +1174,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			Integer trabajadoresAfectados = item.getTrabajadoresAfectados();
 			return ItemsPorCantidadResponse.builder().nombreItem(item.getNombreCaso())
 					.cantidadNumber(getPorcentaje(trabajadoresAfectados, mayorTrabajadoresInvolucrados))
-					.cantidad(String.format("%02d", item.getTrabajadoresAfectados())).build();
+					.cantidad(item.getTrabajadoresAfectados()).build();
 		}).collect(Collectors.toList());
 	}
 }

@@ -23,6 +23,6 @@ public class ItemsPorCantidadResponse implements Serializable {
 	
 	private Double cantidadNumber;
 	
-	private String cantidad;
+	private Integer cantidad;
 	
 }
