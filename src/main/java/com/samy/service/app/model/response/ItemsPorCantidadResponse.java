@@ -21,7 +21,7 @@ public class ItemsPorCantidadResponse implements Serializable {
 
 	private String nombreItem;
 	
-	private Integer cantidadNumber;
+	private Double cantidadNumber;
 	
 	private String cantidad;
 	

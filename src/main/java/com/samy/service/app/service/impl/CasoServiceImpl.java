@@ -658,13 +658,15 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		Map<String, Object> mapa;
 		for (EtapaPojo etapa : externalAws.getTableEtapa().stream().sorted(Comparator.comparing(EtapaPojo::getNroOrden))
 				.collect(Collectors.toList())) {
-			mapa = new HashMap<String, Object>();
-			String idEtapa = etapa.getId_etapa();
-			int contadorCasos = cuentaCasos(idEtapa, casos);
-			mapa.put("nombreEtapa", etapa.getNombreEtapa());
-			mapa.put("cantidad", contadorCasos);
-			mapa.put("porcentaje", getPorcentaje(contadorCasos, casos.size()));
-			listMap.add(mapa);
+			if (!etapa.getNroOrden().equals(4)) {
+				mapa = new HashMap<String, Object>();
+				String idEtapa = etapa.getId_etapa();
+				int contadorCasos = cuentaCasos(idEtapa, casos);
+				mapa.put("nombreEtapa", etapa.getNombreEtapa());
+				mapa.put("cantidad", contadorCasos);
+				mapa.put("porcentaje", getPorcentaje(contadorCasos, casos.size()));
+				listMap.add(mapa);
+			}
 		}
 		return listMap;
 	}
@@ -1142,10 +1144,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		}).collect(Collectors.toList());
 		Map<String, Long> agrupado = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getEmpresa, Collectors.counting()));
+
+		int mayor = agrupado.entrySet().stream().map(item -> item.getValue()).max(Comparator.naturalOrder()).get()
+				.intValue();
 		List<ItemsPorCantidadResponse> listResponse = new ArrayList<>();
 		for (Map.Entry<String, Long> entry : agrupado.entrySet()) {
+			int cantidad = entry.getValue().intValue();
 			listResponse.add(ItemsPorCantidadResponse.builder().nombreItem(entry.getKey())
-					.cantidadNumber(entry.getValue().intValue())
+					.cantidadNumber(getPorcentaje(cantidad, mayor))
 					.cantidad(String.format("%02d", entry.getValue().intValue())).build());
 		}
 		return listResponse;
@@ -1154,18 +1160,21 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<ItemsPorCantidadResponse> casosPorTrabajdoresInvolucrados(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
-		/*
-		Map<String, Integer> agrupado = casosDto.stream().collect(Collectors.groupingBy(CasoDto::getNombreCaso,
-				Collectors.summingInt(CasoDto::getTrabajadoresAfectados)));
-		log.info("Sumando : "+ agrupado);
-		*/
-		return casosPorUsuario.parallelStream().map(item -> {
+
+		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			AnalisisRiesgoPojo analisis = externalAws.tableInfraccion(item.getId());
-			return ItemsPorCantidadResponse.builder()
-					.nombreItem(item.getDescripcionCaso())
-					.cantidadNumber(analisis.getCantidadInvolucrados())
-					.cantidad(String.format("%02d", analisis.getCantidadInvolucrados()))
-					.build();
+			return CasoDto.builder().idCaso(item.getId()).trabajadoresAfectados(analisis.getCantidadInvolucrados())
+					.nombreCaso(item.getDescripcionCaso()).build();
+		}).collect(Collectors.toList());
+
+		int mayorTrabajadoresInvolucrados = casosDto.stream().map(item -> item.getTrabajadoresAfectados())
+				.max(Comparator.naturalOrder()).get();
+
+		return casosDto.parallelStream().map(item -> {
+			Integer trabajadoresAfectados = item.getTrabajadoresAfectados();
+			return ItemsPorCantidadResponse.builder().nombreItem(item.getNombreCaso())
+					.cantidadNumber(getPorcentaje(trabajadoresAfectados, mayorTrabajadoresInvolucrados))
+					.cantidad(String.format("%02d", item.getTrabajadoresAfectados())).build();
 		}).collect(Collectors.toList());
 	}
 }
