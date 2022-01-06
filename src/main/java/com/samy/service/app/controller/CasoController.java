@@ -36,6 +36,7 @@ import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
+import com.samy.service.app.model.response.ItemsPorCantidadResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.model.response.SaveTareaResponse;
@@ -226,6 +227,16 @@ public class CasoController {
 	@PostMapping(path = "/addSubMateriaToCase")
 	public DetailCaseResponse agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
 		return service.agregarSubMateria(request);
+	}
+	
+	@GetMapping(path = "/casesByEmpresa/{userName}")
+	public List<ItemsPorCantidadResponse> itemsPorCantidadResponses(@PathVariable String userName){
+		return service.casosPorEmpresa(userName);
+	}
+	
+	@GetMapping(path = "/affectedWorkersSum/{userName}")
+	public List<ItemsPorCantidadResponse> trabajadoresAfectadosSum(@PathVariable String userName){
+		return service.casosPorTrabajdoresInvolucrados(userName);
 	}
 
 }

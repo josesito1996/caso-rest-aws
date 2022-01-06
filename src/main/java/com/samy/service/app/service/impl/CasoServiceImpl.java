@@ -82,12 +82,14 @@ import com.samy.service.app.model.request.UpdateFileActuacionRequest;
 import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
+import com.samy.service.app.model.response.CasoDto;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.model.response.FuncionarioResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
+import com.samy.service.app.model.response.ItemsPorCantidadResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MateriaResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
@@ -214,18 +216,13 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public SaveTareaResponse registrarTarea(TareaBody request, String idActuacion, String idCaso) {
 		Caso caso = verPodId(idCaso);
 		/**
-		if (caso.getEmailGenerado() == null) {
-			try {
-				LambdaUtils util = new LambdaUtils(lambdaService);
-				String email = util.mailGeneradoLambda(caso);
-				log.info("Correo creado con exito " + email);
-				caso.setEmailGenerado(email);
-				return registraTareaResponse(request, idActuacion, caso);
-			} catch (Exception e) {
-				log.error("Error al crear el correo registrando la tarea " + e.getMessage());
-			}
-		}
-		**/
+		 * if (caso.getEmailGenerado() == null) { try { LambdaUtils util = new
+		 * LambdaUtils(lambdaService); String email = util.mailGeneradoLambda(caso);
+		 * log.info("Correo creado con exito " + email); caso.setEmailGenerado(email);
+		 * return registraTareaResponse(request, idActuacion, caso); } catch (Exception
+		 * e) { log.error("Error al crear el correo registrando la tarea " +
+		 * e.getMessage()); } }
+		 **/
 		try {
 			CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
 					() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder().content(request.getMensaje())
@@ -1133,5 +1130,42 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.recordatorio(tarea.getRecordatorio().getDia()).mensaje(tarea.getMensaje())
 				.fechaRegistro(fechaFormateada(tarea.getFechaRegistro()))
 				.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento())).build();
+	}
+
+	@Override
+	public List<ItemsPorCantidadResponse> casosPorEmpresa(String userName) {
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
+		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+			String empresa = item.getEmpresas().isEmpty() ? "" : item.getEmpresas().get(0).getLabel();
+			return CasoDto.builder().idCaso(item.getId()).nombreCaso(item.getDescripcionCaso()).empresa(empresa)
+					.build();
+		}).collect(Collectors.toList());
+		Map<String, Long> agrupado = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getEmpresa, Collectors.counting()));
+		List<ItemsPorCantidadResponse> listResponse = new ArrayList<>();
+		for (Map.Entry<String, Long> entry : agrupado.entrySet()) {
+			listResponse.add(ItemsPorCantidadResponse.builder().nombreItem(entry.getKey())
+					.cantidadNumber(entry.getValue().intValue())
+					.cantidad(String.format("%02d", entry.getValue().intValue())).build());
+		}
+		return listResponse;
+	}
+
+	@Override
+	public List<ItemsPorCantidadResponse> casosPorTrabajdoresInvolucrados(String userName) {
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
+		/*
+		Map<String, Integer> agrupado = casosDto.stream().collect(Collectors.groupingBy(CasoDto::getNombreCaso,
+				Collectors.summingInt(CasoDto::getTrabajadoresAfectados)));
+		log.info("Sumando : "+ agrupado);
+		*/
+		return casosPorUsuario.parallelStream().map(item -> {
+			AnalisisRiesgoPojo analisis = externalAws.tableInfraccion(item.getId());
+			return ItemsPorCantidadResponse.builder()
+					.nombreItem(item.getDescripcionCaso())
+					.cantidadNumber(analisis.getCantidadInvolucrados())
+					.cantidad(String.format("%02d", analisis.getCantidadInvolucrados()))
+					.build();
+		}).collect(Collectors.toList());
 	}
 }
