@@ -22,7 +22,7 @@ public class Contants {
 	public static final String lambdaMailSenderNombre = "lambda-mailSender-service";
 
 	public static final String passwordCaso = "51st3ma$2021.";
-	
+
 	public static final String correoSami = "notificacion.sami@sidetechsolutions.com";
 
 	public static Map<String, String> mapRiesgo = new HashMap<String, String>() {
@@ -33,4 +33,8 @@ public class Contants {
 			put("Alto", "red");
 		}
 	};
+
+	public static Integer ID_PRIMERA_INSTANCIA = 6;
+	public static Integer ID_SEGUNDA_INSTANCIA = 7;
+	public static Integer ID_TERCERA_INSTANCIA = 10;
 }

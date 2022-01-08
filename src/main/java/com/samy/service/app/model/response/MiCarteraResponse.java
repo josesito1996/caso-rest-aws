@@ -20,6 +20,8 @@ public class MiCarteraResponse {
     private String hasta;
 
     private String casosActivos;
+    
+    private List<Integer> data;
 
     private String casosRegistrados;
 

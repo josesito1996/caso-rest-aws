@@ -13,6 +13,9 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosGene
 import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosPendientes;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasGeneralPorEstado;
 import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVencerCasos;
+import static com.samy.service.app.util.Contants.ID_PRIMERA_INSTANCIA;
+import static com.samy.service.app.util.Contants.ID_SEGUNDA_INSTANCIA;
+import static com.samy.service.app.util.Contants.ID_TERCERA_INSTANCIA;
 import static com.samy.service.app.util.Contants.correoSami;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.fechaActual;
@@ -658,13 +661,67 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		Map<String, Object> mapa;
 		for (EtapaPojo etapa : externalAws.getTableEtapa().stream().sorted(Comparator.comparing(EtapaPojo::getNroOrden))
 				.collect(Collectors.toList())) {
+			List<Map<String, Object>> listResoluciones = new ArrayList<>();
 			if (!etapa.getNroOrden().equals(4)) {
+				int contadorPrimera = 0;
+				int contadorSegunda = 0;
+				int contadorTercera = 0;
 				mapa = new HashMap<String, Object>();
+				if (etapa.getNroOrden() == 3) {
+					for (Caso caso : casos) {
+						List<Actuacion> actuacionesPorEtapa = caso.getActuaciones().stream()
+								.filter(item -> (item.getEtapa().getId().equals(etapa.getId_etapa())))
+								.collect(Collectors.toList());
+						if (!actuacionesPorEtapa.isEmpty()) {
+							for (Actuacion actuacion : actuacionesPorEtapa) {
+								EstadoCasoDto estado = actuacion.getEstadoCaso();
+								if (estado.getOrden() == ID_PRIMERA_INSTANCIA) {
+									log.info("Primera {},{}", estado, caso.getDescripcionCaso());
+									if (contadorPrimera >= 1) {
+										contadorPrimera = 0;
+									}
+									contadorPrimera++;
+								}
+								if (estado.getOrden() == ID_SEGUNDA_INSTANCIA) {
+									log.info("Segunda {},{}", estado, caso.getDescripcionCaso());
+									if (contadorSegunda >= 1) {
+										contadorSegunda = 0;
+									}
+									contadorSegunda++;
+								}
+								if (estado.getOrden() == ID_TERCERA_INSTANCIA) {
+									log.info("Tercera {},{}", estado, caso.getDescripcionCaso());
+									if (contadorTercera >= 1) {
+										contadorTercera = 0;
+									}
+									contadorTercera++;
+								}
+							}
+						}
+					}
+					Map<String, Object> mapPrimera = new HashMap<>();
+					mapPrimera.put("name", "1era");
+					mapPrimera.put("data", Arrays.asList(contadorPrimera));
+					mapPrimera.put("color", "#466EFE");
+					Map<String, Object> mapSegunda = new HashMap<>();
+					mapSegunda.put("name", "2da");
+					mapSegunda.put("data", Arrays.asList(contadorSegunda));
+					mapSegunda.put("color", "#8146FE");
+					Map<String, Object> mapTercera = new HashMap<>();
+					mapTercera.put("name", "3era");
+					mapTercera.put("data", Arrays.asList(contadorTercera));
+					mapTercera.put("color", "#8146FE");
+					
+					listResoluciones.add(mapPrimera);
+					listResoluciones.add(mapSegunda);
+					listResoluciones.add(mapTercera);
+				}
 				String idEtapa = etapa.getId_etapa();
 				int contadorCasos = cuentaCasos(idEtapa, casos);
 				mapa.put("nombreEtapa", etapa.getNombreEtapa());
 				mapa.put("cantidad", contadorCasos);
 				mapa.put("porcentaje", getPorcentaje(contadorCasos, casos.size()));
+				mapa.put("data", listResoluciones);
 				listMap.add(mapa);
 			}
 		}
@@ -1151,8 +1208,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		for (Map.Entry<String, Long> entry : agrupado.entrySet()) {
 			int cantidad = entry.getValue().intValue();
 			listResponse.add(ItemsPorCantidadResponse.builder().nombreItem(entry.getKey())
-					.cantidadNumber(getPorcentaje(cantidad, mayor))
-					.cantidad(cantidad).build());
+					.cantidadNumber(getPorcentaje(cantidad, mayor)).cantidad(cantidad).build());
 		}
 		return listResponse;
 	}
