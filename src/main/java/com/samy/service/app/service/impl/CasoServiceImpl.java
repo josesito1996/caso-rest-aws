@@ -97,6 +97,7 @@ import com.samy.service.app.model.response.MainActuacionResponse;
 import com.samy.service.app.model.response.MateriaResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
+import com.samy.service.app.model.response.ResponseBar;
 import com.samy.service.app.model.response.SaveTareaResponse;
 import com.samy.service.app.model.response.SubMateriaResponse;
 import com.samy.service.app.model.response.UpdateCasoResumenResponse;
@@ -661,7 +662,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		Map<String, Object> mapa;
 		for (EtapaPojo etapa : externalAws.getTableEtapa().stream().sorted(Comparator.comparing(EtapaPojo::getNroOrden))
 				.collect(Collectors.toList())) {
-			List<Map<String, Object>> listResoluciones = new ArrayList<>();
+			List<ResponseBar> listResoluciones = new ArrayList<>();
 			if (!etapa.getNroOrden().equals(4)) {
 				int contadorPrimera = 0;
 				int contadorSegunda = 0;
@@ -699,22 +700,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 							}
 						}
 					}
-					Map<String, Object> mapPrimera = new HashMap<>();
-					mapPrimera.put("name", "1era");
-					mapPrimera.put("data", Arrays.asList(contadorPrimera));
-					mapPrimera.put("color", "#466EFE");
-					Map<String, Object> mapSegunda = new HashMap<>();
-					mapSegunda.put("name", "2da");
-					mapSegunda.put("data", Arrays.asList(contadorSegunda));
-					mapSegunda.put("color", "#8146FE");
-					Map<String, Object> mapTercera = new HashMap<>();
-					mapTercera.put("name", "3era");
-					mapTercera.put("data", Arrays.asList(contadorTercera));
-					mapTercera.put("color", "#8146FE");
-					
-					listResoluciones.add(mapPrimera);
-					listResoluciones.add(mapSegunda);
-					listResoluciones.add(mapTercera);
+					listResoluciones.add(ResponseBar.builder().name("1era").color("#466EFE")
+							.data(Arrays.asList(contadorPrimera)).build());
+					listResoluciones.add(ResponseBar.builder().name("2da").color("#FFB000")
+							.data(Arrays.asList(contadorSegunda)).build());
+					listResoluciones.add(ResponseBar.builder().name("3era").color("#8146FE")
+							.data(Arrays.asList(contadorTercera)).build());
 				}
 				String idEtapa = etapa.getId_etapa();
 				int contadorCasos = cuentaCasos(idEtapa, casos);
