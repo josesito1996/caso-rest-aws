@@ -35,6 +35,7 @@ import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
+import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.ItemsPorCantidadResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
@@ -237,6 +238,11 @@ public class CasoController {
 	@GetMapping(path = "/affectedWorkersSum/{userName}")
 	public List<ItemsPorCantidadResponse> trabajadoresAfectadosSum(@PathVariable String userName){
 		return service.casosPorTrabajdoresInvolucrados(userName);
+	}
+	
+	@GetMapping(path = "/monthlyCaseSummary/{userName}")
+	public GraficoImpactoCarteraResponse resumenMensualCasos(@PathVariable String userName){
+		return service.verGraficoImpactoResponse(userName);
 	}
 
 }

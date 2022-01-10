@@ -29,8 +29,10 @@ import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesFecha;
+import static com.samy.service.app.util.Utils.mesAñoFecha;
 import static com.samy.service.app.util.Utils.nombrePersona;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
+import static com.samy.service.app.util.Utils.round;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -41,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -91,6 +94,7 @@ import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.model.response.FuncionarioResponse;
+import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.ItemsPorCantidadResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
@@ -1223,5 +1227,39 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 					.cantidadNumber(getPorcentaje(trabajadoresAfectados, mayorTrabajadoresInvolucrados))
 					.cantidad(item.getTrabajadoresAfectados()).build();
 		}).collect(Collectors.toList());
+	}
+
+	@Override
+	public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName) {
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
+		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
+					.multaPotencial(item.getMultaPotencial().doubleValue()).fechaRegistro(item.getFechaInicio())
+					.build();
+		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
+		Map<String, Long> mapCantidadMes = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getMesCaso, Collectors.counting()));
+		Map<String, Double> mapSumaMulta = casosDto.stream().collect(
+				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(item -> item.getMultaPotencial())));
+		log.info("MapCantidades {}", mapCantidadMes);
+		log.info("MapSumaMulta {}", mapSumaMulta);
+		/*
+		 * Para las series
+		 */
+		Map<String, Object> mapSerie = new HashMap<>();
+		mapSerie.put("casosActivos",
+				mapCantidadMes.entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList()));
+		mapSerie.put("multaPotencialAcumulada",
+				mapSumaMulta.entrySet().stream().map(item -> round(item.getValue(), 2)).collect(Collectors.toList()));
+		mapSerie.put("provisiones",
+				mapCantidadMes.entrySet().stream().map(item -> {
+					Random random = new Random();
+					int randomNumber = random.nextInt(5000 - 1500) + 1500;
+					return randomNumber;
+				}).collect(Collectors.toList()));
+		return GraficoImpactoCarteraResponse.builder().series(mapSerie)
+				.xAxisCategories(
+						mapCantidadMes.entrySet().stream().map(item -> item.getKey()).collect(Collectors.toList()))
+				.build();
 	}
 }

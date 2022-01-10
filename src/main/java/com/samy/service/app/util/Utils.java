@@ -79,6 +79,11 @@ public class Utils {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM");
 		return formatMes(fecha.format(formatter));
 	}
+	
+	public static String mesAñoFecha(LocalDate fecha) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM YY");
+		return formatMes(fecha.format(formatter));
+	}
 
 	private static String formatMes(String mes) {
 		String primeraLetra = mes.substring(0, 1).toUpperCase();
@@ -98,7 +103,7 @@ public class Utils {
 		return round((float) cantidad / (float) total * 100, 2);
 	}
 
-	private static double round(double value, int places) {
+	public static double round(double value, int places) {
 		if (places < 0)
 			throw new IllegalArgumentException();
 

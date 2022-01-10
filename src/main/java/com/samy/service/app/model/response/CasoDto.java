@@ -1,6 +1,7 @@
 package com.samy.service.app.model.response;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,5 +30,11 @@ public class CasoDto implements Serializable{
 	private String nombreCaso;
 	
 	private Integer trabajadoresAfectados;
+	
+	private String mesCaso;
+	
+	private LocalDate fechaRegistro;
+	
+	private Double multaPotencial;
 	
 }

@@ -22,6 +22,7 @@ import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
+import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.ItemsPorCantidadResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
@@ -90,6 +91,8 @@ public interface CasoService extends ICrud<Caso, String> {
     public List<ItemsPorCantidadResponse> casosPorEmpresa(String userName);
     
     public List<ItemsPorCantidadResponse> casosPorTrabajdoresInvolucrados(String userName);
+    
+    public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName);
     
     /**
      * Documento Anexo REsponse
