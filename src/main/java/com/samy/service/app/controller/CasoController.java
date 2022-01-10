@@ -32,6 +32,7 @@ import com.samy.service.app.model.request.UpdateCasoResumenRequest;
 import com.samy.service.app.model.request.UpdateFileActuacionRequest;
 import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
+import com.samy.service.app.model.response.CasosConRiesgoResponse;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
@@ -243,6 +244,11 @@ public class CasoController {
 	@GetMapping(path = "/monthlyCaseSummary/{userName}")
 	public GraficoImpactoCarteraResponse resumenMensualCasos(@PathVariable String userName){
 		return service.verGraficoImpactoResponse(userName);
+	}
+	
+	@GetMapping(path = "/riskyCases/{userName}")
+	public List<CasosConRiesgoResponse> casosConRiesgoResponses(@PathVariable String userName){
+		return service.dataTableCasosRiesgoResponse(userName);
 	}
 
 }

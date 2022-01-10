@@ -27,12 +27,14 @@ import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.fechaFormateadaOther;
 import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
+import static com.samy.service.app.util.Utils.formatMoneyV2;
 import static com.samy.service.app.util.Utils.getPorcentaje;
-import static com.samy.service.app.util.Utils.mesFecha;
 import static com.samy.service.app.util.Utils.mesAñoFecha;
+import static com.samy.service.app.util.Utils.mesFecha;
 import static com.samy.service.app.util.Utils.nombrePersona;
-import static com.samy.service.app.util.Utils.transformToLocalTime;
+import static com.samy.service.app.util.Utils.randomBetWeen;
 import static com.samy.service.app.util.Utils.round;
+import static com.samy.service.app.util.Utils.transformToLocalTime;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,7 +45,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -89,6 +90,7 @@ import com.samy.service.app.model.response.ActuacionResponse;
 import com.samy.service.app.model.response.ActuacionResponseX2;
 import com.samy.service.app.model.response.ActuacionResponseX3;
 import com.samy.service.app.model.response.CasoDto;
+import com.samy.service.app.model.response.CasosConRiesgoResponse;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
@@ -1251,15 +1253,31 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				mapCantidadMes.entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList()));
 		mapSerie.put("multaPotencialAcumulada",
 				mapSumaMulta.entrySet().stream().map(item -> round(item.getValue(), 2)).collect(Collectors.toList()));
-		mapSerie.put("provisiones",
-				mapCantidadMes.entrySet().stream().map(item -> {
-					Random random = new Random();
-					int randomNumber = random.nextInt(5000 - 1500) + 1500;
-					return randomNumber;
-				}).collect(Collectors.toList()));
+		mapSerie.put("provisiones", mapCantidadMes.entrySet().stream().map(item -> {
+			return randomBetWeen(1500, 5000);
+		}).collect(Collectors.toList()));
 		return GraficoImpactoCarteraResponse.builder().series(mapSerie)
 				.xAxisCategories(
 						mapCantidadMes.entrySet().stream().map(item -> item.getKey()).collect(Collectors.toList()))
 				.build();
+	}
+
+	@Override
+	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
+		return casosPorUsuario.stream().map(item -> {
+			String color = "";
+			double multa = item.getMultaPotencial().doubleValue();
+			if (multa > 0 && multa <= 3000) {
+				color = "green";
+			} else if (multa >= 3001 && multa<=5000) {
+				color = "red";
+			} else {
+				color = "yellow";
+			}
+			return CasosConRiesgoResponse.builder().nombreCaso(item.getDescripcionCaso())
+					.multaPotencial(formatMoneyV2(round(item.getMultaPotencial().doubleValue(), 2)))
+					.provisiones(formatMoneyV2(randomBetWeen(1500, 5000))).color(color).build();
+		}).collect(Collectors.toList());
 	}
 }

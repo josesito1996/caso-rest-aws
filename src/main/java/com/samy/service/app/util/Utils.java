@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Random;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -117,6 +118,11 @@ public class Utils {
 		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		return df.format(money);
 	}
+	
+	public static String formatMoneyV2(double money) {
+		DecimalFormat df = new DecimalFormat("#,###,###,##0");
+		return df.format(money);
+	}
 
 	public static Boolean dniValido(String dni) {
 		String regex = "[0-9]+";
@@ -191,5 +197,11 @@ public class Utils {
 			apellidos = apellidos.substring(0, indexEspacioApellido);
 		}
 		return nombres.concat(" ").concat(apellidos);
+	}
+	
+	public static Double randomBetWeen(int desde, int hasta) {
+		Random random = new Random();
+		int randomNumber = random.nextInt(hasta - desde) + desde;
+		return (double) randomNumber;
 	}
 }
