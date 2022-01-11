@@ -35,13 +35,17 @@ import static com.samy.service.app.util.Utils.nombrePersona;
 import static com.samy.service.app.util.Utils.randomBetWeen;
 import static com.samy.service.app.util.Utils.round;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
+import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,6 +99,7 @@ import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
+import com.samy.service.app.model.response.EvolucionCarteraResponse;
 import com.samy.service.app.model.response.FuncionarioResponse;
 import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
@@ -1240,7 +1245,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 					.build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
-				.collect(Collectors.groupingBy(CasoDto::getMesCaso, Collectors.counting()));
+				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
 		Map<String, Double> mapSumaMulta = casosDto.stream().collect(
 				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(item -> item.getMultaPotencial())));
 		log.info("MapCantidades {}", mapCantidadMes);
@@ -1270,7 +1275,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			double multa = item.getMultaPotencial().doubleValue();
 			if (multa > 0 && multa <= 3000) {
 				color = "green";
-			} else if (multa >= 3001 && multa<=5000) {
+			} else if (multa >= 3001 && multa <= 5000) {
 				color = "red";
 			} else {
 				color = "yellow";
@@ -1279,5 +1284,50 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 					.multaPotencial(formatMoneyV2(round(item.getMultaPotencial().doubleValue(), 2)))
 					.provisiones(formatMoneyV2(randomBetWeen(1500, 5000))).color(color).build();
 		}).collect(Collectors.toList());
+	}
+
+	@Override
+	public EvolucionCarteraResponse evolucionCarteraResponse(String userName, String desde, String hasta) {
+		LocalDate dateDesde = toLocalDateYYYYMMDD(desde);
+		LocalDate dateHasta = toLocalDateYYYYMMDD(hasta);
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream()
+				.filter(item -> item.getFechaInicio().isAfter(dateDesde.minusMonths(1))
+						&& item.getFechaInicio().isBefore(dateHasta))
+				.sorted(Comparator.comparing(Caso::getFechaInicio)).collect(Collectors.toList());
+		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+			String fecha = mesAñoFecha(item.getFechaInicio());
+			return CasoDto.builder().idCaso(item.getId()).mesCaso(fecha).fechaRegistro(item.getFechaInicio())
+					.nombreCaso(item.getDescripcionCaso()).build();
+		}).collect(Collectors.toList());
+		Map<String, Long> totalPorMeses = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
+		List<Map<String, Object>> listMap = new ArrayList<>();
+		for (String tipoCaso : Arrays.asList("Casos al inicio del periodo", "Nuevos Casos", "Casos cerrados")) {
+			Map<String, Object> itemMap = new HashMap<>();
+			itemMap.put("name", tipoCaso);
+			if (tipoCaso.equals("Casos al inicio del periodo")) {
+				int contador = 0;
+				int acumulador = 0;
+				List<Integer> array = new ArrayList<>();
+				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
+					if (contador == 0) {
+						acumulador = acumulador + item.getValue().intValue();
+					}
+					array.add(acumulador);
+					contador++;
+				}
+
+				itemMap.put("data", array);
+			} else if (tipoCaso.equals("Nuevos Casos")) {
+				itemMap.put("data", new ArrayList<>());
+			} else if (tipoCaso.equals("Casos cerrados")) {
+				itemMap.put("data", new ArrayList<>());
+			}
+
+			listMap.add(itemMap);
+		}
+		return EvolucionCarteraResponse.builder()
+				.meses(totalPorMeses.entrySet().stream().map(item -> item.getKey()).collect(Collectors.toList()))
+				.series(listMap).build();
 	}
 }

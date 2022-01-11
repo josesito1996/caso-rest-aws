@@ -40,7 +40,7 @@ public class Utils {
 	}
 
 	public static LocalDate toLocalDateYYYYMMDD(String fecha) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 		return LocalDate.parse(fecha, formatter);
 	}
 

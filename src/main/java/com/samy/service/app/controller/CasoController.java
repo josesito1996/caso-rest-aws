@@ -36,6 +36,7 @@ import com.samy.service.app.model.response.CasosConRiesgoResponse;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
+import com.samy.service.app.model.response.EvolucionCarteraResponse;
 import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.ItemsPorCantidadResponse;
@@ -230,25 +231,31 @@ public class CasoController {
 	public DetailCaseResponse agregarSubMateria(@Valid @RequestBody MateriaRequestUpdate request) {
 		return service.agregarSubMateria(request);
 	}
-	
+
 	@GetMapping(path = "/casesByEmpresa/{userName}")
-	public List<ItemsPorCantidadResponse> itemsPorCantidadResponses(@PathVariable String userName){
+	public List<ItemsPorCantidadResponse> itemsPorCantidadResponses(@PathVariable String userName) {
 		return service.casosPorEmpresa(userName);
 	}
-	
+
 	@GetMapping(path = "/affectedWorkersSum/{userName}")
-	public List<ItemsPorCantidadResponse> trabajadoresAfectadosSum(@PathVariable String userName){
+	public List<ItemsPorCantidadResponse> trabajadoresAfectadosSum(@PathVariable String userName) {
 		return service.casosPorTrabajdoresInvolucrados(userName);
 	}
-	
+
 	@GetMapping(path = "/monthlyCaseSummary/{userName}")
-	public GraficoImpactoCarteraResponse resumenMensualCasos(@PathVariable String userName){
+	public GraficoImpactoCarteraResponse resumenMensualCasos(@PathVariable String userName) {
 		return service.verGraficoImpactoResponse(userName);
 	}
-	
+
 	@GetMapping(path = "/riskyCases/{userName}")
-	public List<CasosConRiesgoResponse> casosConRiesgoResponses(@PathVariable String userName){
+	public List<CasosConRiesgoResponse> casosConRiesgoResponses(@PathVariable String userName) {
 		return service.dataTableCasosRiesgoResponse(userName);
+	}
+
+	@GetMapping(path = "/portfolioEvolution/{userName}")
+	public EvolucionCarteraResponse evolucionCarteraResponses(@PathVariable String userName, @RequestParam String desde,
+			@RequestParam String hasta) {
+		return service.evolucionCarteraResponse(userName, desde, hasta);
 	}
 
 }
