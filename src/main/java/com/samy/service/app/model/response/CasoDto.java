@@ -2,6 +2,7 @@ package com.samy.service.app.model.response;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,5 +39,9 @@ public class CasoDto implements Serializable{
 	private Double multaPotencial;
 	
 	private Boolean estado;
+	
+	private String intendencia;
+	
+	private List<String> idMaterias;
 	
 }

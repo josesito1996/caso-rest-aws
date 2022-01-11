@@ -36,7 +36,7 @@ import com.samy.service.app.model.response.CasosConRiesgoResponse;
 import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
-import com.samy.service.app.model.response.EvolucionCarteraResponse;
+import com.samy.service.app.model.response.GraficoCasosTemplateResponse;
 import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.ItemsPorCantidadResponse;
@@ -253,9 +253,14 @@ public class CasoController {
 	}
 
 	@GetMapping(path = "/portfolioEvolution/{userName}")
-	public EvolucionCarteraResponse evolucionCarteraResponses(@PathVariable String userName, @RequestParam String desde,
+	public GraficoCasosTemplateResponse evolucionCarteraResponses(@PathVariable String userName, @RequestParam String desde,
 			@RequestParam String hasta) {
 		return service.evolucionCarteraResponse(userName, desde, hasta);
+	}
+	
+	@GetMapping(path = "/mattersMostAudited/{userName}")
+	public GraficoCasosTemplateResponse materiasMasFiscalizadas(@PathVariable String userName) {
+		return service.materiasFiscalizadas(userName);
 	}
 
 }

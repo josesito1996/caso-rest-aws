@@ -39,8 +39,6 @@ import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,6 +48,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -99,7 +100,7 @@ import com.samy.service.app.model.response.CriticidadCasosResponse;
 import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
-import com.samy.service.app.model.response.EvolucionCarteraResponse;
+import com.samy.service.app.model.response.GraficoCasosTemplateResponse;
 import com.samy.service.app.model.response.FuncionarioResponse;
 import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
@@ -1287,7 +1288,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	@Override
-	public EvolucionCarteraResponse evolucionCarteraResponse(String userName, String desde, String hasta) {
+	public GraficoCasosTemplateResponse evolucionCarteraResponse(String userName, String desde, String hasta) {
 		LocalDate dateDesde = toLocalDateYYYYMMDD(desde);
 		LocalDate dateHasta = toLocalDateYYYYMMDD(hasta);
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream()
@@ -1316,21 +1317,21 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			} else if (tipoCaso.equals("Casos cerrados")) {
 				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
 					String fecha = item.getKey();
-					Long cantidadCerrados = casosDto.stream().filter(itemCaso -> !itemCaso.getEstado() && fecha.equals(itemCaso.getMesCaso())).count();
+					Long cantidadCerrados = casosDto.stream()
+							.filter(itemCaso -> !itemCaso.getEstado() && fecha.equals(itemCaso.getMesCaso())).count();
 					acumCerrado.add(cantidadCerrados.intValue());
 				}
 				itemMap.put("data", acumCerrado);
-			}
-			else if (tipoCaso.equals("Casos al inicio del periodo")) {
+			} else if (tipoCaso.equals("Casos al inicio del periodo")) {
 				int contador = 0;
-				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
+				for (@SuppressWarnings("unused")
+				Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
 					if (contador == 0) {
 						acumInicio.add(0);
 					} else {
-						int valor = item.getValue().intValue();
-						int acumInicioAnterior = acumInicio.get(contador-1);
-						int acumNuevoAnterior = acumNuevo.get(contador -1);
-						int acumCerradoAnterior = acumCerrado.get(contador -1);
+						int acumInicioAnterior = acumInicio.get(contador - 1);
+						int acumNuevoAnterior = acumNuevo.get(contador - 1);
+						int acumCerradoAnterior = acumCerrado.get(contador - 1);
 						acumInicio.add(acumInicioAnterior + acumNuevoAnterior - acumCerradoAnterior);
 					}
 					contador++;
@@ -1339,8 +1340,62 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			}
 			listMap.add(itemMap);
 		}
-		return EvolucionCarteraResponse.builder()
+		return GraficoCasosTemplateResponse.builder()
 				.meses(totalPorMeses.entrySet().stream().map(item -> item.getKey()).collect(Collectors.toList()))
 				.series(listMap).build();
+	}
+
+	@Override
+	public GraficoCasosTemplateResponse materiasFiscalizadas(String userName) {
+		List<Caso> casos = listarCasosPorUserName(userName);
+		List<CasoDto> casosDto = casos.stream().map(item -> {
+			String intendencia = item.getIntendencias() != null && item.getIntendencias().size() > 0
+					? item.getIntendencias().get(0).getLabel()
+					: "--";
+			return CasoDto.builder().idCaso(item.getId()).intendencia(intendencia).idMaterias(item.getMaterias().stream().map(mat -> mat.getId()).collect(Collectors.toList())).build();
+		}).collect(Collectors.toList());
+		Map<String, Long> casosPorIntendencia = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getIntendencia, Collectors.counting()));
+		List<ReactSelectRequest> materias = new ArrayList<>();
+		for (Caso caso : casos) {
+			for (MateriaDto materia : caso.getMaterias()) {
+				materias.add(new ReactSelectRequest(materia.getId(), materia.getNombreMateria(), null));
+			}
+		}
+		materias = materias.stream().filter(distinctByKey(p -> p.getValue()))
+				.sorted(Comparator.comparing(ReactSelectRequest::getLabel)).collect(Collectors.toList());
+		List<String> idMaterias = materias.stream().filter(distinctByKey(p -> p.getValue()))
+				.map(item -> item.getValue()).collect(Collectors.toList());
+		List<Map<String, Object>> seriesMapList = new ArrayList<>();
+		for (Map.Entry<String, Long> map : casosPorIntendencia.entrySet()) {
+			Map<String, Object> seriesMap = new HashMap<>();
+			seriesMap.put("name", map.getKey());
+			List<CasoDto> listDto = casosDto.stream().filter(item -> item.getIntendencia().equals(map.getKey()))
+					.collect(Collectors.toList());
+			log.info("ListDto {}", listDto);
+			List<Integer> totales = new ArrayList<>();
+			for (String idMateria : idMaterias) {
+				int contadorCaso = 0;
+				for (CasoDto dto : listDto) {
+					long contador = dto.getIdMaterias().stream().filter(item -> item.equals(idMateria)).count();
+					if (contador>0) {
+						contadorCaso ++;
+					}
+				}
+				totales.add(contadorCaso);
+				}
+			seriesMap.put("data", totales);
+			seriesMapList.add(seriesMap);
+		}
+
+		return GraficoCasosTemplateResponse.builder()
+				.meses(materias.stream().map(item -> item.getLabel()).collect(Collectors.toList()))
+				.series(seriesMapList).build();
+	}
+
+	public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+
+		Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+		return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
 }

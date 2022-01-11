@@ -17,7 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
-public class EvolucionCarteraResponse implements Serializable {
+public class GraficoCasosTemplateResponse implements Serializable {
 
 	private static final long serialVersionUID = -6802691321453240331L;
 	
