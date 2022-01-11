@@ -37,4 +37,6 @@ public class CasoDto implements Serializable{
 	
 	private Double multaPotencial;
 	
+	private Boolean estado;
+	
 }

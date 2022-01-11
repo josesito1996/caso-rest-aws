@@ -1297,33 +1297,46 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			String fecha = mesAñoFecha(item.getFechaInicio());
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(fecha).fechaRegistro(item.getFechaInicio())
-					.nombreCaso(item.getDescripcionCaso()).build();
+					.nombreCaso(item.getDescripcionCaso()).estado(item.getEstadoCaso()).build();
 		}).collect(Collectors.toList());
 		Map<String, Long> totalPorMeses = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
 		List<Map<String, Object>> listMap = new ArrayList<>();
-		for (String tipoCaso : Arrays.asList("Casos al inicio del periodo", "Nuevos Casos", "Casos cerrados")) {
+		List<Integer> acumInicio = new ArrayList<>();
+		List<Integer> acumNuevo = new ArrayList<>();
+		List<Integer> acumCerrado = new ArrayList<>();
+		for (String tipoCaso : Arrays.asList("Nuevos Casos", "Casos cerrados", "Casos al inicio del periodo")) {
 			Map<String, Object> itemMap = new HashMap<>();
 			itemMap.put("name", tipoCaso);
-			if (tipoCaso.equals("Casos al inicio del periodo")) {
+			if (tipoCaso.equals("Nuevos Casos")) {
+				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
+					acumNuevo.add(item.getValue().intValue());
+				}
+				itemMap.put("data", acumNuevo);
+			} else if (tipoCaso.equals("Casos cerrados")) {
+				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
+					String fecha = item.getKey();
+					Long cantidadCerrados = casosDto.stream().filter(itemCaso -> !itemCaso.getEstado() && fecha.equals(itemCaso.getMesCaso())).count();
+					acumCerrado.add(cantidadCerrados.intValue());
+				}
+				itemMap.put("data", acumCerrado);
+			}
+			else if (tipoCaso.equals("Casos al inicio del periodo")) {
 				int contador = 0;
-				int acumulador = 0;
-				List<Integer> array = new ArrayList<>();
 				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
 					if (contador == 0) {
-						acumulador = acumulador + item.getValue().intValue();
+						acumInicio.add(0);
+					} else {
+						int valor = item.getValue().intValue();
+						int acumInicioAnterior = acumInicio.get(contador-1);
+						int acumNuevoAnterior = acumNuevo.get(contador -1);
+						int acumCerradoAnterior = acumCerrado.get(contador -1);
+						acumInicio.add(acumInicioAnterior + acumNuevoAnterior - acumCerradoAnterior);
 					}
-					array.add(acumulador);
 					contador++;
 				}
-
-				itemMap.put("data", array);
-			} else if (tipoCaso.equals("Nuevos Casos")) {
-				itemMap.put("data", new ArrayList<>());
-			} else if (tipoCaso.equals("Casos cerrados")) {
-				itemMap.put("data", new ArrayList<>());
+				itemMap.put("data", acumInicio);
 			}
-
 			listMap.add(itemMap);
 		}
 		return EvolucionCarteraResponse.builder()
