@@ -186,7 +186,7 @@ public class CasoRequestBuilder {
 		caso.setUsuario(request.getUsuario());
 		caso.setIntendencias(request.getIntendencia() != null
 				? Arrays.asList(
-						DynamoBodyGenerico.builder().value(uuidGenerado()).label(request.getIntendencia()).build())
+						DynamoBodyGenerico.builder().value(request.getIntendencia().getValue()).label(request.getIntendencia().getLabel()).build())
 				: new ArrayList<DynamoBodyGenerico>());
 		caso.setEmpresas(request.getEmpresa() != null
 				? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado()).label(request.getEmpresa()).build())

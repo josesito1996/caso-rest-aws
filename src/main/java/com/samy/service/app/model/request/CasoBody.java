@@ -73,7 +73,7 @@ public class CasoBody implements Serializable {
 	private Boolean estado;
 	
 	@Schema(title = "Intendencia", example = "Intendencia de ejemplo")
-	private String intendencia;
+	private ReactSelectRequest intendencia;
 	
 	@Schema(title = "Empresa", example = "INDRA COMPANY")
 	private String empresa;
