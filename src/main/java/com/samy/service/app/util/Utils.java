@@ -52,8 +52,6 @@ public class Utils {
 	}
 
 	public static String fechaFormateadaOther(LocalDateTime fecha) {
-		// DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY
-		// hh:mm:s");
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMYYYYhh:mm:s");
 		String fechaFormateada = fecha.format(formatter);
 		return fechaFormateada;
@@ -80,7 +78,7 @@ public class Utils {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM");
 		return formatMes(fecha.format(formatter));
 	}
-	
+
 	public static String mesAñoFecha(LocalDate fecha) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM YY");
 		return formatMes(fecha.format(formatter));
@@ -118,7 +116,7 @@ public class Utils {
 		DecimalFormat df = new DecimalFormat("#,###,###,##0.00");
 		return df.format(money);
 	}
-	
+
 	public static String formatMoneyV2(double money) {
 		DecimalFormat df = new DecimalFormat("#,###,###,##0");
 		return df.format(money);
@@ -198,7 +196,7 @@ public class Utils {
 		}
 		return nombres.concat(" ").concat(apellidos);
 	}
-	
+
 	public static Double randomBetWeen(int desde, int hasta) {
 		Random random = new Random();
 		int randomNumber = random.nextInt(hasta - desde) + desde;
