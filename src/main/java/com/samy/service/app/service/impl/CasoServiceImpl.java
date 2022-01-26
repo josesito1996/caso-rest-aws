@@ -116,6 +116,9 @@ import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
+import com.samy.service.app.restTemplate.ExternalEndpoint;
+import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
+import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
 import com.samy.service.app.util.Contants;
@@ -138,6 +141,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Autowired
 	private LambdaService lambdaService;
+	
+	@Autowired
+	private ExternalEndpoint externalEndpoint;
 
 	@Override
 	protected GenericRepo<Caso, String> getRepo() {
@@ -520,9 +526,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<ArchivoAdjunto> archivos = actuacion.getArchivos().stream().flatMap(item -> {
 			if (item.getId().equals(request.getIdArchivo())) {
 				item.setEsPrincipal(request.isEsPrincipal());
+				item.setUrl(request.getUrl());
 				// item.setEstado(request.isEliminado());
 			} else {
 				item.setEsPrincipal(!request.isEsPrincipal());
+				// item.setUrl(request.getUrl());
 				// item.setEstado(!item.isEstado());
 			}
 			return Stream.of(item);
@@ -608,7 +616,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		String fechaRegistro = archivo.getFechaRegistro() != null ? fechaFormateada(archivo.getFechaRegistro()) : null;
 		return DocumentoAnexoResponse.builder().idArchivo(archivo.getId()).type(archivo.getTipoArchivo())
 				.nombreArchivo(archivo.getNombreArchivo()).tamaño(archivo.getTamaño()).fechaRegistro(fechaRegistro)
-				.esPrincipal(archivo.isEsPrincipal()).build();
+				.esPrincipal(archivo.isEsPrincipal()).url(archivo.getUrl()).build();
 	}
 
 	private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios, String etapa) {
@@ -1352,7 +1360,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			String intendencia = item.getIntendencias() != null && item.getIntendencias().size() > 0
 					? item.getIntendencias().get(0).getLabel()
 					: "--";
-			return CasoDto.builder().idCaso(item.getId()).intendencia(intendencia).idMaterias(item.getMaterias().stream().map(mat -> mat.getId()).collect(Collectors.toList())).build();
+			return CasoDto.builder().idCaso(item.getId()).intendencia(intendencia)
+					.idMaterias(item.getMaterias().stream().map(mat -> mat.getId()).collect(Collectors.toList()))
+					.build();
 		}).collect(Collectors.toList());
 		Map<String, Long> casosPorIntendencia = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getIntendencia, Collectors.counting()));
@@ -1378,12 +1388,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				int contadorCaso = 0;
 				for (CasoDto dto : listDto) {
 					long contador = dto.getIdMaterias().stream().filter(item -> item.equals(idMateria)).count();
-					if (contador>0) {
-						contadorCaso ++;
+					if (contador > 0) {
+						contadorCaso++;
 					}
 				}
 				totales.add(contadorCaso);
-				}
+			}
 			seriesMap.put("data", totales);
 			seriesMapList.add(seriesMap);
 		}
@@ -1397,5 +1407,44 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 		Map<Object, Boolean> seen = new ConcurrentHashMap<>();
 		return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+	}
+
+	@Override
+	public DocumentoAnexoResponse cambiarUrl(DocumentoAnexoRequest request) {
+		log.info("CasoServiceImpl.cambiarUrl");
+		Caso caso = verPodId(request.getIdCaso());
+		if (caso.getActuaciones().isEmpty()) {
+			throw new NotFoundException("No hay actuaciones registradas para el caso : " + caso.getDescripcionCaso());
+		}
+		List<Actuacion> actuaciones = caso.getActuaciones().stream()
+				.filter(actuacion -> actuacion.getIdActuacion().equals(request.getIdActuacion()))
+				.collect(Collectors.toList());
+		if (actuaciones.isEmpty()) {
+			throw new NotFoundException("No hay actuaciones registradas con el ID  : " + request.getIdActuacion());
+		}
+		Actuacion actuacion = actuaciones.get(0);
+		List<ArchivoAdjunto> newArchivos = actuacion.getArchivos().stream()
+				.filter(item -> item.getId().equals(request.getIdArchivo())).collect(Collectors.toList());
+		if (newArchivos.isEmpty()) {
+			throw new NotFoundException("No hay archivos registrados con el ID  : " + request.getIdArchivo());
+		}
+		ArchivoAdjunto archivo = newArchivos.get(0);
+		/**
+		 * Generando Imagen del archivio
+		 */
+		log.info("Archivo {}", archivo);
+		ActuacionFileResponse response = externalEndpoint.uploadFilePngActuacion(ActuacionFileRequest.builder()
+        		.idArchivo(archivo.getId())
+        		.nombreArchivo(archivo.getNombreArchivo())
+        		.type(archivo.getTipoArchivo())
+        		.build());
+		archivo.setUrl(response.getUrl());
+		int indexArchivo = actuacion.getArchivos().indexOf(archivo);
+		int indexActuacion = caso.getActuaciones().indexOf(actuacion);
+		caso.getActuaciones().get(indexActuacion).getArchivos().set(indexArchivo, archivo);
+		Caso caseModified = modificar(caso);
+		return transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos()).stream()
+				.filter(item -> item.getIdArchivo().equals(request.getIdArchivo())).findFirst()
+				.orElse(DocumentoAnexoResponse.builder().build());
 	}
 }

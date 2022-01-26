@@ -34,6 +34,9 @@ public class DocumentoAnexoResponse implements Serializable {
     @JsonInclude(Include.NON_NULL)
     private String fechaRegistro;
     
+    @JsonInclude(Include.NON_NULL)
+    private String url;
+    
     private boolean esPrincipal;
 
 }

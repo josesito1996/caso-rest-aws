@@ -159,6 +159,12 @@ public class CasoController {
 	public List<DocumentoAnexoResponse> cambiarArchivoPrincipal(@Valid @RequestBody DocumentoAnexoRequest request) {
 		return service.cambiarPrincipal(request);
 	}
+	
+	@Operation(description = "Cambia la URL del archivo de la actuacion")
+	@PutMapping(path = "/updateUrlFile")
+	public DocumentoAnexoResponse cambiarUrl(@Valid @RequestBody DocumentoAnexoRequest request) {
+		return service.cambiarUrl(request);
+	}
 
 	@Operation(description = "Modifica los datos de la tarea correspondiente a la actuacion.")
 	@PostMapping(path = "/updateTarea")

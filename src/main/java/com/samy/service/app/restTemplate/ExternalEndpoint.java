@@ -1,0 +1,34 @@
+package com.samy.service.app.restTemplate;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
+import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@Slf4j
+public class ExternalEndpoint {
+
+	@Value("${endpoints.api-files}")
+	private String uploadFilePngActuacionUrl;
+
+	private RestTemplate restTemplate;
+
+	public ExternalEndpoint(RestTemplateBuilder builder) {
+		restTemplate = builder.errorHandler(new RestTemplateErrorHandler()).build();
+	}
+
+	public ActuacionFileResponse uploadFilePngActuacion(ActuacionFileRequest request) {
+		log.info("ExternalEndpoint.uploadFilePngActuacion  : {} ", request);
+		ActuacionFileResponse response = restTemplate.postForObject(
+				uploadFilePngActuacionUrl.concat("uploadFilePngActuacion"), request, ActuacionFileResponse.class);
+		log.info("Response {} ", response);
+		return response;
+	}
+
+}

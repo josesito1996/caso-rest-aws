@@ -44,5 +44,7 @@ public class DocumentoAnexoRequest implements Serializable {
     @Schema(title = "Id Archivo", example = "3dd71db6-3bf8-47da-8da3-655d2f5397ad")
     private String idArchivo;
     
+    private String url;
+    
     private boolean esPrincipal;
 }
