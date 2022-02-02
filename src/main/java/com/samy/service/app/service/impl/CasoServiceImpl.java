@@ -1018,6 +1018,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				for (Tarea tarea : tareas) {
 					LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
 					LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
+					/**
+					 * Validar este tema
+					 */
 					if (fechaVencimiento.isAfter(fechaActual) && fechaVencimiento.isBefore(fechaAumentada)) {
 						notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
 								.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())

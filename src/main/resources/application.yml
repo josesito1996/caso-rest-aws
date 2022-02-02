@@ -12,6 +12,7 @@ aws:
   bucket:
     name: archivos-samy-v1
 spring:
+  main:    allow-bean-definition-overriding: true
   servlet:
     multipart:
       max-file-size: 5MB
