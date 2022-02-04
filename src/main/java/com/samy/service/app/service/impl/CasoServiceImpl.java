@@ -32,7 +32,6 @@ import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesAñoFecha;
 import static com.samy.service.app.util.Utils.mesFecha;
 import static com.samy.service.app.util.Utils.nombrePersona;
-import static com.samy.service.app.util.Utils.randomBetWeen;
 import static com.samy.service.app.util.Utils.round;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
 import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
@@ -1252,16 +1251,22 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+			AnalisisRiesgoPojo analisisPojo = externalAws.tableInfraccion(item.getId());
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
-					.multaPotencial(item.getMultaPotencial().doubleValue()).fechaRegistro(item.getFechaInicio())
+					.multaPotencial(analisisPojo.getSumaMultaPotencial())
+					.provision(analisisPojo.getSumaProvision())
+					.fechaRegistro(item.getFechaInicio())
 					.build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
 		Map<String, Double> mapSumaMulta = casosDto.stream().collect(
 				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(item -> item.getMultaPotencial())));
+		Map<String, Double> mapSumaProvision = casosDto.stream().collect(
+				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(item -> item.getProvision())));
 		log.info("MapCantidades {}", mapCantidadMes);
 		log.info("MapSumaMulta {}", mapSumaMulta);
+		log.info("MapSumaMultaProvision {}", mapSumaProvision);
 		/*
 		 * Para las series
 		 */
@@ -1270,8 +1275,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				mapCantidadMes.entrySet().stream().map(item -> item.getValue()).collect(Collectors.toList()));
 		mapSerie.put("multaPotencialAcumulada",
 				mapSumaMulta.entrySet().stream().map(item -> round(item.getValue(), 2)).collect(Collectors.toList()));
-		mapSerie.put("provisiones", mapCantidadMes.entrySet().stream().map(item -> {
-			return randomBetWeen(1500, 5000);
+		mapSerie.put("provisiones", mapSumaProvision.entrySet().stream().map(item -> {
+			return round(item.getValue(),2);
 		}).collect(Collectors.toList()));
 		return GraficoImpactoCarteraResponse.builder().series(mapSerie)
 				.xAxisCategories(
@@ -1282,7 +1287,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
-		return casosPorUsuario.stream().map(item -> {
+		return casosPorUsuario.parallelStream().map(item -> {
+			AnalisisRiesgoPojo pojo = externalAws.tableInfraccion(item.getId());
 			String color = "";
 			double multa = item.getMultaPotencial().doubleValue();
 			if (multa > 0 && multa <= 3000) {
@@ -1293,8 +1299,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				color = "yellow";
 			}
 			return CasosConRiesgoResponse.builder().nombreCaso(item.getDescripcionCaso())
-					.multaPotencial(formatMoneyV2(round(item.getMultaPotencial().doubleValue(), 2)))
-					.provisiones(formatMoneyV2(randomBetWeen(1500, 5000))).color(color).build();
+					.multaPotencial(formatMoneyV2(round(pojo.getSumaMultaPotencial(), 2)))
+					.provisiones(formatMoneyV2(round(pojo.getSumaProvision(), 2))).color(color).build();
 		}).collect(Collectors.toList());
 	}
 
