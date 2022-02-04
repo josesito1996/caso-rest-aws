@@ -184,10 +184,11 @@ public class CasoRequestBuilder {
 		caso.setEstadoCaso(request.getEstado());
 		caso.setActuaciones(new ArrayList<Actuacion>());
 		caso.setUsuario(request.getUsuario());
-		caso.setIntendencias(request.getIntendencia() != null
-				? Arrays.asList(
-						DynamoBodyGenerico.builder().value(request.getIntendencia().getValue()).label(request.getIntendencia().getLabel()).build())
-				: new ArrayList<DynamoBodyGenerico>());
+		caso.setIntendencias(
+				request.getIntendencia() != null
+						? Arrays.asList(DynamoBodyGenerico.builder().value(request.getIntendencia().getValue())
+								.label(request.getIntendencia().getLabel()).build())
+						: new ArrayList<DynamoBodyGenerico>());
 		caso.setEmpresas(request.getEmpresa() != null
 				? Arrays.asList(DynamoBodyGenerico.builder().value(uuidGenerado()).label(request.getEmpresa()).build())
 				: new ArrayList<DynamoBodyGenerico>());
@@ -204,7 +205,8 @@ public class CasoRequestBuilder {
 	}
 
 	private List<InspectorDto> getInspectorDto(List<ReactSelectRequest> listReact) {
-		return listReact.stream().map(this::transformFromReact).collect(Collectors.toList());
+		return listReact != null ? listReact.stream().map(this::transformFromReact).collect(Collectors.toList())
+				: new ArrayList<>();
 	}
 
 	private InspectorDto transformFromReact(ReactSelectRequest reactSelectRequest) {
