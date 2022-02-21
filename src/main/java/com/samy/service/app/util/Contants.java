@@ -1,12 +1,9 @@
 package com.samy.service.app.util;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Contants {
-
-	public static final LocalDate fechaActual = LocalDate.now();
 
 	public static final int diasPlazoVencimiento = 8;
 

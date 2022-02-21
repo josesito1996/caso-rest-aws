@@ -18,7 +18,6 @@ import static com.samy.service.app.util.Contants.ID_SEGUNDA_INSTANCIA;
 import static com.samy.service.app.util.Contants.ID_TERCERA_INSTANCIA;
 import static com.samy.service.app.util.Contants.correoSami;
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
-import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
@@ -38,6 +37,7 @@ import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -368,7 +368,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casos = listarCasosPorUserName(userName);
 		int totalCasos = casos.size();
 		int totalCasosActivos = totalCasosPorEstado(casos, true);
-		return MiCarteraResponse.builder().hasta(fechaFormateada(fechaActual))
+		return MiCarteraResponse.builder().hasta(fechaFormateada(LocalDateTime.now()))
 				.casosActivos(String.valueOf(totalCasosActivos)).casosRegistrados(String.valueOf(totalCasos))
 				.etapas(transformToMap(casos)).build();
 	}
@@ -1016,11 +1016,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				List<Tarea> tareas = actuacion.getTareas();
 				for (Tarea tarea : tareas) {
 					LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
-					LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
+					LocalDate fechaAumentada = LocalDate.now().plusDays(diasPlazoVencimiento);
 					/**
 					 * Validar este tema
 					 */
-					if (fechaVencimiento.isAfter(fechaActual) && fechaVencimiento.isBefore(fechaAumentada)) {
+					if (fechaVencimiento.isAfter(LocalDate.now()) && fechaVencimiento.isBefore(fechaAumentada)) {
 						notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
 								.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
 								.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))

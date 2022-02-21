@@ -1,7 +1,6 @@
 package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
-import static com.samy.service.app.util.Contants.fechaActual;
 import static com.samy.service.app.util.Contants.REGEX_DDMMYYYY;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.toLocalDate;
@@ -173,8 +172,8 @@ public class ServiceUtils {
 		for (Actuacion actuacion : caso.getActuaciones()) {
 			for (Tarea tarea : actuacion.getTareas()) {
 				LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
-				if (fechaVencimiento.isAfter(fechaActual)
-						&& fechaVencimiento.isBefore(fechaActual.plusDays(diasPlazoVencimiento))) {
+				if (fechaVencimiento.isAfter(LocalDate.now())
+						&& fechaVencimiento.isBefore(LocalDate.now().plusDays(diasPlazoVencimiento))) {
 					contadorTareasAVencer++;
 				}
 			}
