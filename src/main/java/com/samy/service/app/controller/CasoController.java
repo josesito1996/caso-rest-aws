@@ -1,5 +1,6 @@
 package com.samy.service.app.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,12 @@ public class CasoController {
 	@Autowired
 	private CasoService service;
 
+	
+	@GetMapping(path = "/test")
+	private String getDate() {
+		return LocalDateTime.now().toString();
+	}
+	
 	@Operation(description = "Este metodo lista todas las actuaciones tal cual estan en la BD")
 	@GetMapping(path = "/listAll")
 	public List<Caso> listCasos() {
