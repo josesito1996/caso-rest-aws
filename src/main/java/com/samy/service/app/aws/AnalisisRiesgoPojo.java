@@ -1,6 +1,7 @@
 package com.samy.service.app.aws;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +22,7 @@ import lombok.ToString;
 @ToString
 public class AnalisisRiesgoPojo implements Serializable {
   private static final long serialVersionUID = 5960050256963893497L;
-  @JsonProperty("id_analisis")
+  @JsonProperty("idAnalisis")
   private String idAnalisis;
   
   private String nombreAsesor;
@@ -30,7 +31,7 @@ public class AnalisisRiesgoPojo implements Serializable {
   
   private List<InfraccionItemPojo> infracciones;
   
-  @JsonProperty("id_caso")
+  @JsonProperty("idCaso")
   private String idCaso;
   
   private ReactSelectRequest OrigenCaso;
@@ -40,4 +41,8 @@ public class AnalisisRiesgoPojo implements Serializable {
   private Double sumaMultaPotencial;
   
   private Double sumaProvision;
+  
+  private LocalDate fechaRegistro;
+  
+  private boolean estado;
 }

@@ -49,13 +49,25 @@ public class ExternalDbAws {
 		GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_analisis", idAnalisis);
 		Item materiaItem = tableMaterias.getItem(spec);
 		if (materiaItem == null) {
-			return AnalisisRiesgoPojo.builder()
-					.sumaMultaPotencial(0.0)
-					.sumaProvision(0.0)
-					.cantidadInvolucrados(0).infracciones(new ArrayList<>()).build();
+			return AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).cantidadInvolucrados(0)
+					.infracciones(new ArrayList<>()).build();
 		}
 		final ObjectMapper mapper = new ObjectMapper();
 		return mapper.convertValue(materiaItem.asMap(), AnalisisRiesgoPojo.class);
+	}
+
+	public List<AnalisisRiesgoPojo> tableInfraccionList(String idCaso) {
+		DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder()
+				.withTableNameOverride(DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("analisis-riesgo"))
+				.build();
+		DynamoDBMapper mapper = new DynamoDBMapper(awsDynamoBD, mapperConfig);
+		HashMap<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+		eav.put(":id_caso", new AttributeValue().withS(idCaso));
+		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withFilterExpression("id_caso = :id_caso")
+				.withExpressionAttributeValues(eav);
+		List<AnalisisRiesgoPojo> analisisList = mapper.scan(AnalisisRiesgoPojo.class, scanExpression);
+		log.info("AanlisisList {}", analisisList);
+		return analisisList;
 	}
 
 	public List<EtapaPojo> getTableEtapa() {
@@ -93,14 +105,11 @@ public class ExternalDbAws {
 		int cantidad = scanResult.getCount();
 		if (cantidad > 0) {
 			for (Map<String, AttributeValue> item : scanResult.getItems()) {
-				return UsuarioPojo.builder()
-						.idUsuario(item.get("id_usuario").getS())
-						.nombres(item.get("nombres").getS())
-						.apellidos(item.get("apellidos").getS())
-						.build();
+				return UsuarioPojo.builder().idUsuario(item.get("id_usuario").getS())
+						.nombres(item.get("nombres").getS()).apellidos(item.get("apellidos").getS()).build();
 			}
 		}
-		
+
 		return UsuarioPojo.builder().build();
 	}
 

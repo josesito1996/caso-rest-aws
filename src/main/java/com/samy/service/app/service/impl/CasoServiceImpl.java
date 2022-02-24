@@ -140,7 +140,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Autowired
 	private LambdaService lambdaService;
-	
+
 	@Autowired
 	private ExternalEndpoint externalEndpoint;
 
@@ -833,7 +833,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	private DetailCaseResponse transformFromCaso(Caso caso) {
 		List<String> idMaterias = caso.getMaterias().stream().map(item -> item.getId()).collect(Collectors.toList());
-		AnalisisRiesgoPojo mapInfraccion = externalAws.tableInfraccion(caso.getId());
+		AnalisisRiesgoPojo mapInfraccion = externalEndpoint.listByIdCaso(caso.getId()).stream()
+				.reduce((first, second) -> second).orElse(AnalisisRiesgoPojo.builder().build());
 		Integer totalMaterias = 0;
 		Integer totalSubMaterias = 0;
 		// List<MateriaResponse> materias =
@@ -1253,10 +1254,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			AnalisisRiesgoPojo analisisPojo = externalAws.tableInfraccion(item.getId());
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
-					.multaPotencial(analisisPojo.getSumaMultaPotencial())
-					.provision(analisisPojo.getSumaProvision())
-					.fechaRegistro(item.getFechaInicio())
-					.build();
+					.multaPotencial(analisisPojo.getSumaMultaPotencial()).provision(analisisPojo.getSumaProvision())
+					.fechaRegistro(item.getFechaInicio()).build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
@@ -1276,7 +1275,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		mapSerie.put("multaPotencialAcumulada",
 				mapSumaMulta.entrySet().stream().map(item -> round(item.getValue(), 2)).collect(Collectors.toList()));
 		mapSerie.put("provisiones", mapSumaProvision.entrySet().stream().map(item -> {
-			return round(item.getValue(),2);
+			return round(item.getValue(), 2);
 		}).collect(Collectors.toList()));
 		return GraficoImpactoCarteraResponse.builder().series(mapSerie)
 				.xAxisCategories(
@@ -1442,11 +1441,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		 * Generando Imagen del archivio
 		 */
 		log.info("Archivo {}", archivo);
-		ActuacionFileResponse response = externalEndpoint.uploadFilePngActuacion(ActuacionFileRequest.builder()
-        		.idArchivo(archivo.getId())
-        		.nombreArchivo(archivo.getNombreArchivo())
-        		.type(archivo.getTipoArchivo())
-        		.build());
+		ActuacionFileResponse response = externalEndpoint
+				.uploadFilePngActuacion(ActuacionFileRequest.builder().idArchivo(archivo.getId())
+						.nombreArchivo(archivo.getNombreArchivo()).type(archivo.getTipoArchivo()).build());
 		archivo.setUrl(response.getUrl());
 		int indexArchivo = actuacion.getArchivos().indexOf(archivo);
 		int indexActuacion = caso.getActuaciones().indexOf(actuacion);

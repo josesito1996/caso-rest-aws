@@ -3,6 +3,7 @@ springdoc:
     path: /api-docs
 endpoints:
   api-files: http://samyofficefiles-env.eba-zh8kupum.us-east-2.elasticbeanstalk.com/api-files/
+  api-analisisRiesgo: http://samyappprimary-env.eba-avd5ffkm.us-east-2.elasticbeanstalk.com/api-analisisRiesgo/
 aws:
   config:
     region: us-east-2
