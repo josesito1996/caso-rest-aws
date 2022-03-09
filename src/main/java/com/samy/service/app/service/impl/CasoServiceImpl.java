@@ -1441,9 +1441,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		 * Generando Imagen del archivio
 		 */
 		log.info("Archivo {}", archivo);
-		ActuacionFileResponse response = externalEndpoint
-				.uploadFilePngActuacion(ActuacionFileRequest.builder().idArchivo(archivo.getId())
-						.nombreArchivo(archivo.getNombreArchivo()).type(archivo.getTipoArchivo()).build());
+		ActuacionFileResponse response = externalEndpoint.uploadFilePngActuacion(
+				ActuacionFileRequest.builder().idArchivo(archivo.getId()).nombreArchivo(archivo.getNombreArchivo())
+						.type(archivo.getTipoArchivo()).bucketName("archivos-samy-v1").build());
 		archivo.setUrl(response.getUrl());
 		int indexArchivo = actuacion.getArchivos().indexOf(archivo);
 		int indexActuacion = caso.getActuaciones().indexOf(actuacion);

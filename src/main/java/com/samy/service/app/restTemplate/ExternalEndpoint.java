@@ -8,6 +8,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.google.gson.Gson;
 import com.samy.service.app.aws.AnalisisRiesgoPojo;
 import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
 import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
@@ -38,7 +39,7 @@ public class ExternalEndpoint {
 	}
 
 	public ActuacionFileResponse uploadFilePngActuacion(ActuacionFileRequest request) {
-		log.info("ExternalEndpoint.uploadFilePngActuacion  : {} ", request);
+		log.info("ExternalEndpoint.uploadFilePngActuacion  : {} ", new Gson().toJson(request));
 		ActuacionFileResponse response = restTemplate.postForObject(
 				uploadFilePngActuacionUrl.concat("uploadFilePngActuacion"), request, ActuacionFileResponse.class);
 		log.info("Response {} ", response);
