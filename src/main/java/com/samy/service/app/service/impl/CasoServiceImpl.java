@@ -884,6 +884,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
+		if (items == null) {
+			return new ArrayList<>();
+		}
 		List<MateriaResponse> materias = new ArrayList<>();
 		for (InfraccionItemPojo item : items) {
 			MateriaPojo materiaPojo = externalAws.getTable(item.getMateria().getValue());
