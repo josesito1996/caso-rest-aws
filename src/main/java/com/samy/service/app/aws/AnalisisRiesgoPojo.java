@@ -34,7 +34,7 @@ public class AnalisisRiesgoPojo implements Serializable {
   @JsonProperty("idCaso")
   private String idCaso;
   
-  private ReactSelectRequest OrigenCaso;
+  private ReactSelectRequest origenCaso;
   
   private ReactSelectRequest nivelRiesgo;
   

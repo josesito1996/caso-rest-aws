@@ -62,4 +62,6 @@ public class DetailCaseResponse {
 	private Integer totalMaterias;
 	
 	private Integer totalSubMaterias;
+	
+	private String region;
 }

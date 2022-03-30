@@ -74,6 +74,7 @@ import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
+import com.samy.service.app.model.DynamoBodyGenerico;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.ArchivoBody;
@@ -880,7 +881,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.sumaMultaPotencial(mapInfraccion.getSumaMultaPotencial())
 				.sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
-				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado).build();
+				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
+				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
+				.build();
 	}
 
 	private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
