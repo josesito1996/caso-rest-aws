@@ -193,7 +193,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public ActuacionResponseX2 registrarActuacion(ActuacionBody request, String idCaso) {
 		Caso caso = verPodId(idCaso);
 		String estadoCaso = request.getEstadoCaso().getCampoAux();
-		if (estadoCaso.contains("03") || estadoCaso.contains("05")) {
+		if (estadoCaso.contains("3") || estadoCaso.contains("5")) {
 			caso.setEstadoCaso(false);
 		}
 		return transformMap(registrar(builder.transformActuacion(caso, request)));
@@ -1275,6 +1275,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			AnalisisRiesgoPojo analisisPojo = externalAws.tableInfraccion(item.getId());
+			log.info("Analisis {}", analisisPojo);
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
 					.multaPotencial(analisisPojo.getSumaMultaPotencial()).provision(analisisPojo.getSumaProvision())
 					.fechaRegistro(item.getFechaInicio()).build();
