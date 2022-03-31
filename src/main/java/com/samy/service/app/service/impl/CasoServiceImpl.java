@@ -348,13 +348,13 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * Metodo que lista las Notificacion y Vencimientos
 	 */
 	@Override
-	public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(String userName) {
+	public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(String userName, Boolean isProximos) {
 		/*
 		 * return listarCasosPorUserName(userName).stream()
 		 * .map(this::transformNotificacionesVencimientosResponse)
 		 * .collect(Collectors.toList());
 		 */
-		return test(listarCasosPorUserName(userName));
+		return test(listarCasosPorUserName(userName),isProximos);
 	}
 
 	/**
@@ -1015,7 +1015,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		return tareas.indexOf(tareaAux.get(0));
 	}
 
-	private List<NotificacionesVencimientosResponse> test(List<Caso> casos) {
+	private List<NotificacionesVencimientosResponse> test(List<Caso> casos, Boolean isProximos) {
 		List<Caso> listaCaso = casos;
 		List<NotificacionesVencimientosResponse> notiVenci = new ArrayList<NotificacionesVencimientosResponse>();
 		for (Caso caso : listaCaso) {
@@ -1023,16 +1023,26 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			for (Actuacion actuacion : actuaciones) {
 				List<Tarea> tareas = actuacion.getTareas();
 				for (Tarea tarea : tareas) {
-					LocalDate fechaVencimiento = convertActualZone(tarea.getFechaVencimiento().toLocalDate());
-					LocalDate fechaAumentada = LocalDate.now().plusDays(diasPlazoVencimiento);
+					LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
+					LocalDate fechaActual = convertActualZone(LocalDate.now());
+					LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
 					/**
 					 * Validar este tema
 					 */
-					if (fechaVencimiento.isAfter(LocalDate.now()) && fechaVencimiento.isBefore(fechaAumentada)) {
-						notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
-								.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
-								.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-								.nombreCaso(caso.getDescripcionCaso()).descripcion(getObject(tarea)).build());
+					if (isProximos) {
+						if (fechaVencimiento.isAfter(LocalDate.now()) && fechaVencimiento.isBefore(fechaAumentada)) {
+							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
+									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
+									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
+									.nombreCaso(caso.getDescripcionCaso()).descripcion(getObject(tarea)).build());
+						}
+					} else {
+						if (fechaVencimiento.isBefore(fechaActual.minusDays(1))) {
+							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
+									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
+									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
+									.nombreCaso(caso.getDescripcionCaso()).descripcion(getObject(tarea)).build());
+						}
 					}
 				}
 			}

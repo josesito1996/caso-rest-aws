@@ -76,7 +76,7 @@ public interface CasoService extends ICrud<Caso, String> {
     public List<MainActuacionResponse> listarActuacionesPorCaso(String idCaso);
 
     public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(
-            String userName);
+            String userName, Boolean isProximos);
 
     public MiCarteraResponse verCarteraResponse(String userName);
 

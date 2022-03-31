@@ -59,12 +59,11 @@ public class CasoController {
 	@Autowired
 	private CasoService service;
 
-	
 	@GetMapping(path = "/test")
 	private String getDate() {
 		return LocalDateTime.now().toString();
 	}
-	
+
 	@Operation(description = "Este metodo lista todas las actuaciones tal cual estan en la BD")
 	@GetMapping(path = "/listAll")
 	public List<Caso> listCasos() {
@@ -166,7 +165,7 @@ public class CasoController {
 	public List<DocumentoAnexoResponse> cambiarArchivoPrincipal(@Valid @RequestBody DocumentoAnexoRequest request) {
 		return service.cambiarPrincipal(request);
 	}
-	
+
 	@Operation(description = "Cambia la URL del archivo de la actuacion")
 	@PutMapping(path = "/updateUrlFile")
 	public DocumentoAnexoResponse cambiarUrl(@Valid @RequestBody DocumentoAnexoRequest request) {
@@ -211,8 +210,8 @@ public class CasoController {
 	@Operation(description = "Lista las notificaciones de vencimiento correspondientes al usuario")
 	@GetMapping(path = "/listNotifVenciByUserName/{userName}")
 	public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientosPorNombreUsuario(
-			@PathVariable String userName) {
-		return service.listarNotificacionesVencimientos(userName);
+			@PathVariable String userName, @RequestParam(required = false) Boolean isProximos) {
+		return service.listarNotificacionesVencimientos(userName, isProximos);
 	}
 
 	@Operation(description = "Lista la cantidad de casos por etapa.")
@@ -266,11 +265,11 @@ public class CasoController {
 	}
 
 	@GetMapping(path = "/portfolioEvolution/{userName}")
-	public GraficoCasosTemplateResponse evolucionCarteraResponses(@PathVariable String userName, @RequestParam String desde,
-			@RequestParam String hasta) {
+	public GraficoCasosTemplateResponse evolucionCarteraResponses(@PathVariable String userName,
+			@RequestParam String desde, @RequestParam String hasta) {
 		return service.evolucionCarteraResponse(userName, desde, hasta);
 	}
-	
+
 	@GetMapping(path = "/mattersMostAudited/{userName}")
 	public GraficoCasosTemplateResponse materiasMasFiscalizadas(@PathVariable String userName) {
 		return service.materiasFiscalizadas(userName);
