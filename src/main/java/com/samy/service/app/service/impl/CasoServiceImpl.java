@@ -192,6 +192,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public ActuacionResponseX2 registrarActuacion(ActuacionBody request, String idCaso) {
 		Caso caso = verPodId(idCaso);
+		String estadoCaso = request.getEstadoCaso().getCampoAux();
+		if (estadoCaso.contains("03") || estadoCaso.contains("05")) {
+			caso.setEstadoCaso(false);
+		}
 		return transformMap(registrar(builder.transformActuacion(caso, request)));
 	}
 
@@ -884,6 +888,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
 				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
+				.statusCase(caso.getEstadoCaso())
 				.build();
 	}
 
