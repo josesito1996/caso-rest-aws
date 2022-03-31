@@ -4,8 +4,12 @@ import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -202,4 +206,48 @@ public class Utils {
 		int randomNumber = random.nextInt(hasta - desde) + desde;
 		return (double) randomNumber;
 	}
+
+	public static LocalDate stringToLocalDate(String fecha) {
+		return LocalDate.parse(fecha);
+	}
+
+	/**
+	 * Primera letra en mayuscula.
+	 * 
+	 * @param val
+	 * @return
+	 */
+	public static String upperCaseFirst(String val) {
+		char[] arr = val.toCharArray();
+		arr[0] = Character.toUpperCase(arr[0]);
+		return new String(arr);
+	}
+
+	/**
+	 * Parametros para formato de fecha : Dia : "dd" Mes : "MMMM" Anio : yyyy
+	 * 
+	 * @param zoneTime
+	 * @param fechaActual
+	 * @return
+	 */
+	public static String dateZone(String zoneTime, LocalDateTime fechaActual, String paramDate) {
+		TimeZone timeZone = TimeZone.getTimeZone(zoneTime);
+		Date fecha = convertToDateViaInstant(fechaActual);
+		return fecha.toInstant().atZone(timeZone.toZoneId()).toLocalDateTime()
+				.format(DateTimeFormatter.ofPattern(paramDate, new Locale("es", "ES")));
+	}
+
+	private static Date convertToDateViaInstant(LocalDateTime dateToConvert) {
+		return java.util.Date.from(dateToConvert.atZone(ZoneId.systemDefault()).toInstant());
+	}
+
+	public static LocalDate convertActualZone(LocalDate fechaActual) {
+		LocalDateTime fechaHora = LocalDateTime.of(fechaActual, LocalTime.now());
+		return LocalDate.parse(dateZone("America/Lima", fechaHora, "yyyy-MM-dd"));
+	}
+
+	public static void main(String... args) {
+		System.out.println("Fecha : " + convertActualZone(LocalDate.of(2022, 03, 30)));
+	}
+
 }

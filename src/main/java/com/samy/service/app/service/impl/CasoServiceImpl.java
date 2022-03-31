@@ -34,6 +34,7 @@ import static com.samy.service.app.util.Utils.nombrePersona;
 import static com.samy.service.app.util.Utils.round;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
 import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
+import static com.samy.service.app.util.Utils.convertActualZone;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -1022,7 +1023,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			for (Actuacion actuacion : actuaciones) {
 				List<Tarea> tareas = actuacion.getTareas();
 				for (Tarea tarea : tareas) {
-					LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
+					LocalDate fechaVencimiento = convertActualZone(tarea.getFechaVencimiento().toLocalDate());
 					LocalDate fechaAumentada = LocalDate.now().plusDays(diasPlazoVencimiento);
 					/**
 					 * Validar este tema
