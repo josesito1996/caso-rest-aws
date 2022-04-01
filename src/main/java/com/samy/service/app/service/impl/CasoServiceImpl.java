@@ -193,7 +193,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public ActuacionResponseX2 registrarActuacion(ActuacionBody request, String idCaso) {
 		Caso caso = verPodId(idCaso);
 		String estadoCaso = request.getEstadoCaso().getCampoAux();
-		if (estadoCaso.contains("3") || estadoCaso.contains("5")) {
+		if (estadoCaso.contains("3") || estadoCaso.contains("5") || estadoCaso.contains("10")) {
 			caso.setEstadoCaso(false);
 		}
 		return transformMap(registrar(builder.transformActuacion(caso, request)));
