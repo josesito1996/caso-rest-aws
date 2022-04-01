@@ -1274,10 +1274,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
-			log.info("Item {}", item.getId());
-			AnalisisRiesgoPojo analisisPojo = externalAws.tableInfraccion(item.getId());
-			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
-					.multaPotencial(analisisPojo.getSumaMultaPotencial()).provision(analisisPojo.getSumaProvision())
+			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
+			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial).sum();
+			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
+			return CasoDto.builder()
+					.idCaso(item.getId())
+					.mesCaso(mesAñoFecha(item.getFechaInicio()))
+					.multaPotencial(sumaMultaPotencial)
+					.provision(sumaProvision)
 					.fechaRegistro(item.getFechaInicio()).build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
