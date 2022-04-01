@@ -352,13 +352,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 * Metodo que lista las Notificacion y Vencimientos
 	 */
 	@Override
-	public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(String userName, Boolean isProximos) {
+	public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientos(String userName,
+			Boolean isProximos) {
 		/*
 		 * return listarCasosPorUserName(userName).stream()
 		 * .map(this::transformNotificacionesVencimientosResponse)
 		 * .collect(Collectors.toList());
 		 */
-		return test(listarCasosPorUserName(userName),isProximos);
+		return test(listarCasosPorUserName(userName), isProximos);
 	}
 
 	/**
@@ -888,8 +889,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
 				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
-				.statusCase(caso.getEstadoCaso())
-				.build();
+				.statusCase(caso.getEstadoCaso()).build();
 	}
 
 	private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
@@ -963,6 +963,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro).reversed());
 		for (Actuacion actuacion : actuaciones) {
 			for (FuncionarioDto func : actuacion.getFuncionario()) {
+				
 				List<FuncionarioResponse> funcis = funcionarios.stream()
 						.filter(item -> item.getIdFuncionario().equals(func.getId())).collect(Collectors.toList());
 				InspectorPojo inspectorPojo = externalAws.tableInspector(func.getId());
@@ -1274,8 +1275,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+			log.info("Item {}", item.getId());
 			AnalisisRiesgoPojo analisisPojo = externalAws.tableInfraccion(item.getId());
-			log.info("Analisis {}", analisisPojo);
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
 					.multaPotencial(analisisPojo.getSumaMultaPotencial()).provision(analisisPojo.getSumaProvision())
 					.fechaRegistro(item.getFechaInicio()).build();

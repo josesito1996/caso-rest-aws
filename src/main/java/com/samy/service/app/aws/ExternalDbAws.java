@@ -49,6 +49,7 @@ public class ExternalDbAws {
 		GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_analisis", idAnalisis);
 		Item materiaItem = tableMaterias.getItem(spec);
 		if (materiaItem == null) {
+			log.info("validacion : {}",materiaItem == null);
 			return AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).cantidadInvolucrados(0)
 					.infracciones(new ArrayList<>()).build();
 		}

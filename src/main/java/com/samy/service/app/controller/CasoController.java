@@ -143,6 +143,7 @@ public class CasoController {
 	@PostMapping(path = "/saveActuacion/{idCaso}")
 	public ActuacionResponseX2 registrarActuacion(@Valid @RequestBody ActuacionBody requestBody,
 			@Valid @PathVariable String idCaso) {
+		log.info("CasoController.registrarActuacion {}", requestBody);
 		return service.registrarActuacion(requestBody, idCaso);
 	}
 
