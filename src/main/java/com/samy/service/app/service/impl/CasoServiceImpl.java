@@ -17,7 +17,6 @@ import static com.samy.service.app.util.Contants.ID_PRIMERA_INSTANCIA;
 import static com.samy.service.app.util.Contants.ID_SEGUNDA_INSTANCIA;
 import static com.samy.service.app.util.Contants.ID_TERCERA_INSTANCIA;
 import static com.samy.service.app.util.Contants.correoSami;
-import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
@@ -1031,12 +1030,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				for (Tarea tarea : tareas) {
 					LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
 					LocalDate fechaActual = convertActualZone(LocalDate.now());
-					LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
+					// LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
 					/**
 					 * Validar este tema
 					 */
 					if (isProximos) {
-						if (fechaVencimiento.isAfter(LocalDate.now()) && fechaVencimiento.isBefore(fechaAumentada)) {
+						if (fechaVencimiento.isAfter(LocalDate.now())) {
 							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
 									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
 									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
