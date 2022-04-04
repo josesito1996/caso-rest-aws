@@ -52,6 +52,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1262,8 +1263,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
 
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
-			AnalisisRiesgoPojo analisis = externalAws.tableInfraccion(item.getId());
-			return CasoDto.builder().idCaso(item.getId()).trabajadoresAfectados(analisis.getCantidadInvolucrados())
+			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
+			Integer sumTrabajadores = listAnalisis.stream().flatMapToInt(element -> IntStream.of(element.getCantidadInvolucrados())).sum();
+			return CasoDto.builder().idCaso(item.getId())
+					.trabajadoresAfectados(sumTrabajadores)
 					.nombreCaso(item.getDescripcionCaso()).build();
 		}).collect(Collectors.toList());
 
@@ -1274,7 +1277,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			Integer trabajadoresAfectados = item.getTrabajadoresAfectados();
 			return ItemsPorCantidadResponse.builder().nombreItem(item.getNombreCaso())
 					.cantidadNumber(getPorcentaje(trabajadoresAfectados, mayorTrabajadoresInvolucrados))
-					.cantidad(item.getTrabajadoresAfectados()).build();
+					.cantidad(trabajadoresAfectados).build();
 		}).collect(Collectors.toList());
 	}
 
