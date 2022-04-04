@@ -1322,19 +1322,20 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
 		return casosPorUsuario.parallelStream().map(item -> {
-			AnalisisRiesgoPojo pojo = externalAws.tableInfraccion(item.getId());
+			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
+			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial).sum();
+			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
 			String color = "";
-			double multa = item.getMultaPotencial().doubleValue();
-			if (multa > 0 && multa <= 3000) {
+			if (sumaMultaPotencial > 0 && sumaMultaPotencial <= 3000) {
 				color = "green";
-			} else if (multa >= 3001 && multa <= 5000) {
+			} else if (sumaMultaPotencial >= 3001 && sumaMultaPotencial <= 5000) {
 				color = "red";
 			} else {
 				color = "yellow";
 			}
 			return CasosConRiesgoResponse.builder().nombreCaso(item.getDescripcionCaso())
-					.multaPotencial(formatMoneyV2(round(pojo.getSumaMultaPotencial(), 2)))
-					.provisiones(formatMoneyV2(round(pojo.getSumaProvision(), 2))).color(color).build();
+					.multaPotencial(formatMoneyV2(round(sumaMultaPotencial, 2)))
+					.provisiones(formatMoneyV2(round(sumaProvision, 2))).color(color).build();
 		}).collect(Collectors.toList());
 	}
 
