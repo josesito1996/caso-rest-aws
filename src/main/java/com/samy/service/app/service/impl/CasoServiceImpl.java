@@ -375,8 +375,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casos = listarCasosPorUserName(userName);
 		int totalCasos = casos.size();
 		int totalCasosActivos = totalCasosPorEstado(casos, true);
+		int totalCasosConcluidos = totalCasosPorEstado(casos,false);
 		return MiCarteraResponse.builder().hasta(fechaFormateada(LocalDateTime.now()))
-				.casosActivos(String.valueOf(totalCasosActivos)).casosRegistrados(String.valueOf(totalCasos))
+				.casosActivos(String.valueOf(totalCasosActivos))
+				.casosConcluidos(String.valueOf(totalCasosConcluidos))
+				.casosRegistrados(String.valueOf(totalCasos))
 				.etapas(transformToMap(casos)).build();
 	}
 
@@ -963,7 +966,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro).reversed());
 		for (Actuacion actuacion : actuaciones) {
 			for (FuncionarioDto func : actuacion.getFuncionario()) {
-				
+
 				List<FuncionarioResponse> funcis = funcionarios.stream()
 						.filter(item -> item.getIdFuncionario().equals(func.getId())).collect(Collectors.toList());
 				InspectorPojo inspectorPojo = externalAws.tableInspector(func.getId());
@@ -1037,24 +1040,18 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 					 */
 					if (isProximos) {
 						if (fechaVencimiento.isAfter(LocalDate.now())) {
-							notiVenci.add(NotificacionesVencimientosResponse.builder()
-									.idCaso(caso.getId())
-									.idActuacion(actuacion.getIdActuacion())
-									.idTarea(tarea.getIdTarea())
+							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
+									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
 									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-									.fechaVenc(fechaVencimiento)
-									.nombreCaso(caso.getDescripcionCaso())
+									.fechaVenc(fechaVencimiento).nombreCaso(caso.getDescripcionCaso())
 									.descripcion(getObject(tarea)).build());
 						}
 					} else {
 						if (fechaVencimiento.isBefore(fechaActual.minusDays(1))) {
-							notiVenci.add(NotificacionesVencimientosResponse.builder()
-									.idCaso(caso.getId())
-									.idActuacion(actuacion.getIdActuacion())
-									.idTarea(tarea.getIdTarea())
+							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
+									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
 									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-									.fechaVenc(fechaVencimiento)
-									.nombreCaso(caso.getDescripcionCaso())
+									.fechaVenc(fechaVencimiento).nombreCaso(caso.getDescripcionCaso())
 									.descripcion(getObject(tarea)).build());
 						}
 					}
@@ -1264,9 +1261,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
-			Integer sumTrabajadores = listAnalisis.stream().flatMapToInt(element -> IntStream.of(element.getCantidadInvolucrados())).sum();
-			return CasoDto.builder().idCaso(item.getId())
-					.trabajadoresAfectados(sumTrabajadores)
+			Integer sumTrabajadores = listAnalisis.stream()
+					.flatMapToInt(element -> IntStream.of(element.getCantidadInvolucrados())).sum();
+			return CasoDto.builder().idCaso(item.getId()).trabajadoresAfectados(sumTrabajadores)
 					.nombreCaso(item.getDescripcionCaso()).build();
 		}).collect(Collectors.toList());
 
@@ -1286,14 +1283,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
-			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial).sum();
+			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
+					.sum();
 			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
-			return CasoDto.builder()
-					.idCaso(item.getId())
-					.mesCaso(mesAñoFecha(item.getFechaInicio()))
-					.multaPotencial(sumaMultaPotencial)
-					.provision(sumaProvision)
-					.fechaRegistro(item.getFechaInicio()).build();
+			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
+					.multaPotencial(sumaMultaPotencial).provision(sumaProvision).fechaRegistro(item.getFechaInicio())
+					.build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
@@ -1326,7 +1321,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
 		return casosPorUsuario.parallelStream().map(item -> {
 			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
-			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial).sum();
+			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
+					.sum();
 			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
 			String color = "";
 			if (sumaMultaPotencial > 0 && sumaMultaPotencial <= 3000) {

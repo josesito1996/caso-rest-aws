@@ -21,6 +21,8 @@ public class MiCarteraResponse {
 
     private String casosActivos;
     
+    private String casosConcluidos;
+    
     private List<Integer> data;
 
     private String casosRegistrados;
