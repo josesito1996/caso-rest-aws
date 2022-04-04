@@ -1,5 +1,6 @@
 package com.samy.service.app.model.response;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 import lombok.AllArgsConstructor;
@@ -24,6 +25,8 @@ public class NotificacionesVencimientosResponse {
     private String idTarea;
 
     private String fechaVencimiento;
+    
+    private LocalDate fechaVenc;
 
     private String nombreCaso;
 

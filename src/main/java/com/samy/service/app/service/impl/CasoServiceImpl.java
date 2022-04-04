@@ -1020,7 +1020,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		return tareas.indexOf(tareaAux.get(0));
 	}
 
-	private List<NotificacionesVencimientosResponse> test(List<Caso> casos, Boolean isProximos) {
+	private List<NotificacionesVencimientosResponse> test(List<Caso> casos, boolean isProximos) {
 		List<Caso> listaCaso = casos;
 		List<NotificacionesVencimientosResponse> notiVenci = new ArrayList<NotificacionesVencimientosResponse>();
 		for (Caso caso : listaCaso) {
@@ -1036,23 +1036,31 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 					 */
 					if (isProximos) {
 						if (fechaVencimiento.isAfter(LocalDate.now())) {
-							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
-									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
+							notiVenci.add(NotificacionesVencimientosResponse.builder()
+									.idCaso(caso.getId())
+									.idActuacion(actuacion.getIdActuacion())
+									.idTarea(tarea.getIdTarea())
 									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-									.nombreCaso(caso.getDescripcionCaso()).descripcion(getObject(tarea)).build());
+									.fechaVenc(fechaVencimiento)
+									.nombreCaso(caso.getDescripcionCaso())
+									.descripcion(getObject(tarea)).build());
 						}
 					} else {
 						if (fechaVencimiento.isBefore(fechaActual.minusDays(1))) {
-							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
-									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
+							notiVenci.add(NotificacionesVencimientosResponse.builder()
+									.idCaso(caso.getId())
+									.idActuacion(actuacion.getIdActuacion())
+									.idTarea(tarea.getIdTarea())
 									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-									.nombreCaso(caso.getDescripcionCaso()).descripcion(getObject(tarea)).build());
+									.fechaVenc(fechaVencimiento)
+									.nombreCaso(caso.getDescripcionCaso())
+									.descripcion(getObject(tarea)).build());
 						}
 					}
 				}
 			}
 		}
-		return notiVenci.stream().sorted(Comparator.comparing(NotificacionesVencimientosResponse::getFechaVencimiento))
+		return notiVenci.stream().sorted(Comparator.comparing(NotificacionesVencimientosResponse::getFechaVenc))
 				.collect(Collectors.toList());
 	}
 

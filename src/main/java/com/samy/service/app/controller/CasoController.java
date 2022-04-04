@@ -211,7 +211,7 @@ public class CasoController {
 	@Operation(description = "Lista las notificaciones de vencimiento correspondientes al usuario")
 	@GetMapping(path = "/listNotifVenciByUserName/{userName}")
 	public List<NotificacionesVencimientosResponse> listarNotificacionesVencimientosPorNombreUsuario(
-			@PathVariable String userName, @RequestParam(required = false) Boolean isProximos) {
+			@PathVariable String userName, @RequestParam boolean isProximos) {
 		return service.listarNotificacionesVencimientos(userName, isProximos);
 	}
 
