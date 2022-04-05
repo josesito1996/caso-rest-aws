@@ -40,7 +40,7 @@ public class CasoDto implements Serializable{
 	
 	private Double provision;
 	
-	private Boolean estado;
+	private boolean estado;
 	
 	private String intendencia;
 	

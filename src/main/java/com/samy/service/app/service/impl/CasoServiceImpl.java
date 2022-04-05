@@ -375,12 +375,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casos = listarCasosPorUserName(userName);
 		int totalCasos = casos.size();
 		int totalCasosActivos = totalCasosPorEstado(casos, true);
-		int totalCasosConcluidos = totalCasosPorEstado(casos,false);
+		int totalCasosConcluidos = totalCasosPorEstado(casos, false);
 		return MiCarteraResponse.builder().hasta(fechaFormateada(LocalDateTime.now()))
-				.casosActivos(String.valueOf(totalCasosActivos))
-				.casosConcluidos(String.valueOf(totalCasosConcluidos))
-				.casosRegistrados(String.valueOf(totalCasos))
-				.etapas(transformToMap(casos)).build();
+				.casosActivos(String.valueOf(totalCasosActivos)).casosConcluidos(String.valueOf(totalCasosConcluidos))
+				.casosRegistrados(String.valueOf(totalCasos)).etapas(transformToMap(casos)).build();
 	}
 
 	@Override
@@ -1280,7 +1278,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName) {
-		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().collect(Collectors.toList());
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().filter(Caso::getEstadoCaso)
+				.collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
 			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
@@ -1288,7 +1287,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
 					.multaPotencial(sumaMultaPotencial).provision(sumaProvision).fechaRegistro(item.getFechaInicio())
-					.build();
+					.estado(item.getEstadoCaso()).build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
@@ -1320,10 +1319,16 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
 		return casosPorUsuario.parallelStream().map(item -> {
-			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
-			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
-					.sum();
-			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
+			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
+					.reduce((first, second) -> second)
+					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
+			// Double sumaMultaPotencial =
+			// listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
+			// .sum();
+			// Double sumaProvision =
+			// listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
+			Double sumaMultaPotencial = listAnalisis.getSumaMultaPotencial();
+			Double sumaProvision = listAnalisis.getSumaProvision();
 			String color = "";
 			if (sumaMultaPotencial > 0 && sumaMultaPotencial <= 3000) {
 				color = "green";
@@ -1369,7 +1374,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				for (Map.Entry<String, Long> item : totalPorMeses.entrySet()) {
 					String fecha = item.getKey();
 					Long cantidadCerrados = casosDto.stream()
-							.filter(itemCaso -> !itemCaso.getEstado() && fecha.equals(itemCaso.getMesCaso())).count();
+							.filter(itemCaso -> !itemCaso.isEstado() && fecha.equals(itemCaso.getMesCaso())).count();
 					acumCerrado.add(cantidadCerrados.intValue());
 				}
 				itemMap.put("data", acumCerrado);
