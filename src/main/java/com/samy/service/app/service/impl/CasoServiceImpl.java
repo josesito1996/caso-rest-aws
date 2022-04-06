@@ -840,8 +840,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private DetailCaseResponse transformFromCaso(Caso caso) {
-		List<String> idMaterias = caso.getMaterias().stream().map(item -> item.getId()).collect(Collectors.toList());
+		List<String> idMaterias = caso.getMaterias().stream().map(MateriaDto::getId).collect(Collectors.toList());
 		AnalisisRiesgoPojo mapInfraccion = externalEndpoint.listByIdCaso(caso.getId()).stream()
+				.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro))
 				.reduce((first, second) -> second).orElse(AnalisisRiesgoPojo.builder().build());
 		Integer totalMaterias = 0;
 		Integer totalSubMaterias = 0;
@@ -849,7 +850,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		// materiasResponseBuild(transformToDto(caso.getMaterias()),
 		// subMateriasBuild(caso.getMaterias()));
 		List<MateriaResponse> materias = materias(mapInfraccion.getInfracciones());
-		List<String> idMateriasV2 = materias.stream().map(item -> item.getIdMateria()).collect(Collectors.toList());
+		List<String> idMateriasV2 = materias.stream().map(MateriaResponse::getIdMateria).collect(Collectors.toList());
 		List<String> unionId = Stream.concat(idMaterias.stream(), idMateriasV2.stream()).distinct()
 				.collect(Collectors.toList());
 		List<MateriaResponse> materiasNew = new ArrayList<>();
@@ -885,7 +886,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
 				.funcionarios(funcionariosResponseList(caso))
 				.trabajadoresInvolucrados(mapInfraccion.getCantidadInvolucrados())
-				.sumaMultaPotencial(mapInfraccion.getSumaMultaPotencial())
+				.sumaMultaPotencial(mapInfraccion.getInfracciones().stream().mapToDouble(InfraccionItemPojo::getMultaPotencial).sum())
 				.sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
