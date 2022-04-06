@@ -1281,10 +1281,16 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().filter(Caso::getEstadoCaso)
 				.collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
-			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
-			Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
-					.sum();
-			Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
+			
+			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
+					.reduce((first, second) -> second)
+					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());;
+			
+			// Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
+			//		.sum();
+			//Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
+					Double sumaMultaPotencial = listAnalisis.getSumaMultaPotencial();
+					Double sumaProvision = listAnalisis.getSumaProvision();
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
 					.multaPotencial(sumaMultaPotencial).provision(sumaProvision).fechaRegistro(item.getFechaInicio())
 					.estado(item.getEstadoCaso()).build();
@@ -1318,7 +1324,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
-		return casosPorUsuario.parallelStream().map(item -> {
+		return casosPorUsuario.parallelStream().filter(Caso::getEstadoCaso).map(item -> {
 			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
 					.reduce((first, second) -> second)
 					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
