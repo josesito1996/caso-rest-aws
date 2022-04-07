@@ -1280,7 +1280,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	/*
-	 * Este metodo quedo deprecado por que no cumple con lo que se pide en el dashboard
+	 * Este metodo quedo deprecado por que no cumple con lo que se pide en el
+	 * dashboard
 	 */
 	@Deprecated
 	@Override
@@ -1346,19 +1347,23 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		Map<String, Long> mapCantidadMes = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
 
-		Map<String, Double> mapSumaMulta = casosDto.stream().filter(CasoDto::isEstado).collect(
-				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(CasoDto::getMultaPotencial)));
-		Map<String, Double> mapSumaProvision = casosDto.stream()
-				.collect(Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(CasoDto::getProvision)));
+		Map<String, Double> mapSumaMulta = casosDto.stream().filter(CasoDto::isEstado).collect(Collectors.groupingBy(
+				CasoDto::getMesCaso, LinkedHashMap::new, Collectors.summingDouble(CasoDto::getMultaPotencial)));
+	
 		
+		Map<String, Double> mapSumaProvision = casosDto.stream().filter(CasoDto::isEstado).collect(Collectors.groupingBy(CasoDto::getMesCaso,
+				LinkedHashMap::new, Collectors.summingDouble(CasoDto::getProvision)));
+
 		Map<String, Object> mapSeries = new HashMap<>();
 		List<Object> itemMapSerie = new ArrayList<>();
 		List<String> itemAxisCategory = new ArrayList<>();
-		List<Double> provisiones = mapSumaProvision.entrySet().stream().map(Entry::getValue).collect(Collectors.toList());
-		List<Double> multaPotenciales = mapSumaMulta.entrySet().stream().map(Entry::getValue).collect(Collectors.toList());
+		List<Double> provisiones = mapSumaProvision.entrySet().stream().map(Entry::getValue)
+				.collect(Collectors.toList());
+		List<Double> multaPotenciales = mapSumaMulta.entrySet().stream().map(Entry::getValue)
+				.collect(Collectors.toList());
 		int countInicial = 0;
 		for (Entry<String, Long> entry : mapCantidadMes.entrySet()) {
-			// log.info("Item : {},{}", entry.getKey(), entry.getValue());
+			log.info("Item : {},{}", entry.getKey(), entry.getValue());
 			String key = entry.getKey();
 			int countTotal = entry.getValue().intValue();
 			List<CasoDto> newList = casosDto.stream().filter(item -> item.getMesCaso().equals(key))
