@@ -7,14 +7,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import com.samy.service.app.external.ArchivoAdjunto;
-import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
-import com.samy.service.app.model.request.DocumentoAnexoRequest;
-import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.restTemplate.ExternalEndpoint;
 import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
-import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
 import com.samy.service.app.service.CasoService;
 
 import lombok.extern.slf4j.Slf4j;
