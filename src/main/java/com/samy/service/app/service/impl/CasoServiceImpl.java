@@ -1349,21 +1349,35 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 		Map<String, Double> mapSumaMulta = casosDto.stream().filter(CasoDto::isEstado).collect(Collectors.groupingBy(
 				CasoDto::getMesCaso, LinkedHashMap::new, Collectors.summingDouble(CasoDto::getMultaPotencial)));
-	
-		
-		Map<String, Double> mapSumaProvision = casosDto.stream().filter(CasoDto::isEstado).collect(Collectors.groupingBy(CasoDto::getMesCaso,
-				LinkedHashMap::new, Collectors.summingDouble(CasoDto::getProvision)));
+
+		Map<String, Double> mapSumaProvision = casosDto.stream().filter(CasoDto::isEstado).collect(Collectors
+				.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.summingDouble(CasoDto::getProvision)));
 
 		Map<String, Object> mapSeries = new HashMap<>();
 		List<Object> itemMapSerie = new ArrayList<>();
 		List<String> itemAxisCategory = new ArrayList<>();
-		List<Double> provisiones = mapSumaProvision.entrySet().stream().map(Entry::getValue)
-				.collect(Collectors.toList());
-		List<Double> multaPotenciales = mapSumaMulta.entrySet().stream().map(Entry::getValue)
-				.collect(Collectors.toList());
+		List<Double> provisiones = new ArrayList<>();
+		List<Double> multaPotenciales = new ArrayList<>();
+
+		double multaInicial = 0.0;
+		for (Entry<String, Double> entry : mapSumaMulta.entrySet()) {
+			double amountTotal = entry.getValue();
+			multaInicial = multaInicial + amountTotal;
+			multaPotenciales.add(multaInicial);
+		}
+		
+		double provisionInicial = 0.0;
+		for (Entry<String, Double> entry : mapSumaProvision.entrySet()) {
+			log.info("Provision {}", entry);
+			double amountTotal = entry.getValue();
+			provisionInicial = provisionInicial + amountTotal;
+			provisiones.add(provisionInicial);
+		}
+
+		/////////////////////////////////
 		int countInicial = 0;
 		for (Entry<String, Long> entry : mapCantidadMes.entrySet()) {
-			log.info("Item : {},{}", entry.getKey(), entry.getValue());
+			// log.info("Item : {},{}", entry.getKey(), entry.getValue());
 			String key = entry.getKey();
 			int countTotal = entry.getValue().intValue();
 			List<CasoDto> newList = casosDto.stream().filter(item -> item.getMesCaso().equals(key))
