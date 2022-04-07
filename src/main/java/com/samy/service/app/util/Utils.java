@@ -83,7 +83,7 @@ public class Utils {
 		return formatMes(fecha.format(formatter));
 	}
 
-	public static String mesAñoFecha(LocalDate fecha) {
+	public static String mesAnioFecha(LocalDate fecha) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM YY");
 		return formatMes(fecha.format(formatter));
 	}

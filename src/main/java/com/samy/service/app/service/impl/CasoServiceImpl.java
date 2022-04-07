@@ -27,7 +27,7 @@ import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.formatMoneyV2;
 import static com.samy.service.app.util.Utils.getPorcentaje;
-import static com.samy.service.app.util.Utils.mesAñoFecha;
+import static com.samy.service.app.util.Utils.mesAnioFecha;
 import static com.samy.service.app.util.Utils.mesFecha;
 import static com.samy.service.app.util.Utils.nombrePersona;
 import static com.samy.service.app.util.Utils.round;
@@ -45,6 +45,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -842,8 +843,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	private DetailCaseResponse transformFromCaso(Caso caso) {
 		List<String> idMaterias = caso.getMaterias().stream().map(MateriaDto::getId).collect(Collectors.toList());
 		AnalisisRiesgoPojo mapInfraccion = externalEndpoint.listByIdCaso(caso.getId()).stream()
-				.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro))
-				.reduce((first, second) -> second).orElse(AnalisisRiesgoPojo.builder().build());
+				.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro)).reduce((first, second) -> second)
+				.orElse(AnalisisRiesgoPojo.builder().build());
 		Integer totalMaterias = 0;
 		Integer totalSubMaterias = 0;
 		// List<MateriaResponse> materias =
@@ -886,7 +887,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
 				.funcionarios(funcionariosResponseList(caso))
 				.trabajadoresInvolucrados(mapInfraccion.getCantidadInvolucrados())
-				.sumaMultaPotencial(mapInfraccion.getInfracciones().stream().mapToDouble(InfraccionItemPojo::getMultaPotencial).sum())
+				.sumaMultaPotencial(mapInfraccion.getInfracciones().stream()
+						.mapToDouble(InfraccionItemPojo::getMultaPotencial).sum())
 				.sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
@@ -1277,31 +1279,37 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		}).collect(Collectors.toList());
 	}
 
+	/*
+	 * Este metodo quedo deprecado por que no cumple con lo que se pide en el dashboard
+	 */
+	@Deprecated
 	@Override
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName).stream().filter(Caso::getEstadoCaso)
 				.collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
-			
+
 			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
 					.reduce((first, second) -> second)
-					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());;
-			
-			// Double sumaMultaPotencial = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
-			//		.sum();
-			//Double sumaProvision = listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
-					Double sumaMultaPotencial = listAnalisis.getSumaMultaPotencial();
-					Double sumaProvision = listAnalisis.getSumaProvision();
-			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAñoFecha(item.getFechaInicio()))
+					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
+
+			// Double sumaMultaPotencial =
+			// listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
+			// .sum();
+			// Double sumaProvision =
+			// listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaProvision).sum();
+			Double sumaMultaPotencial = listAnalisis.getSumaMultaPotencial();
+			Double sumaProvision = listAnalisis.getSumaProvision();
+			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAnioFecha(item.getFechaInicio()))
 					.multaPotencial(sumaMultaPotencial).provision(sumaProvision).fechaRegistro(item.getFechaInicio())
 					.estado(item.getEstadoCaso()).build();
 		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
 		Map<String, Long> mapCantidadMes = casosDto.stream()
 				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
 		Map<String, Double> mapSumaMulta = casosDto.stream().collect(
-				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(item -> item.getMultaPotencial())));
-		Map<String, Double> mapSumaProvision = casosDto.stream().collect(
-				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(item -> item.getProvision())));
+				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(CasoDto::getMultaPotencial)));
+		Map<String, Double> mapSumaProvision = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(CasoDto::getProvision)));
 		log.info("MapCantidades {}", mapCantidadMes);
 		log.info("MapSumaMulta {}", mapSumaMulta);
 		log.info("MapSumaMultaProvision {}", mapSumaProvision);
@@ -1317,9 +1325,54 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			return round(item.getValue(), 2);
 		}).collect(Collectors.toList()));
 		return GraficoImpactoCarteraResponse.builder().series(mapSerie)
-				.xAxisCategories(
-						mapCantidadMes.entrySet().stream().map(item -> item.getKey()).collect(Collectors.toList()))
+				.xAxisCategories(mapCantidadMes.entrySet().stream().map(Entry::getKey).collect(Collectors.toList()))
 				.build();
+	}
+
+	@Override
+	public GraficoImpactoCarteraResponse verGraficoImpactoResponseV2(String userName) {
+		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
+		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
+					.reduce((first, second) -> second)
+					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
+			Double sumaMultaPotencial = listAnalisis.getSumaMultaPotencial();
+			Double sumaProvision = listAnalisis.getSumaProvision();
+			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAnioFecha(item.getFechaInicio()))
+					.multaPotencial(sumaMultaPotencial).provision(sumaProvision).fechaRegistro(item.getFechaInicio())
+					.estado(item.getEstadoCaso()).build();
+		}).sorted(Comparator.comparing(CasoDto::getFechaRegistro)).collect(Collectors.toList());
+
+		Map<String, Long> mapCantidadMes = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getMesCaso, LinkedHashMap::new, Collectors.counting()));
+
+		Map<String, Double> mapSumaMulta = casosDto.stream().filter(CasoDto::isEstado).collect(
+				Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(CasoDto::getMultaPotencial)));
+		Map<String, Double> mapSumaProvision = casosDto.stream()
+				.collect(Collectors.groupingBy(CasoDto::getMesCaso, Collectors.summingDouble(CasoDto::getProvision)));
+		
+		Map<String, Object> mapSeries = new HashMap<>();
+		List<Object> itemMapSerie = new ArrayList<>();
+		List<String> itemAxisCategory = new ArrayList<>();
+		List<Double> provisiones = mapSumaProvision.entrySet().stream().map(Entry::getValue).collect(Collectors.toList());
+		List<Double> multaPotenciales = mapSumaMulta.entrySet().stream().map(Entry::getValue).collect(Collectors.toList());
+		int countInicial = 0;
+		for (Entry<String, Long> entry : mapCantidadMes.entrySet()) {
+			// log.info("Item : {},{}", entry.getKey(), entry.getValue());
+			String key = entry.getKey();
+			int countTotal = entry.getValue().intValue();
+			List<CasoDto> newList = casosDto.stream().filter(item -> item.getMesCaso().equals(key))
+					.collect(Collectors.toList());
+			int countActives = (int) newList.stream().filter(CasoDto::isEstado).count();
+			int countInactives = newList.size() - countActives;
+			itemMapSerie.add((countInicial + countTotal - countInactives));
+			itemAxisCategory.add(key);
+			countInicial = countTotal + countInicial - countInactives;
+		}
+		mapSeries.put("casosActivos", itemMapSerie);
+		mapSeries.put("provisiones", provisiones);
+		mapSeries.put("multaPotencialAcumulada", multaPotenciales);
+		return GraficoImpactoCarteraResponse.builder().xAxisCategories(itemAxisCategory).series(mapSeries).build();
 	}
 
 	@Override
@@ -1359,7 +1412,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 						&& item.getFechaInicio().isBefore(dateHasta))
 				.sorted(Comparator.comparing(Caso::getFechaInicio)).collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
-			String fecha = mesAñoFecha(item.getFechaInicio());
+			String fecha = mesAnioFecha(item.getFechaInicio());
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(fecha).fechaRegistro(item.getFechaInicio())
 					.nombreCaso(item.getDescripcionCaso()).estado(item.getEstadoCaso()).build();
 		}).collect(Collectors.toList());
@@ -1404,7 +1457,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			listMap.add(itemMap);
 		}
 		return GraficoCasosTemplateResponse.builder()
-				.meses(totalPorMeses.entrySet().stream().map(item -> item.getKey()).collect(Collectors.toList()))
+				.meses(totalPorMeses.entrySet().stream().map(Entry::getKey).collect(Collectors.toList()))
 				.series(listMap).build();
 	}
 

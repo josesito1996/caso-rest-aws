@@ -96,6 +96,8 @@ public interface CasoService extends ICrud<Caso, String> {
     
     public GraficoImpactoCarteraResponse verGraficoImpactoResponse(String userName);
     
+    public GraficoImpactoCarteraResponse verGraficoImpactoResponseV2(String userName);
+    
     public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName);
     
     public GraficoCasosTemplateResponse evolucionCarteraResponse(String userName, String desde, String hasta);

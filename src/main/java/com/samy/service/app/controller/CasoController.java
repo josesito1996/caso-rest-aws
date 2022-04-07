@@ -257,7 +257,7 @@ public class CasoController {
 
 	@GetMapping(path = "/monthlyCaseSummary/{userName}")
 	public GraficoImpactoCarteraResponse resumenMensualCasos(@PathVariable String userName) {
-		return service.verGraficoImpactoResponse(userName);
+		return service.verGraficoImpactoResponseV2(userName);
 	}
 
 	@GetMapping(path = "/riskyCases/{userName}")
