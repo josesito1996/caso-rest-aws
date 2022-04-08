@@ -25,7 +25,6 @@ public class Utils {
 		try {
 			return new ObjectMapper().readValue(cadena, clazz);
 		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}

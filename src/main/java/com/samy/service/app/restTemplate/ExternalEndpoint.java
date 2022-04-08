@@ -35,7 +35,6 @@ public class ExternalEndpoint {
 		log.info("ExternalEndpoint.listByIdCaso  : {} ", idCaso);
 		AnalisisRiesgoPojo[] lista = restTemplate.getForObject(apiAnalisisRiesgo.concat("findById/{idCaso}"),
 				AnalisisRiesgoPojo[].class, new Object[] { idCaso });
-		log.info("listita {}", lista);
 		return Arrays.asList(lista);
 	}
 
