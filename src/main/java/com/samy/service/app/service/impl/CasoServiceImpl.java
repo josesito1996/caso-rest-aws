@@ -844,7 +844,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<String> idMaterias = caso.getMaterias().stream().map(MateriaDto::getId).collect(Collectors.toList());
 		AnalisisRiesgoPojo mapInfraccion = externalEndpoint.listByIdCaso(caso.getId()).stream()
 				.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro)).reduce((first, second) -> second)
-				.orElse(AnalisisRiesgoPojo.builder().build());
+				.orElse(AnalisisRiesgoPojo.builder().infracciones(new ArrayList<>()).build());
 		Integer totalMaterias = 0;
 		Integer totalSubMaterias = 0;
 		// List<MateriaResponse> materias =

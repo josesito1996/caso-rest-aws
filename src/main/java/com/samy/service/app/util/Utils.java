@@ -31,8 +31,6 @@ public class Utils {
 	}
 
 	public static String fechaFormateadaYYYMMDD(LocalDateTime fecha) {
-		// DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YYYY
-		// hh:mm:s");
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
 		return fecha.format(formatter);
 	}
