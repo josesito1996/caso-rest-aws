@@ -388,7 +388,13 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		if (casos.isEmpty()) {
 			return CriticidadCasosResponse.builder().build();
 		}
-		BigDecimal suma = casos.stream().map(item -> item.getMultaPotencial()).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal suma = casos.parallelStream().map(caso -> {
+			AnalisisRiesgoPojo analisisRiesgo = externalEndpoint.listByIdCaso(caso.getId()).stream()
+					.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro).reversed()).findFirst()
+					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).build());
+			caso.setMultaPotencial(BigDecimal.valueOf(analisisRiesgo.getSumaMultaPotencial()));
+			return caso.getMultaPotencial();
+		}).reduce(BigDecimal.ZERO, BigDecimal::add);
 		double mayor = casos.stream().max(Comparator.comparing(Caso::getMultaPotencial)).get().getMultaPotencial()
 				.doubleValue();
 		return CriticidadCasosResponse.builder().total(formatMoney(suma.doubleValue()))
@@ -1365,7 +1371,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			multaInicial = multaInicial + amountTotal;
 			multaPotenciales.add(multaInicial);
 		}
-		
+
 		double provisionInicial = 0.0;
 		for (Entry<String, Double> entry : mapSumaProvision.entrySet()) {
 			log.info("Provision {}", entry);
