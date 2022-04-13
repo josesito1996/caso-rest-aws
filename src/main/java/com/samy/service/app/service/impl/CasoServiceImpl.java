@@ -1339,7 +1339,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponseV2(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
-		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
+		List<CasoDto> casosDto = casosPorUsuario.stream()
+				.parallel()
+				.map(item -> {
 			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
 					.reduce((first, second) -> second)
 					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
@@ -1403,7 +1405,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
 		List<Caso> casosPorUsuario = listarCasosPorUserName(userName);
-		return casosPorUsuario.parallelStream().filter(Caso::getEstadoCaso).map(item -> {
+		return casosPorUsuario.stream().filter(Caso::getEstadoCaso).parallel().map(item -> {
 			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
 					.reduce((first, second) -> second)
 					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
