@@ -17,13 +17,13 @@ import lombok.ToString;
 @ToString
 public class EtapaPojo {
 
-    @JsonProperty("id_etapa")
-    private String id_etapa;
+  @JsonProperty("id_etapa")
+  private String id_etapa;
 
-    @JsonProperty("nombreEtapa")
-    private String nombreEtapa;
+  @JsonProperty("nombreEtapa")
+  private String nombreEtapa;
 
-    @JsonProperty("nroOrden")
-    private Integer nroOrden;
+  @JsonProperty("nroOrden")
+  private Integer nroOrden;
 
 }

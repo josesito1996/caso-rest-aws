@@ -1,12 +1,10 @@
 package com.samy.service.app.aws;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.samy.service.app.model.request.ReactSelectRequest;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.samy.service.app.model.request.ReactSelectRequest;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

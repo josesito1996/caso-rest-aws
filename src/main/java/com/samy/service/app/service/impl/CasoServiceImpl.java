@@ -121,6 +121,7 @@ import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.restTemplate.ExternalEndpoint;
 import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
 import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
+import com.samy.service.app.restTemplate.model.ColaboradorPojo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
 import com.samy.service.app.util.Contants;
@@ -507,6 +508,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
 		Caso caso = verPodId(idCaso);
 		UsuarioPojo usuarioPojo = externalAws.tableUsuario(caso.getUsuario());
+		if (usuarioPojo.getIdUsuario() == null) {
+			ColaboradorPojo colaborador = externalEndpoint.viewColaboratorByUserName(caso.getUsuario());
+			usuarioPojo.setNombres(colaborador.getNombres());
+			usuarioPojo.setApellidos(colaborador.getApellidos());
+		}
 		List<Actuacion> actuaciones = caso.getActuaciones();
 		List<ActuacionResponseX3> response = actuaciones.stream()
 				// .peek(item -> System.out.println(item))

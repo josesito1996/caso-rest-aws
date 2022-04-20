@@ -1,8 +1,7 @@
 package com.samy.service.app.aws;
 
-import java.io.Serializable;
 import com.samy.service.app.model.request.ReactSelectRequest;
-
+import java.io.Serializable;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

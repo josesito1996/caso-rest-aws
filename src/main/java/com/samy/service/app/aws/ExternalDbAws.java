@@ -49,7 +49,7 @@ public class ExternalDbAws {
 		GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_analisis", idAnalisis);
 		Item materiaItem = tableMaterias.getItem(spec);
 		if (materiaItem == null) {
-			log.info("validacion : {}",materiaItem == null);
+			log.info("validacion : {}", materiaItem == null);
 			return AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).cantidadInvolucrados(0)
 					.infracciones(new ArrayList<>()).build();
 		}
@@ -58,9 +58,8 @@ public class ExternalDbAws {
 	}
 
 	public List<AnalisisRiesgoPojo> tableInfraccionList(String idCaso) {
-		DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder()
-				.withTableNameOverride(DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("analisis-riesgo"))
-				.build();
+		DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder().withTableNameOverride(
+				DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("analisis-riesgo")).build();
 		DynamoDBMapper mapper = new DynamoDBMapper(awsDynamoBD, mapperConfig);
 		HashMap<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
 		eav.put(":id_caso", new AttributeValue().withS(idCaso));
@@ -96,7 +95,7 @@ public class ExternalDbAws {
 	}
 
 	public UsuarioPojo tableUsuario(String userName) {
-		Map<String, AttributeValue> expresionAttributte = new HashMap<String, AttributeValue>();
+		Map<String, AttributeValue> expresionAttributte = new HashMap<>();
 		expresionAttributte.put(":userName", new AttributeValue().withS(userName));
 		ScanRequest scan = new ScanRequest();
 		scan.setTableName("usuarios");
