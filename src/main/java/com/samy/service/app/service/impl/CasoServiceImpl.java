@@ -336,11 +336,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 */
 	@Override
 	public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber, Integer pageSize) {
-		List<Caso> lista = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> lista = getUserNamePrincipal(userName);
 		return ListPagination.getPage(
 				orderByDesc(lista.stream().map(this::transformToHomeCase).collect(Collectors.toList())), pageNumber,
 				pageSize);
 	}
+
 	/**
 	 * Metodo que muestra el detalle de un caso en especifico
 	 */
@@ -360,7 +361,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		 * .map(this::transformNotificacionesVencimientosResponse)
 		 * .collect(Collectors.toList());
 		 */
-		return test(listarCasosPorUserName(getUserNamePrincipal(userName)), isProximos);
+		return test(getUserNamePrincipal(userName), isProximos);
 	}
 
 	/**
@@ -373,7 +374,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public MiCarteraResponse verCarteraResponse(String userName) {
-		List<Caso> casos = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casos = getUserNamePrincipal(userName);
 		int totalCasos = casos.size();
 		int totalCasosActivos = totalCasosPorEstado(casos, true);
 		int totalCasosConcluidos = totalCasosPorEstado(casos, false);
@@ -384,7 +385,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public CriticidadCasosResponse verCriticidadResponse(String userName) {
-		List<Caso> casos = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casos = getUserNamePrincipal(userName);
 		if (casos.isEmpty()) {
 			return CriticidadCasosResponse.builder().build();
 		}
@@ -403,7 +404,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public List<Map<String, Object>> verCasosPorMateria(String userName) {
-		List<Caso> casos = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casos = getUserNamePrincipal(userName);
 		if (casos.isEmpty()) {
 			return new ArrayList<Map<String, Object>>();
 		}
@@ -432,7 +433,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public List<Map<String, Object>> verTotalesCompletados(String userName) {
-		List<Caso> casos = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casos = getUserNamePrincipal(userName);
 		List<Map<String, Object>> lista = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("tipo", "Actuaciones");
@@ -1247,7 +1248,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public List<ItemsPorCantidadResponse> casosPorEmpresa(String userName) {
-		List<Caso> casosPorUsuario = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			String empresa = item.getEmpresas().isEmpty() ? "" : item.getEmpresas().get(0).getLabel();
 			return CasoDto.builder().idCaso(item.getId()).nombreCaso(item.getDescripcionCaso()).empresa(empresa)
@@ -1269,7 +1270,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public List<ItemsPorCantidadResponse> casosPorTrabajdoresInvolucrados(String userName) {
-		List<Caso> casosPorUsuario = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
@@ -1343,7 +1344,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponseV2(String userName) {
-		List<Caso> casosPorUsuario = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 		List<CasoDto> casosDto = casosPorUsuario.stream().parallel().map(item -> {
 			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
 					.reduce((first, second) -> second)
@@ -1407,7 +1408,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
-		List<Caso> casosPorUsuario = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 		return casosPorUsuario.stream().filter(Caso::getEstadoCaso).parallel().map(item -> {
 			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
 					.reduce((first, second) -> second)
@@ -1437,7 +1438,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public GraficoCasosTemplateResponse evolucionCarteraResponse(String userName, String desde, String hasta) {
 		LocalDate dateDesde = toLocalDateYYYYMMDD(desde);
 		LocalDate dateHasta = toLocalDateYYYYMMDD(hasta);
-		List<Caso> casosPorUsuario = listarCasosPorUserName(getUserNamePrincipal(userName)).stream()
+		List<Caso> casosPorUsuario = getUserNamePrincipal(userName).stream()
 				.filter(item -> item.getFechaInicio().isAfter(dateDesde.minusMonths(1))
 						&& item.getFechaInicio().isBefore(dateHasta))
 				.sorted(Comparator.comparing(Caso::getFechaInicio)).collect(Collectors.toList());
@@ -1493,7 +1494,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Override
 	public GraficoCasosTemplateResponse materiasFiscalizadas(String userName) {
-		List<Caso> casos = listarCasosPorUserName(getUserNamePrincipal(userName));
+		List<Caso> casos = getUserNamePrincipal(userName);
 		List<CasoDto> casosDto = casos.stream().map(item -> {
 			String intendencia = item.getIntendencias() != null && item.getIntendencias().size() > 0
 					? item.getIntendencias().get(0).getLabel()
@@ -1583,13 +1584,23 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.filter(item -> item.getIdArchivo().equals(request.getIdArchivo())).findFirst()
 				.orElse(DocumentoAnexoResponse.builder().build());
 	}
-	
-	private String getUserNamePrincipal(String userName) {
-		com.samy.service.app.restTemplate.model.UsuarioPojo usuario = externalEndpoint.viewByUserName(userName);
-		if (usuario == null) {
-			ColaboradorPojo colaborador = externalEndpoint.viewColaboratorByUserName(userName);
-			return colaborador.getUserName();
+
+	private List<Caso> getUserNamePrincipal(String userName) {
+		com.samy.service.app.restTemplate.model.UsuarioPojo usuarioPojo = externalEndpoint.viewByUserName(userName);
+		String usuario = "";
+		if (usuarioPojo == null) {
+			ColaboradorPojo colaboradorPojo = externalEndpoint.viewColaboratorByUserName(userName);
+			usuario = colaboradorPojo.getUserName();
+		} else {
+			usuario = usuarioPojo.getCorreo();
 		}
-		return usuario.getNombreUsuario();
+		List<String> colaborators = externalEndpoint.findColaboratorsByUserName(usuario);
+		List<Caso> casosConcat = colaborators.parallelStream().flatMap(item -> {
+			log.info("Dentro del flatMap {}", item);
+			return listarCasosPorUserName(item).stream();
+		}).collect(Collectors.toList());
+		List<Caso> casosUsuario = listarCasosPorUserName(usuario);
+		Stream<Caso> resultingStream = Stream.concat(casosConcat.stream(), casosUsuario.stream());
+		return resultingStream.collect(Collectors.toList());
 	}
 }
