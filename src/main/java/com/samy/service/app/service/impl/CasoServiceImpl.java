@@ -905,6 +905,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
 				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
+				.userName(caso.getUsuario())
 				.statusCase(caso.getEstadoCaso()).build();
 	}
 

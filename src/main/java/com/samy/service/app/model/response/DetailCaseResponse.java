@@ -65,5 +65,7 @@ public class DetailCaseResponse {
 	
 	private String region;
 	
+	private String userName;
+	
 	private boolean statusCase;
 }
