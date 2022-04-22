@@ -13,6 +13,7 @@ import com.samy.service.app.aws.AnalisisRiesgoPojo;
 import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
 import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
 import com.samy.service.app.restTemplate.model.ColaboradorPojo;
+import com.samy.service.app.restTemplate.model.UserResponseBodyPojo;
 import com.samy.service.app.restTemplate.model.UsuarioPojo;
 
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,15 @@ public class ExternalEndpoint {
 		List<String> colaborators = Arrays.asList(response);
 		log.info("Colaborators {}", colaborators);
 		return colaborators;
+	}
+	
+	public UserResponseBodyPojo getUser(String userName) {
+		log.info("ExternalEndpoint.getUser  : {} ", userName);
+		log.info("URL {}", apiUsuarios.concat("getUser").concat("/" + userName));
+		UserResponseBodyPojo userResponse = restTemplate.getForObject(
+				apiUsuarios.concat("getUser/{userName}"), UserResponseBodyPojo.class, userName);
+		log.info("Response {} ", userResponse);
+		return userResponse;
 	}
 
 }

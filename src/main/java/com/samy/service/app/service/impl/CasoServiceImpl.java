@@ -29,7 +29,6 @@ import static com.samy.service.app.util.Utils.formatMoneyV2;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesAnioFecha;
 import static com.samy.service.app.util.Utils.mesFecha;
-import static com.samy.service.app.util.Utils.nombrePersona;
 import static com.samy.service.app.util.Utils.round;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
 import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
@@ -67,7 +66,6 @@ import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.aws.InfraccionItemPojo;
 import com.samy.service.app.aws.InspectorPojo;
 import com.samy.service.app.aws.MateriaPojo;
-import com.samy.service.app.aws.UsuarioPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
@@ -507,17 +505,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
 		Caso caso = verPodId(idCaso);
-		UsuarioPojo usuarioPojo = externalAws.tableUsuario(caso.getUsuario());
-		if (usuarioPojo.getIdUsuario() == null) {
-			ColaboradorPojo colaborador = externalEndpoint.viewColaboratorByUserName(caso.getUsuario());
-			usuarioPojo.setNombres(colaborador.getNombres());
-			usuarioPojo.setApellidos(colaborador.getApellidos());
-		}
 		List<Actuacion> actuaciones = caso.getActuaciones();
 		List<ActuacionResponseX3> response = actuaciones.stream()
 				// .peek(item -> System.out.println(item))
-				.map(item -> transformActuacionResponseX3(item,
-						nombrePersona(usuarioPojo.getNombres(), usuarioPojo.getApellidos())))
+				.map(item -> transformActuacionResponseX3(item))
 				// .peek(item -> System.out.println(item.getFechaRegistro() + " - " +
 				// item.getFechaActuacion()))
 				.sorted(Comparator.comparing(ActuacionResponseX3::getFechaRegistro).reversed())
@@ -599,8 +590,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		return transformVencimientoMap(casoModified.getActuaciones().get(indexActuacion).getTareas().get(indexTarea));
 	}
 
-	private ActuacionResponseX3 transformActuacionResponseX3(Actuacion actuacion, String usuario) {
+	private ActuacionResponseX3 transformActuacionResponseX3(Actuacion actuacion) {
 		List<ArchivoAdjunto> archivos = actuacion.getArchivos();
+		String registradoPor = "";
+		if (actuacion.getRegistradoPor() != null) {
+			registradoPor = externalEndpoint.getUser(actuacion.getRegistradoPor()).getDatosUsuario();
+		}
 		String nombreArchivo = "";
 		if (!archivos.isEmpty()) {
 			for (ArchivoAdjunto adj : archivos) {
@@ -615,7 +610,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 						actuacion.getFechaRegistro().toLocalTime())))
 				.fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
 				.nombreActuacion(actuacion.getDescripcion()).descripcion(actuacion.getDescripcionAux())
-				.subidoPor(usuario)
+				.subidoPor(registradoPor)
 				.anexos((int) actuacion.getArchivos().stream().filter(item -> !item.isEsPrincipal()).count())
 				.tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
 				.funcionarios(
@@ -1136,7 +1131,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		actuacion.setDescripcion(request.getDescripcionActuacion());
 		caso.getActuaciones().set(indexActuacion, actuacion);
 		Caso casoEdit = modificar(caso);
-		return transformActuacionResponseX3(casoEdit.getActuaciones().get(indexActuacion), casoEdit.getUsuario());
+		return transformActuacionResponseX3(casoEdit.getActuaciones().get(indexActuacion));
 	}
 
 	@Override
@@ -1154,7 +1149,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<ActuacionResponseX3> response = new ArrayList<ActuacionResponseX3>();
 		Supplier<Stream<ActuacionResponseX3>> stream = () -> actuaciones.stream()
 				.filter(item -> evaluateArrays(item, params))
-				.map(item -> transformActuacionResponseX3(item, caso.getUsuario()));
+				.map(item -> transformActuacionResponseX3(item));
 		Comparator<ActuacionResponseX3> comparator = new Comparator<ActuacionResponseX3>() {
 			@Override
 			public int compare(ActuacionResponseX3 o1, ActuacionResponseX3 o2) {

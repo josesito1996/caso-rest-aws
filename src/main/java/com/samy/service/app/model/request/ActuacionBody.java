@@ -58,6 +58,10 @@ public class ActuacionBody implements Serializable {
 
 	@Valid
 	private List<TareaBody> tareas;
+	
+	@Valid
+	@NotNull
+	private String registradoPor;
 
 	@NotNull
 	private ReactSelectRequest etapa;

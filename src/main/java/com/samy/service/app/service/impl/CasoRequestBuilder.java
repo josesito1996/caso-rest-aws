@@ -76,6 +76,7 @@ public class CasoRequestBuilder {
 		actuacion.setTipoActuacion(toTipoActuacion(actuacionBody.getTipoActuacion()));
 		actuacion.setEtapa(toEtapaDto(actuacionBody.getEtapa()));
 		actuacion.setArchivos(listArchivoAdjunto(actuacionBody.getArchivos()));
+		actuacion.setRegistradoPor(actuacionBody.getRegistradoPor());
 		actuacion.setEstadoCaso(transformTransform(
 				EstadoCasoDto.builder().orden(Integer.parseInt(actuacionBody.getEstadoCaso().getCampoAux()))
 						.idEstadoCaso(actuacionBody.getEstadoCaso().getValue())

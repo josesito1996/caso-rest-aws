@@ -62,5 +62,8 @@ public class Actuacion {
 	private List<ArchivoAdjunto> archivos;
 	
 	@DynamoDBAttribute
+	private String registradoPor;
+	
+	@DynamoDBAttribute
 	private List<Tarea> tareas;
 }
