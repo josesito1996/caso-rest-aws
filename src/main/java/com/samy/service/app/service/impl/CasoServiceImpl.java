@@ -981,8 +981,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 				List<FuncionarioResponse> funcis = funcionarios.stream()
 						.filter(item -> item.getIdFuncionario().equals(func.getId())).collect(Collectors.toList());
+				log.info("Funcis {}", funcionarios);
 				InspectorPojo inspectorPojo = externalAws.tableInspector(func.getId());
-				log.info("Table" + inspectorPojo);
+				if (inspectorPojo.getId() == null) {
+					inspectorPojo.setId(func.getId());
+					inspectorPojo.setNombreInspector(func.getDatosFuncionario());
+				}
 				if (!funcis.isEmpty()) {
 					funcionarios.add(FuncionarioResponse.builder().idFuncionario(inspectorPojo.getId())
 							.nombreFuncionario(inspectorPojo.getNombreInspector()).cargo(inspectorPojo.getCargo())
