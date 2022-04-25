@@ -67,5 +67,7 @@ public class DetailCaseResponse {
 	
 	private String userName;
 	
+	private String datosUsuario;
+	
 	private boolean statusCase;
 }

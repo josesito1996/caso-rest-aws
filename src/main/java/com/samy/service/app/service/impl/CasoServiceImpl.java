@@ -120,6 +120,7 @@ import com.samy.service.app.restTemplate.ExternalEndpoint;
 import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
 import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
 import com.samy.service.app.restTemplate.model.ColaboradorPojo;
+import com.samy.service.app.restTemplate.model.UserResponseBodyPojo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
 import com.samy.service.app.util.Contants;
@@ -848,6 +849,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private DetailCaseResponse transformFromCaso(Caso caso) {
+		UserResponseBodyPojo usuario = externalEndpoint.getUser(caso.getUsuario());
 		List<String> idMaterias = caso.getMaterias().stream().map(MateriaDto::getId).collect(Collectors.toList());
 		AnalisisRiesgoPojo mapInfraccion = externalEndpoint.listByIdCaso(caso.getId()).stream()
 				.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro)).reduce((first, second) -> second)
@@ -901,6 +903,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
 				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
 				.userName(caso.getUsuario())
+				.datosUsuario(usuario.getDatosUsuario())
 				.statusCase(caso.getEstadoCaso()).build();
 	}
 
