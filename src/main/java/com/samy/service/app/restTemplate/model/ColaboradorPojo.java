@@ -41,6 +41,8 @@ private String idColaborador;
 	private boolean eliminado;
 	
     private boolean validado;
+    
+    private String rol;
 	
 	private LocalDateTime fechaRegistro;
 	

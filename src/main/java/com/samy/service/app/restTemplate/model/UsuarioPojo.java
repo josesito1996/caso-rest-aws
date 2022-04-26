@@ -47,6 +47,8 @@ public class UsuarioPojo implements Serializable {
 
 	private boolean validado;
 
+	private String rol;
+	
 	/**
 	 * Tipo: usuario -> usuario normal colaborador -> colaborador
 	 * 
