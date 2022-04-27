@@ -1,26 +1,27 @@
 package com.samy.service.app.aws;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
-import com.amazonaws.services.dynamodbv2.document.DynamoDB;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ScanRequest;
-import com.amazonaws.services.dynamodbv2.model.ScanResult;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.samy.service.samifiles.service.api.ProcessControllerApi;
+import com.samy.service.samifiles.service.model.ActuacionFileRequest;
+import com.samy.service.samifiles.service.model.ActuacionFileResponse;
+import com.samy.service.samiprimary.service.api.AnalisisRiesgoControllerApi;
+import com.samy.service.samiprimary.service.api.EtapaControllerApi;
+import com.samy.service.samiprimary.service.api.InspectorControllerApi;
+import com.samy.service.samiprimary.service.api.MateriaControllerApi;
+import com.samy.service.samiprimary.service.model.AnalisisRiesgo;
+import com.samy.service.samiprimary.service.model.EtapaResponse;
+import com.samy.service.samiprimary.service.model.InspectorResponse;
+import com.samy.service.samiprimary.service.model.MateriaResponse;
+import com.samy.service.samiusers.service.api.UsuarioControllerApi;
+import com.samy.service.samiusers.service.model.ColaboradorResponse;
+import com.samy.service.samiusers.service.model.UserResponseBody;
+import com.samy.service.samiusers.service.model.Usuario;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,88 +30,81 @@ import lombok.extern.slf4j.Slf4j;
 public class ExternalDbAws {
 
 	@Autowired
-	private DynamoDB dynamoDB;
+	private MateriaControllerApi materiaApi;
 
 	@Autowired
-	private AmazonDynamoDB awsDynamoBD;
+	private AnalisisRiesgoControllerApi analisisRiesgoApi;
 
-	public MateriaPojo getTable(String idMateria) {
-		log.info("ExternalDbAws.getTable");
-		final ObjectMapper mapper = new ObjectMapper();
-		Table tableMaterias = dynamoDB.getTable("materias");
-		GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_materia", idMateria);
-		Item materiaItem = tableMaterias.getItem(spec);
-		return mapper.convertValue(materiaItem.asMap(), MateriaPojo.class);
+	@Autowired
+	private EtapaControllerApi etapaApi;
+
+	@Autowired
+	private InspectorControllerApi inspectorApi;
+
+	@Autowired
+	private ProcessControllerApi processApi;
+
+	@Autowired
+	private UsuarioControllerApi usuarioApi;
+
+	public MateriaResponse getTable(String idMateria) {
+		MateriaResponse materia = materiaApi.buscarPorId1(idMateria);
+		return materia == null ? new MateriaResponse() : materia;
 	}
 
-	public AnalisisRiesgoPojo tableInfraccion(String idAnalisis) {
+	public List<AnalisisRiesgo> tableInfraccion(String idCaso) {
 		log.info("ExternalDbAws.tableInfraccion");
-		Table tableMaterias = dynamoDB.getTable("analisis-riesgo");
-		GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_analisis", idAnalisis);
-		Item materiaItem = tableMaterias.getItem(spec);
-		if (materiaItem == null) {
-			log.info("validacion : {}", materiaItem == null);
-			return AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).cantidadInvolucrados(0)
-					.infracciones(new ArrayList<>()).build();
+		List<AnalisisRiesgo> analisisList = analisisRiesgoApi.listarPorIdCaso(idCaso);
+		if (analisisList == null || analisisList.isEmpty()) {
+			return new ArrayList<>();
 		}
-		final ObjectMapper mapper = new ObjectMapper();
-		return mapper.convertValue(materiaItem.asMap(), AnalisisRiesgoPojo.class);
-	}
-
-	public List<AnalisisRiesgoPojo> tableInfraccionList(String idCaso) {
-		DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder().withTableNameOverride(
-				DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("analisis-riesgo")).build();
-		DynamoDBMapper mapper = new DynamoDBMapper(awsDynamoBD, mapperConfig);
-		HashMap<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-		eav.put(":id_caso", new AttributeValue().withS(idCaso));
-		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression().withFilterExpression("id_caso = :id_caso")
-				.withExpressionAttributeValues(eav);
-		List<AnalisisRiesgoPojo> analisisList = mapper.scan(AnalisisRiesgoPojo.class, scanExpression);
-		log.info("AanlisisList {}", analisisList);
 		return analisisList;
 	}
 
-	public List<EtapaPojo> getTableEtapa() {
-		log.info("ExternalDbAws.getTableEtapa");
-		DynamoDBMapperConfig mapperConfig = new DynamoDBMapperConfig.Builder()
-				.withTableNameOverride(DynamoDBMapperConfig.TableNameOverride.withTableNameReplacement("etapas"))
-				.build();
-		DynamoDBMapper mapper = new DynamoDBMapper(awsDynamoBD, mapperConfig);
-		DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
-		List<EtapaPojo> scanResult = mapper.scan(EtapaPojo.class, scanExpression);
-		return scanResult;
+	public List<EtapaResponse> listEtapas() {
+		log.info("ExternalDbAws.listEtapas");
+		List<EtapaResponse> etapas = etapaApi.listarTodos5();
+		if (etapas == null || etapas.isEmpty()) {
+			return new ArrayList<>();
+		}
+		log.info("Etpas {}", etapas);
+		return etapas;
 	}
 
-	public InspectorPojo tableInspector(String idInspector) {
+	public InspectorResponse tableInspector(String idInspector) {
 		log.info("ExternalDbAws.tableInspector");
-		Table tableInspector = dynamoDB.getTable("inspectores");
-		GetItemSpec spec = new GetItemSpec().withPrimaryKey("id_inspector", idInspector);
-		Item inspectorItem = tableInspector.getItem(spec);
-		if (inspectorItem == null) {
-			return InspectorPojo.builder().build();
+		InspectorResponse response = inspectorApi.buscarPorId2(idInspector);
+		if (response == null) {
+			return InspectorResponse.builder().build();
 		}
-		final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-				false);
-		return mapper.convertValue(inspectorItem.asMap(), InspectorPojo.class);
+		return response;
 	}
 
-	public UsuarioPojo tableUsuario(String userName) {
-		Map<String, AttributeValue> expresionAttributte = new HashMap<>();
-		expresionAttributte.put(":userName", new AttributeValue().withS(userName));
-		ScanRequest scan = new ScanRequest();
-		scan.setTableName("usuarios");
-		scan.setFilterExpression("nombreUsuario = :userName");
-		scan.setExpressionAttributeValues(expresionAttributte);
-		ScanResult scanResult = awsDynamoBD.scan(scan);
-		int cantidad = scanResult.getCount();
-		if (cantidad > 0) {
-			for (Map<String, AttributeValue> item : scanResult.getItems()) {
-				return UsuarioPojo.builder().idUsuario(item.get("id_usuario").getS())
-						.nombres(item.get("nombres").getS()).apellidos(item.get("apellidos").getS()).build();
-			}
-		}
-
-		return UsuarioPojo.builder().build();
+	public ActuacionFileResponse uploadFilePngActuacion(ActuacionFileRequest request) {
+		log.info("ExternalDbAws.uploadFilePngActuacion {} ", new Gson().toJson(request));
+		return processApi.uploadFile(request);
 	}
 
+	public Usuario viewByUserName(String userName) {
+		log.info("ExternalDbAws.viewByUserName {}", userName);
+		Usuario usuario = usuarioApi.findByUserName(userName);
+		return usuario == null ? new Usuario() : usuario;
+	}
+
+	public ColaboradorResponse viewColaboratorByUserName(String userName) {
+		log.info("ExternalDbAws.viewColaboratorByUserName {}", userName);
+		ColaboradorResponse colaborador = usuarioApi.findColaboratorByUserName(userName);
+		return colaborador == null ? ColaboradorResponse.builder().build() : colaborador;
+	}
+
+	public List<String> findColaboratorsByUserName(String userName) {
+		log.info("ExternalDbAws.findColaboratorsByUserName {}", userName);
+		return usuarioApi.findColaboratorsByUserName(userName);
+	}
+
+	public UserResponseBody getUser(String userName) {
+		log.info("ExternalDbAws.getUser {}", userName);
+		UserResponseBody userResponse = usuarioApi.verUsuarioPorUserName(userName);
+		return userResponse == null ? UserResponseBody.builder().build() : userResponse;
+	}
 }

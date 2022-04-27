@@ -33,6 +33,7 @@ import static com.samy.service.app.util.Utils.round;
 import static com.samy.service.app.util.Utils.transformToLocalTime;
 import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
 import static com.samy.service.app.util.Utils.convertActualZone;
+import static com.samy.service.app.util.Utils.esNumero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -60,12 +61,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.JsonObject;
-import com.samy.service.app.aws.AnalisisRiesgoPojo;
-import com.samy.service.app.aws.EtapaPojo;
 import com.samy.service.app.aws.ExternalDbAws;
-import com.samy.service.app.aws.InfraccionItemPojo;
-import com.samy.service.app.aws.InspectorPojo;
-import com.samy.service.app.aws.MateriaPojo;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
@@ -116,15 +112,20 @@ import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
-import com.samy.service.app.restTemplate.ExternalEndpoint;
-import com.samy.service.app.restTemplate.model.ActuacionFileRequest;
-import com.samy.service.app.restTemplate.model.ActuacionFileResponse;
-import com.samy.service.app.restTemplate.model.ColaboradorPojo;
-import com.samy.service.app.restTemplate.model.UserResponseBodyPojo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
 import com.samy.service.app.util.Contants;
 import com.samy.service.app.util.ListPagination;
+import com.samy.service.samifiles.service.model.ActuacionFileRequest;
+import com.samy.service.samifiles.service.model.ActuacionFileResponse;
+import com.samy.service.samiprimary.service.model.AnalisisRiesgo;
+import com.samy.service.samiprimary.service.model.EtapaResponse;
+import com.samy.service.samiprimary.service.model.InfraccionItem;
+import com.samy.service.samiprimary.service.model.InspectorResponse;
+import com.samy.service.samiprimary.service.model.ReactSelect;
+import com.samy.service.samiusers.service.model.ColaboradorResponse;
+import com.samy.service.samiusers.service.model.UserResponseBody;
+import com.samy.service.samiusers.service.model.Usuario;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -143,9 +144,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Autowired
 	private LambdaService lambdaService;
-
-	@Autowired
-	private ExternalEndpoint externalEndpoint;
 
 	@Override
 	protected GenericRepo<Caso, String> getRepo() {
@@ -389,9 +387,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			return CriticidadCasosResponse.builder().build();
 		}
 		BigDecimal suma = casos.parallelStream().map(caso -> {
-			AnalisisRiesgoPojo analisisRiesgo = externalEndpoint.listByIdCaso(caso.getId()).stream()
-					.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro).reversed()).findFirst()
-					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).build());
+			AnalisisRiesgo analisisRiesgo = externalAws.tableInfraccion(caso.getId())
+					.stream().sorted(Comparator.comparing(AnalisisRiesgo::getFechaRegistro).reversed())
+					.findFirst().orElse(AnalisisRiesgo.builder()
+							.sumaMultaPotencial(0.0)
+							.build());
 			caso.setMultaPotencial(BigDecimal.valueOf(analisisRiesgo.getSumaMultaPotencial()));
 			return caso.getMultaPotencial();
 		}).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -595,7 +595,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<ArchivoAdjunto> archivos = actuacion.getArchivos();
 		String registradoPor = "";
 		if (actuacion.getRegistradoPor() != null) {
-			registradoPor = externalEndpoint.getUser(actuacion.getRegistradoPor()).getDatosUsuario();
+			registradoPor = externalAws.getUser(actuacion.getRegistradoPor()).getDatosUsuario();
 		}
 		String nombreArchivo = "";
 		if (!archivos.isEmpty()) {
@@ -640,11 +640,19 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto, String etapa) {
-		InspectorPojo inspectorPojo = externalAws.tableInspector(dto.getId());
-		Map<String, Object> mapFuncionario = new HashMap<String, Object>();
-		mapFuncionario.put("idFuncionario", dto.getId());
-		mapFuncionario.put("nombre", dto.getDatosFuncionario());
-		mapFuncionario.put("cargo", inspectorPojo.getCargo());
+		log.info("CasoServiceImpl.transformFuncionarioMap {}", dto);
+		InspectorResponse inspectorResponse;
+		if (esNumero(dto.getId())) {
+			inspectorResponse = new InspectorResponse();
+			inspectorResponse.setId(dto.getId());
+			inspectorResponse.setNombresApellidos(dto.getDatosFuncionario());
+		} else {
+			inspectorResponse = externalAws.tableInspector(dto.getId());	
+		}
+		Map<String, Object> mapFuncionario = new HashMap<>();
+		mapFuncionario.put("idFuncionario", inspectorResponse.getId());
+		mapFuncionario.put("nombre", inspectorResponse.getNombresApellidos());
+		mapFuncionario.put("cargo", inspectorResponse.getCargo());
 		mapFuncionario.put("etapa", etapa);
 		return mapFuncionario;
 	}
@@ -694,20 +702,20 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private List<Map<String, Object>> transformToMap(List<Caso> casos) {
-		List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> listMap = new ArrayList<>();
 		Map<String, Object> mapa;
-		for (EtapaPojo etapa : externalAws.getTableEtapa().stream().sorted(Comparator.comparing(EtapaPojo::getNroOrden))
+		for (EtapaResponse etapa : externalAws.listEtapas().stream().sorted(Comparator.comparing(EtapaResponse::getNroOrden))
 				.collect(Collectors.toList())) {
 			List<ResponseBar> listResoluciones = new ArrayList<>();
 			if (!etapa.getNroOrden().equals(4)) {
 				int contadorPrimera = 0;
 				int contadorSegunda = 0;
 				int contadorTercera = 0;
-				mapa = new HashMap<String, Object>();
+				mapa = new HashMap<>();
 				if (etapa.getNroOrden() == 3) {
 					for (Caso caso : casos) {
 						List<Actuacion> actuacionesPorEtapa = caso.getActuaciones().stream()
-								.filter(item -> (item.getEtapa().getId().equals(etapa.getId_etapa())))
+								.filter(item -> (item.getEtapa().getId().equals(etapa.getIdEtapa())))
 								.collect(Collectors.toList());
 						if (!actuacionesPorEtapa.isEmpty()) {
 							for (Actuacion actuacion : actuacionesPorEtapa) {
@@ -743,7 +751,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 					listResoluciones.add(ResponseBar.builder().name("3era").color("#8146FE")
 							.data(Arrays.asList(contadorTercera)).build());
 				}
-				String idEtapa = etapa.getId_etapa();
+				String idEtapa = etapa.getIdEtapa();
 				int contadorCasos = cuentaCasos(idEtapa, casos);
 				mapa.put("nombreEtapa", etapa.getNombreEtapa());
 				mapa.put("cantidad", contadorCasos);
@@ -849,11 +857,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private DetailCaseResponse transformFromCaso(Caso caso) {
-		UserResponseBodyPojo usuario = externalEndpoint.getUser(caso.getUsuario());
+		UserResponseBody usuario = externalAws.getUser(caso.getUsuario());
 		List<String> idMaterias = caso.getMaterias().stream().map(MateriaDto::getId).collect(Collectors.toList());
-		AnalisisRiesgoPojo mapInfraccion = externalEndpoint.listByIdCaso(caso.getId()).stream()
-				.sorted(Comparator.comparing(AnalisisRiesgoPojo::getFechaRegistro)).reduce((first, second) -> second)
-				.orElse(AnalisisRiesgoPojo.builder().infracciones(new ArrayList<>()).build());
+		AnalisisRiesgo mapInfraccion = externalAws.tableInfraccion(caso.getId()).stream()
+				.sorted(Comparator.comparing(AnalisisRiesgo::getFechaRegistro)).reduce((first, second) -> second)
+				.orElse(AnalisisRiesgo.builder().infracciones(new ArrayList<>()).build());
 		Integer totalMaterias = 0;
 		Integer totalSubMaterias = 0;
 		// List<MateriaResponse> materias =
@@ -870,10 +878,10 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			if (materiaResponse.getIdMateria() != null) {
 				materiasNew.add(materiaResponse);
 			} else {
-				MateriaPojo matPojo = externalAws.getTable(id);
-				materiasNew.add(MateriaResponse.builder().idMateria(matPojo.getIdMateria())
-						.nombreMateria(matPojo.getNombreMateria()).color(matPojo.getColor()).icono(matPojo.getIcono())
-						.subMaterias(new ArrayList<>()).build());
+				com.samy.service.samiprimary.service.model.MateriaResponse matResponse = externalAws.getTable(id);
+				materiasNew.add(MateriaResponse.builder().idMateria(matResponse.getIdMateria())
+						.nombreMateria(matResponse.getNombreMateria()).color(matResponse.getColor())
+						.icono(matResponse.getIcono()).subMaterias(new ArrayList<>()).build());
 			}
 		}
 		totalMaterias = materiasNew.size();
@@ -897,27 +905,27 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.funcionarios(funcionariosResponseList(caso))
 				.trabajadoresInvolucrados(mapInfraccion.getCantidadInvolucrados())
 				.sumaMultaPotencial(mapInfraccion.getInfracciones().stream()
-						.mapToDouble(InfraccionItemPojo::getMultaPotencial).sum())
+						.mapToDouble(InfraccionItem::getMultaPotencial).sum())
 				.sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
 				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
 				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
 				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
-				.userName(caso.getUsuario())
-				.datosUsuario(usuario.getDatosUsuario())
-				.statusCase(caso.getEstadoCaso()).build();
+				.userName(caso.getUsuario()).datosUsuario(usuario.getDatosUsuario()).statusCase(caso.getEstadoCaso())
+				.build();
 	}
 
-	private List<MateriaResponse> materias(List<InfraccionItemPojo> items) {
+	private List<MateriaResponse> materias(List<InfraccionItem> items) {
 		if (items == null) {
 			return new ArrayList<>();
 		}
 		List<MateriaResponse> materias = new ArrayList<>();
-		for (InfraccionItemPojo item : items) {
-			MateriaPojo materiaPojo = externalAws.getTable(item.getMateria().getValue());
-			ReactSelectRequest materia = item.getMateria();
-			ReactSelectRequest subMateria = item.getSubMaterias();
+		for (InfraccionItem item : items) {
+			com.samy.service.samiprimary.service.model.MateriaResponse matResponse = externalAws
+					.getTable(item.getMateria().getValue());
+			ReactSelect materia = item.getMateria();
+			ReactSelect subMateria = item.getSubMaterias();
 			materias.add(MateriaResponse
-					.builder().idMateria(materia.getValue()).color(materiaPojo.getColor()).icono(materiaPojo.getIcono())
+					.builder().idMateria(materia.getValue()).color(matResponse.getColor()).icono(matResponse.getIcono())
 					.nombreMateria(materia.getLabel()).subMaterias(Arrays.asList(SubMateriaResponse.builder()
 							.idSubMateria(subMateria.getValue()).nombreSubMAteria(subMateria.getLabel()).build()))
 					.build());
@@ -982,18 +990,18 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				List<FuncionarioResponse> funcis = funcionarios.stream()
 						.filter(item -> item.getIdFuncionario().equals(func.getId())).collect(Collectors.toList());
 				log.info("Funcis {}", funcionarios);
-				InspectorPojo inspectorPojo = externalAws.tableInspector(func.getId());
-				if (inspectorPojo.getId() == null) {
-					inspectorPojo.setId(func.getId());
-					inspectorPojo.setNombreInspector(func.getDatosFuncionario());
+				InspectorResponse inspectorResponse = externalAws.tableInspector(func.getId());
+				if (inspectorResponse.getId() == null) {
+					inspectorResponse.setId(func.getId());
+					inspectorResponse.setNombresApellidos(func.getDatosFuncionario());
 				}
 				if (!funcis.isEmpty()) {
-					funcionarios.add(FuncionarioResponse.builder().idFuncionario(inspectorPojo.getId())
-							.nombreFuncionario(inspectorPojo.getNombreInspector()).cargo(inspectorPojo.getCargo())
+					funcionarios.add(FuncionarioResponse.builder().idFuncionario(inspectorResponse.getId())
+							.nombreFuncionario(inspectorResponse.getNombresApellidos()).cargo(inspectorResponse.getCargo())
 							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
 				} else {
 					funcionarios.add(FuncionarioResponse.builder().idFuncionario(func.getId())
-							.nombreFuncionario(inspectorPojo.getNombreInspector()).cargo(inspectorPojo.getCargo())
+							.nombreFuncionario(inspectorResponse.getNombresApellidos()).cargo(inspectorResponse.getCargo())
 							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
 				}
 			}
@@ -1002,9 +1010,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private HomeCaseResponse transformToHomeCase(Caso caso) {
-		String nombreEmpresa = caso.getEmpresas().stream().map(item -> item.getLabel()).findFirst().orElse("");
-		AnalisisRiesgoPojo pojoAnalisis = externalAws.tableInfraccion(caso.getId());
-		String nivelRiesgo = pojoAnalisis.getIdAnalisis() != null ? pojoAnalisis.getNivelRiesgo().getLabel() : "";
+		String nombreEmpresa = caso.getEmpresas().stream().map(DynamoBodyGenerico::getLabel).findFirst().orElse("");
+		AnalisisRiesgo analisis = externalAws.tableInfraccion(caso.getId()).stream()
+				.reduce((first, second) -> second).orElse(new AnalisisRiesgo());
+		log.info("AnalisisPojo {}", analisis);
+		String nivelRiesgo = analisis.getIdAnalisis() != null ? analisis.getNivelRiesgo().getLabel() : "";
 		String colorRiesgo = Contants.mapRiesgo.get(nivelRiesgo);
 		String siguienteVencimiento = siguienteVencimientoDelCaso(caso.getActuaciones());
 		return HomeCaseResponse.builder().idCaso(caso.getId()).idCaso(caso.getId()).nombreEmpresa(nombreEmpresa)
@@ -1155,8 +1165,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Actuacion> actuaciones = caso.getActuaciones();
 		List<ActuacionResponseX3> response = new ArrayList<ActuacionResponseX3>();
 		Supplier<Stream<ActuacionResponseX3>> stream = () -> actuaciones.stream()
-				.filter(item -> evaluateArrays(item, params))
-				.map(item -> transformActuacionResponseX3(item));
+				.filter(item -> evaluateArrays(item, params)).map(item -> transformActuacionResponseX3(item));
 		Comparator<ActuacionResponseX3> comparator = new Comparator<ActuacionResponseX3>() {
 			@Override
 			public int compare(ActuacionResponseX3 o1, ActuacionResponseX3 o2) {
@@ -1276,7 +1285,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
-			List<AnalisisRiesgoPojo> listAnalisis = externalEndpoint.listByIdCaso(item.getId());
+			List<AnalisisRiesgo> listAnalisis = externalAws.tableInfraccion(item.getId());
 			Integer sumTrabajadores = listAnalisis.stream()
 					.flatMapToInt(element -> IntStream.of(element.getCantidadInvolucrados())).sum();
 			return CasoDto.builder().idCaso(item.getId()).trabajadoresAfectados(sumTrabajadores)
@@ -1305,9 +1314,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.collect(Collectors.toList());
 		List<CasoDto> casosDto = casosPorUsuario.stream().map(item -> {
 
-			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
+			AnalisisRiesgo listAnalisis = externalAws.tableInfraccion(item.getId()).stream()
 					.reduce((first, second) -> second)
-					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
+					.orElse(AnalisisRiesgo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
 
 			// Double sumaMultaPotencial =
 			// listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
@@ -1349,9 +1358,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public GraficoImpactoCarteraResponse verGraficoImpactoResponseV2(String userName) {
 		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 		List<CasoDto> casosDto = casosPorUsuario.stream().parallel().map(item -> {
-			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
+			AnalisisRiesgo listAnalisis = externalAws.tableInfraccion(item.getId()).stream()
 					.reduce((first, second) -> second)
-					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
+					.orElse(AnalisisRiesgo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
 			Double sumaMultaPotencial = listAnalisis.getSumaMultaPotencial();
 			Double sumaProvision = listAnalisis.getSumaProvision();
 			return CasoDto.builder().idCaso(item.getId()).mesCaso(mesAnioFecha(item.getFechaInicio()))
@@ -1413,9 +1422,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public List<CasosConRiesgoResponse> dataTableCasosRiesgoResponse(String userName) {
 		List<Caso> casosPorUsuario = getUserNamePrincipal(userName);
 		return casosPorUsuario.stream().filter(Caso::getEstadoCaso).parallel().map(item -> {
-			AnalisisRiesgoPojo listAnalisis = externalEndpoint.listByIdCaso(item.getId()).stream()
+			AnalisisRiesgo listAnalisis = externalAws.tableInfraccion(item.getId()).stream()
 					.reduce((first, second) -> second)
-					.orElse(AnalisisRiesgoPojo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
+					.orElse(AnalisisRiesgo.builder().sumaMultaPotencial(0.0).sumaProvision(0.0).build());
 			// Double sumaMultaPotencial =
 			// listAnalisis.stream().mapToDouble(AnalisisRiesgoPojo::getSumaMultaPotencial)
 			// .sum();
@@ -1575,7 +1584,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		 * Generando Imagen del archivio
 		 */
 		log.info("Archivo {}", archivo);
-		ActuacionFileResponse response = externalEndpoint.uploadFilePngActuacion(
+		ActuacionFileResponse response = externalAws.uploadFilePngActuacion(
 				ActuacionFileRequest.builder().idArchivo(archivo.getId()).nombreArchivo(archivo.getNombreArchivo())
 						.type(archivo.getTipoArchivo()).bucketName("archivos-samy-v1").build());
 		archivo.setUrl(response.getUrl());
@@ -1589,15 +1598,15 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	}
 
 	private List<Caso> getUserNamePrincipal(String userName) {
-		com.samy.service.app.restTemplate.model.UsuarioPojo usuarioPojo = externalEndpoint.viewByUserName(userName);
+		Usuario usuarioPojo = externalAws.viewByUserName(userName);
 		String usuario = "";
 		if (usuarioPojo == null) {
-			ColaboradorPojo colaboradorPojo = externalEndpoint.viewColaboratorByUserName(userName);
+			ColaboradorResponse colaboradorPojo = externalAws.viewColaboratorByUserName(userName);
 			usuario = colaboradorPojo.getUserName();
 		} else {
 			usuario = usuarioPojo.getCorreo();
 		}
-		List<String> colaborators = externalEndpoint.findColaboratorsByUserName(usuario);
+		List<String> colaborators = externalAws.findColaboratorsByUserName(usuario);
 		List<Caso> casosConcat = colaborators.parallelStream().flatMap(item -> {
 			log.info("Dentro del flatMap {}", item);
 			return listarCasosPorUserName(item).stream();

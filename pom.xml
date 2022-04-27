@@ -49,13 +49,6 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui -->
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.5.9</version>
-		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -71,6 +64,31 @@
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger-ui</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.springfox</groupId>
+			<artifactId>springfox-swagger2</artifactId>
+			<version>2.6.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.6.8</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openapitools</groupId>
+			<artifactId>jackson-databind-nullable</artifactId>
+			<version>0.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.2</version>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
@@ -97,6 +115,97 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>5.3.0</version>
+				<executions>
+					<execution>
+						<id>samy-primary-service</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<!-- <inputSpec>http://samyappprimary-env.eba-avd5ffkm.us-east-2.elasticbeanstalk.com/api-docs/</inputSpec> -->
+							<inputSpec>${project.basedir}/src/main/resources/openapi/sami-primary-openapi.json</inputSpec>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApis>true</generateApis>
+							<packageName>${project.groupId}.samiprimary.service.helpdesk</packageName>
+							<apiPackage>${project.groupId}.samiprimary.service.api</apiPackage>
+							<modelPackage>${project.groupId}.samiprimary.service.model</modelPackage>
+							<!-- Uncomment in order to display the config options -->
+							<!-- <configHelp>true</configHelp> -->
+							<configOptions>
+								<java11>true</java11>
+								<interfaceOnly>false</interfaceOnly>
+								<dateLibrary>java8-localdatetime</dateLibrary>
+								<performBeanValidation>true</performBeanValidation>
+								<useBeanValidation>true</useBeanValidation>
+								<delegatePattern>true</delegatePattern>
+								<additionalModelTypeAnnotations>@lombok.AllArgsConstructor
+									@lombok.Builder @lombok.NoArgsConstructor</additionalModelTypeAnnotations>
+							</configOptions>
+						</configuration>
+					</execution>
+					<execution>
+						<id>samy-files-service</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<!-- <inputSpec>http://samyappprimary-env.eba-avd5ffkm.us-east-2.elasticbeanstalk.com/api-docs/</inputSpec> -->
+							<inputSpec>${project.basedir}/src/main/resources/openapi/sami-files-openapi.json</inputSpec>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApis>true</generateApis>
+							<packageName>${project.groupId}.samifiles.service.helpdesk</packageName>
+							<apiPackage>${project.groupId}.samifiles.service.api</apiPackage>
+							<modelPackage>${project.groupId}.samifiles.service.model</modelPackage>
+							<!-- Uncomment in order to display the config options -->
+							<!-- <configHelp>true</configHelp> -->
+							<configOptions>
+								<java11>true</java11>
+								<performBeanValidation>true</performBeanValidation>
+								<useBeanValidation>true</useBeanValidation>
+								<interfaceOnly>false</interfaceOnly>
+								<dateLibrary>java8-localdatetime</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<additionalModelTypeAnnotations>@lombok.AllArgsConstructor
+									@lombok.Builder @lombok.NoArgsConstructor</additionalModelTypeAnnotations>
+							</configOptions>
+						</configuration>
+					</execution>
+					<execution>
+						<id>samy-users-service</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<!-- <inputSpec>http://samyappprimary-env.eba-avd5ffkm.us-east-2.elasticbeanstalk.com/api-docs/</inputSpec> -->
+							<inputSpec>${project.basedir}/src/main/resources/openapi/sami-users-openapi.json</inputSpec>
+							<generatorName>java</generatorName>
+							<library>resttemplate</library>
+							<generateApis>true</generateApis>
+							<packageName>${project.groupId}.samiusers.service.helpdesk</packageName>
+							<apiPackage>${project.groupId}.samiusers.service.api</apiPackage>
+							<modelPackage>${project.groupId}.samiusers.service.model</modelPackage>
+							<!-- Uncomment in order to display the config options -->
+							<!-- <configHelp>true</configHelp> -->
+							<configOptions>
+								<java11>true</java11>
+								<performBeanValidation>true</performBeanValidation>
+								<useBeanValidation>true</useBeanValidation>
+								<interfaceOnly>false</interfaceOnly>
+								<dateLibrary>java8-localdatetime</dateLibrary>
+								<delegatePattern>true</delegatePattern>
+								<additionalModelTypeAnnotations>@lombok.AllArgsConstructor
+									@lombok.Builder @lombok.NoArgsConstructor</additionalModelTypeAnnotations>
+							</configOptions>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 		<finalName>samy-application-caso</finalName>
