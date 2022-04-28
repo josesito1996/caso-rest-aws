@@ -183,7 +183,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<!-- <inputSpec>http://samyappprimary-env.eba-avd5ffkm.us-east-2.elasticbeanstalk.com/api-docs/</inputSpec> -->
+							<!--  <inputSpec>http://samyappusuarios-env.eba-aja3zm2w.us-east-2.elasticbeanstalk.com/api-docs</inputSpec>-->
 							<inputSpec>${project.basedir}/src/main/resources/openapi/sami-users-openapi.json</inputSpec>
 							<generatorName>java</generatorName>
 							<library>resttemplate</library>

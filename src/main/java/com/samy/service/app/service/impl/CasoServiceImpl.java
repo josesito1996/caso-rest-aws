@@ -1599,8 +1599,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	private List<Caso> getUserNamePrincipal(String userName) {
 		Usuario usuarioPojo = externalAws.viewByUserName(userName);
+		log.info("UsuarioPojo {}", usuarioPojo);
 		String usuario = "";
-		if (usuarioPojo == null) {
+		if (usuarioPojo.getIdUsuario() == null) {
 			ColaboradorResponse colaboradorPojo = externalAws.viewColaboratorByUserName(userName);
 			usuario = colaboradorPojo.getUserName();
 		} else {
