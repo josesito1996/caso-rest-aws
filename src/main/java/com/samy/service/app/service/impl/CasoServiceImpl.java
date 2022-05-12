@@ -1,12 +1,5 @@
 package com.samy.service.app.service.impl;
 
-import static com.samy.service.app.service.impl.ServiceUtils.cantidadDocumentos;
-import static com.samy.service.app.service.impl.ServiceUtils.estaVencido;
-import static com.samy.service.app.service.impl.ServiceUtils.etapaActuacion;
-import static com.samy.service.app.service.impl.ServiceUtils.fechaActuacion;
-import static com.samy.service.app.service.impl.ServiceUtils.nroOrdenEtapaActuacion;
-import static com.samy.service.app.service.impl.ServiceUtils.siguienteVencimientoDelCaso;
-import static com.samy.service.app.service.impl.ServiceUtils.tipoActuacion;
 import static com.samy.service.app.service.impl.ServiceUtils.totalActuacionesCompletadasGeneral;
 import static com.samy.service.app.service.impl.ServiceUtils.totalCasosPorEstado;
 import static com.samy.service.app.service.impl.ServiceUtils.totalDocumentosGenerales;
@@ -22,7 +15,6 @@ import static com.samy.service.app.util.ListUtils.orderByDesc;
 import static com.samy.service.app.util.Utils.añoFecha;
 import static com.samy.service.app.util.Utils.diaFecha;
 import static com.samy.service.app.util.Utils.fechaFormateada;
-import static com.samy.service.app.util.Utils.fechaFormateadaOther;
 import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.formatMoneyV2;
@@ -30,10 +22,7 @@ import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesAnioFecha;
 import static com.samy.service.app.util.Utils.mesFecha;
 import static com.samy.service.app.util.Utils.round;
-import static com.samy.service.app.util.Utils.transformToLocalTime;
 import static com.samy.service.app.util.Utils.toLocalDateYYYYMMDD;
-import static com.samy.service.app.util.Utils.convertActualZone;
-import static com.samy.service.app.util.Utils.esNumero;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -66,11 +55,9 @@ import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
 import com.samy.service.app.external.EstadoCasoDto;
-import com.samy.service.app.external.FuncionarioDto;
 import com.samy.service.app.external.MateriaDto;
 import com.samy.service.app.model.Actuacion;
 import com.samy.service.app.model.Caso;
-import com.samy.service.app.model.DynamoBodyGenerico;
 import com.samy.service.app.model.Tarea;
 import com.samy.service.app.model.request.ActuacionBody;
 import com.samy.service.app.model.request.ArchivoBody;
@@ -97,34 +84,31 @@ import com.samy.service.app.model.response.DetailCaseResponse;
 import com.samy.service.app.model.response.DetalleActuacionResponse;
 import com.samy.service.app.model.response.DocumentoAnexoResponse;
 import com.samy.service.app.model.response.GraficoCasosTemplateResponse;
-import com.samy.service.app.model.response.FuncionarioResponse;
 import com.samy.service.app.model.response.GraficoImpactoCarteraResponse;
 import com.samy.service.app.model.response.HomeCaseResponse;
 import com.samy.service.app.model.response.ItemsPorCantidadResponse;
 import com.samy.service.app.model.response.MainActuacionResponse;
-import com.samy.service.app.model.response.MateriaResponse;
 import com.samy.service.app.model.response.MiCarteraResponse;
 import com.samy.service.app.model.response.NotificacionesVencimientosResponse;
 import com.samy.service.app.model.response.ResponseBar;
 import com.samy.service.app.model.response.SaveTareaResponse;
-import com.samy.service.app.model.response.SubMateriaResponse;
 import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
 import com.samy.service.app.service.LambdaService;
-import com.samy.service.app.util.Contants;
+import com.samy.service.app.service.processor.ActuacionResponseProcessor;
+import com.samy.service.app.service.processor.CasoRequestBuilder;
+import com.samy.service.app.service.processor.CasoResponseProcessor;
+import com.samy.service.app.service.processor.DocumentoReponseProcessor;
+import com.samy.service.app.service.processor.TareaResponseProcessor;
 import com.samy.service.app.util.ListPagination;
 import com.samy.service.samifiles.service.model.ActuacionFileRequest;
 import com.samy.service.samifiles.service.model.ActuacionFileResponse;
 import com.samy.service.samiprimary.service.model.AnalisisRiesgo;
 import com.samy.service.samiprimary.service.model.EtapaResponse;
-import com.samy.service.samiprimary.service.model.InfraccionItem;
-import com.samy.service.samiprimary.service.model.InspectorResponse;
-import com.samy.service.samiprimary.service.model.ReactSelect;
 import com.samy.service.samiusers.service.model.ColaboradorResponse;
-import com.samy.service.samiusers.service.model.UserResponseBody;
 import com.samy.service.samiusers.service.model.Usuario;
 
 import lombok.extern.slf4j.Slf4j;
@@ -195,44 +179,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		if (estadoCaso.contains("3") || estadoCaso.contains("5") || estadoCaso.contains("10")) {
 			caso.setEstadoCaso(false);
 		}
-		return transformMap(registrar(builder.transformActuacion(caso, request)));
-	}
-
-	private ActuacionResponseX2 transformMap(Caso caso) {
-		List<Actuacion> actuaciones = caso.getActuaciones();
-		int ultimoItem = actuaciones.isEmpty() ? 0 : actuaciones.size() - 1;
-		return ActuacionResponseX2.builder().id(actuaciones.get(ultimoItem).getIdActuacion())
-				.archivos(archivos(actuaciones.get(ultimoItem).getArchivos())).build();
-	}
-
-	private Map<String, Object> transformMapTarea(Caso caso, TareaArchivoBody tareaArchivoBody) {
-		Map<String, Object> newMap = new HashMap<String, Object>();
-		List<Actuacion> actuaciones = caso.getActuaciones().stream()
-				.filter(actu -> actu.getIdActuacion().equals(tareaArchivoBody.getId_actuacion()))
-				.collect(Collectors.toList());
-		if (!actuaciones.isEmpty()) {
-			List<Tarea> tareas = actuaciones.get(0).getTareas().stream()
-					.filter(tarea -> tarea.getIdTarea().equals(tareaArchivoBody.getId_tarea()))
-					.collect(Collectors.toList());
-			if (!tareas.isEmpty()) {
-				List<ArchivoAdjunto> archivos = tareas.get(0).getArchivos();
-				int indice = archivos.size() > 0 ? archivos.size() - 1 : 0;
-				newMap.put("id", tareaArchivoBody.getId_tarea());
-				newMap.put("archivos", archivos(Arrays.asList(archivos.get(indice))));
-			}
-		}
-		return newMap;
-	}
-
-	private List<ArchivoAdjunto> archivos(List<ArchivoAdjunto> archivos) {
-		return archivos.stream().map(this::transform).collect(Collectors.toList());
-	}
-
-	private ArchivoAdjunto transform(ArchivoAdjunto archivo) {
-		return ArchivoAdjunto.builder()
-				// .id(archivo.getId().concat(getExtension(archivo.getNombreArchivo())))
-				.id(archivo.getId()).nombreArchivo(archivo.getNombreArchivo()).tipoArchivo(archivo.getTipoArchivo())
-				.build();
+		ActuacionResponseProcessor processor = new ActuacionResponseProcessor();
+		return processor.transformMap(registrar(builder.transformActuacion(caso, request)));
 	}
 
 	/**
@@ -258,24 +206,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		} catch (Exception e) {
 			log.error("Error al enviar correo " + e.getMessage());
 		}
-		return registraTareaResponse(request, idActuacion, caso);
-	}
-
-	private SaveTareaResponse registraTareaResponse(TareaBody request, String idActuacion, Caso caso) {
-		Caso casoRegistrado = registrar(builder.transformTarea(caso, request, idActuacion));
-		List<Actuacion> actuaciones = casoRegistrado.getActuaciones().stream()
-				.filter(item -> item.getIdActuacion().equals(idActuacion)).collect(Collectors.toList());
-		List<Tarea> tareas = actuaciones.get(0).getTareas();
-		int tareasSize = tareas.size();
-		Tarea tarea = tareas.get(tareasSize - 1);
-		return SaveTareaResponse.builder().idTarea(tarea.getIdTarea()).tipoTarea(tarea.getTipoTarea().getNombreTipo())
-				.descripcion(tarea.getDenominacion())
-				.destinatario(
-						request.getEquipos().stream().map(item -> item.getDestinatario()).collect(Collectors.toList()))
-				.correo(request.getEquipos().stream().map(item -> item.getCorreo()).collect(Collectors.toList()))
-				.recordatorio(request.getRecordatorio().getDia()).mensaje(request.getMensaje())
-				.fechaRegistro(fechaFormateada(tarea.getFechaRegistro()))
-				.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento())).build();
+		TareaResponseProcessor processor = new TareaResponseProcessor(builder, repo);
+		return processor.registraTareaResponse(request, idActuacion, caso);
 	}
 
 	/**
@@ -284,7 +216,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody) {
 		Caso caso = verPodId(tareaArchivoBody.getId_caso());
-		return transformMapTarea(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)), tareaArchivoBody);
+		TareaResponseProcessor processor = new TareaResponseProcessor();
+		return processor.transformMapTarea(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)), tareaArchivoBody);
 	}
 
 	/**
@@ -307,7 +240,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			materias.clear();
 			caso.setMaterias(builder.materiaDtoBuilderList(request.getMaterias()));
 		}
-		return transformFromCaso(registrar(caso));
+		CasoResponseProcessor processor = new CasoResponseProcessor(externalAws);
+		return processor.transformFromCaso(registrar(caso));
 	}
 
 	/**
@@ -334,8 +268,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Override
 	public List<HomeCaseResponse> listadoDeCasosPorUserName(String userName, Integer pageNumber, Integer pageSize) {
 		List<Caso> lista = getUserNamePrincipal(userName);
+		CasoResponseProcessor processor = new CasoResponseProcessor(externalAws);
 		return ListPagination.getPage(
-				orderByDesc(lista.stream().map(this::transformToHomeCase).collect(Collectors.toList())), pageNumber,
+				orderByDesc(lista.stream().map(processor::transformToHomeCase).collect(Collectors.toList())), pageNumber,
 				pageSize);
 	}
 
@@ -344,7 +279,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	 */
 	@Override
 	public DetailCaseResponse mostratDetalleDelCasoPorId(String idCaso) {
-		return transformFromCaso(verPodId(idCaso));
+		CasoResponseProcessor processor = new CasoResponseProcessor(externalAws);
+		return processor.transformFromCaso(verPodId(idCaso));
 	}
 
 	/**
@@ -358,7 +294,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		 * .map(this::transformNotificacionesVencimientosResponse)
 		 * .collect(Collectors.toList());
 		 */
-		return test(getUserNamePrincipal(userName), isProximos);
+		TareaResponseProcessor processor = new TareaResponseProcessor();
+		return processor.test(getUserNamePrincipal(userName), isProximos);
 	}
 
 	/**
@@ -397,8 +334,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		}).reduce(BigDecimal.ZERO, BigDecimal::add);
 		double mayor = casos.stream().max(Comparator.comparing(Caso::getMultaPotencial)).get().getMultaPotencial()
 				.doubleValue();
+		CasoResponseProcessor processor = new CasoResponseProcessor();
 		return CriticidadCasosResponse.builder().total(formatMoney(suma.doubleValue()))
-				.detalles(transformToMapCritidicidad(casos, mayor)).build();
+				.detalles(processor.transformToMapCritidicidad(casos, mayor)).build();
 	}
 
 	@Override
@@ -507,10 +445,11 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public List<ActuacionResponseX3> verActuacionesPorIdCaso(String idCaso) {
 		Caso caso = verPodId(idCaso);
 		List<Actuacion> actuaciones = caso.getActuaciones();
+		ActuacionResponseProcessor processor = new ActuacionResponseProcessor(externalAws);
 		List<ActuacionResponseX3> response = actuaciones.stream()
 				.sorted(Comparator.comparing(Actuacion::getFechaRegistro).reversed())
 				// .peek(item -> System.out.println(item))
-				.map(this::transformActuacionResponseX3)
+				.map(processor::transformActuacionResponseX3)
 				// .peek(item -> System.out.println(item.getFechaRegistro() + " - " +
 				// item.getFechaActuacion()))
 				.collect(Collectors.toList());
@@ -558,7 +497,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		int indexActuacion = caso.getActuaciones().indexOf(actuacion);
 		caso.getActuaciones().get(indexActuacion).getArchivos().set(indexArchivo, archivo);
 		Caso caseModified = modificar(caso);
-		return transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos());
+		DocumentoReponseProcessor processor = new DocumentoReponseProcessor();
+		return processor.transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos());
 	}
 
 	@Override
@@ -587,80 +527,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		actuacion.getTareas().set(indexTarea, tarea);
 		caso.getActuaciones().set(indexActuacion, actuacion);
 		Caso casoModified = modificar(caso);
-
 		return transformVencimientoMap(casoModified.getActuaciones().get(indexActuacion).getTareas().get(indexTarea));
-	}
-
-	private ActuacionResponseX3 transformActuacionResponseX3(Actuacion actuacion) {
-		List<ArchivoAdjunto> archivos = actuacion.getArchivos();
-		String registradoPor = "";
-		if (actuacion.getRegistradoPor() != null) {
-			registradoPor = externalAws.getUser(actuacion.getRegistradoPor()).getDatosUsuario();
-		}
-		String nombreArchivo = "";
-		if (!archivos.isEmpty()) {
-			for (ArchivoAdjunto adj : archivos) {
-				if (adj.isEsPrincipal()) {
-					nombreArchivo = adj.getNombreArchivo();
-					break;
-				}
-			}
-		}
-		return ActuacionResponseX3.builder().idActuacion(actuacion.getIdActuacion()).documentoPrincipal(nombreArchivo)
-				.fechaRegistro(fechaFormateadaOther(transformToLocalTime(actuacion.getFechaActuacion(),
-						actuacion.getFechaRegistro().toLocalTime())))
-				.fechaActuacion(fechaFormateada(actuacion.getFechaActuacion()))
-				.nombreActuacion(actuacion.getDescripcion()).descripcion(actuacion.getDescripcionAux())
-				.subidoPor(registradoPor)
-				.anexos((int) actuacion.getArchivos().stream().filter(item -> !item.isEsPrincipal()).count())
-				.tipoActuacion(actuacion.getTipoActuacion().getNombreTipoActuacion())
-				.funcionarios(
-						transformListFuncionarioMap(actuacion.getFuncionario(), actuacion.getEtapa().getNombreEtapa()))
-				.vencimientos(transformListVencimientoMap(actuacion.getTareas()))// Asumo que son de
-																					// las
-																					// tareas.
-				.documentosAnexos(transformDocumentosAnexos(actuacion.getArchivos())).build();
-	}
-
-	private List<DocumentoAnexoResponse> transformDocumentosAnexos(List<ArchivoAdjunto> archivos) {
-		return archivos.stream().map(this::transfomrDocumentoAnexoResponse)
-				.sorted(Comparator.comparing(DocumentoAnexoResponse::isEsPrincipal).reversed())
-				.collect(Collectors.toList());
-	}
-
-	private DocumentoAnexoResponse transfomrDocumentoAnexoResponse(ArchivoAdjunto archivo) {
-		String fechaRegistro = archivo.getFechaRegistro() != null ? fechaFormateada(archivo.getFechaRegistro()) : null;
-		return DocumentoAnexoResponse.builder().idArchivo(archivo.getId()).type(archivo.getTipoArchivo())
-				.nombreArchivo(archivo.getNombreArchivo()).tamaño(archivo.getTamaño()).fechaRegistro(fechaRegistro)
-				.esPrincipal(archivo.isEsPrincipal()).url(archivo.getUrl()).build();
-	}
-
-	private List<Map<String, Object>> transformListFuncionarioMap(List<FuncionarioDto> funcionarios, String etapa) {
-		return funcionarios.stream().map(item -> transformFuncionarioMap(item, etapa)).collect(Collectors.toList());
-	}
-
-	private Map<String, Object> transformFuncionarioMap(FuncionarioDto dto, String etapa) {
-		log.info("CasoServiceImpl.transformFuncionarioMap {}", dto);
-		InspectorResponse inspectorResponse;
-		if (esNumero(dto.getId())) {
-			inspectorResponse = new InspectorResponse();
-			inspectorResponse.setId(dto.getId());
-			inspectorResponse.setNombresApellidos(dto.getDatosFuncionario());
-		} else {
-			inspectorResponse = externalAws.tableInspector(dto.getId());	
-		}
-		Map<String, Object> mapFuncionario = new HashMap<>();
-		mapFuncionario.put("idFuncionario", inspectorResponse.getId());
-		mapFuncionario.put("nombre", inspectorResponse.getNombresApellidos());
-		mapFuncionario.put("cargo", inspectorResponse.getCargo());
-		mapFuncionario.put("etapa", etapa);
-		return mapFuncionario;
-	}
-
-	private List<Map<String, Object>> transformListVencimientoMap(List<Tarea> tareas) {
-		return tareas.stream().filter(tarea -> !tarea.isEliminado())
-				.sorted(Comparator.comparing(Tarea::getFechaVencimiento)).map(this::transformVencimientoMap)
-				.collect(Collectors.toList());
 	}
 
 	private Map<String, Object> transformVencimientoMap(Tarea dto) {
@@ -686,19 +553,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			}
 		}
 		return newCaso.stream().distinct().collect(Collectors.toList());
-	}
-
-	private List<Map<String, Object>> transformToMapCritidicidad(List<Caso> casos, double suma) {
-		List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
-		Map<String, Object> mapa;
-		for (Caso caso : casos) {
-			mapa = new HashMap<String, Object>();
-			mapa.put("nombreCaso", caso.getDescripcionCaso());
-			mapa.put("montoMulta", formatMoney(caso.getMultaPotencial().doubleValue()));
-			mapa.put("porcentaje", getPorcentaje(caso.getMultaPotencial().doubleValue(), suma));
-			listMap.add(mapa);
-		}
-		return listMap;
 	}
 
 	private List<Map<String, Object>> transformToMap(List<Caso> casos) {
@@ -856,176 +710,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento())).estado(tarea.isEstado()).build();
 	}
 
-	private DetailCaseResponse transformFromCaso(Caso caso) {
-		UserResponseBody usuario = externalAws.getUser(caso.getUsuario());
-		List<String> idMaterias = caso.getMaterias().stream().map(MateriaDto::getId).collect(Collectors.toList());
-		AnalisisRiesgo mapInfraccion = externalAws.tableInfraccion(caso.getId()).stream()
-				.sorted(Comparator.comparing(AnalisisRiesgo::getFechaRegistro)).reduce((first, second) -> second)
-				.orElse(AnalisisRiesgo.builder().infracciones(new ArrayList<>()).build());
-		Integer totalMaterias = 0;
-		Integer totalSubMaterias = 0;
-		// List<MateriaResponse> materias =
-		// materiasResponseBuild(transformToDto(caso.getMaterias()),
-		// subMateriasBuild(caso.getMaterias()));
-		List<MateriaResponse> materias = materias(mapInfraccion.getInfracciones());
-		List<String> idMateriasV2 = materias.stream().map(MateriaResponse::getIdMateria).collect(Collectors.toList());
-		List<String> unionId = Stream.concat(idMaterias.stream(), idMateriasV2.stream()).distinct()
-				.collect(Collectors.toList());
-		List<MateriaResponse> materiasNew = new ArrayList<>();
-		for (String id : unionId) {
-			MateriaResponse materiaResponse = materias.stream().filter(mat -> mat.getIdMateria().equals(id)).findFirst()
-					.orElse(new MateriaResponse());
-			if (materiaResponse.getIdMateria() != null) {
-				materiasNew.add(materiaResponse);
-			} else {
-				com.samy.service.samiprimary.service.model.MateriaResponse matResponse = externalAws.getTable(id);
-				materiasNew.add(MateriaResponse.builder().idMateria(matResponse.getIdMateria())
-						.nombreMateria(matResponse.getNombreMateria()).color(matResponse.getColor())
-						.icono(matResponse.getIcono()).subMaterias(new ArrayList<>()).build());
-			}
-		}
-		totalMaterias = materiasNew.size();
-		for (MateriaResponse response : materiasNew) {
-			totalSubMaterias = totalSubMaterias + response.getSubMaterias().size();
-		}
-		List<Actuacion> actuaciones = caso.getActuaciones();
-		int sizeActuaciones = actuaciones.size();
-		String etapaActuacion = actuaciones.isEmpty() ? ""
-				: actuaciones.get(sizeActuaciones - 1).getEtapa().getNombreEtapa();
-		Map<String, Object> mapEstado = new HashMap<String, Object>();
-		EstadoCasoDto estado = actuaciones.isEmpty() ? EstadoCasoDto.builder().build()
-				: actuaciones.get(sizeActuaciones - 1).getEstadoCaso();
-		mapEstado.put("numero", estado.getOrden());
-		mapEstado.put("estadoCaso", estado.getNombreEstado());
-
-		return DetailCaseResponse.builder().idCaso(caso.getId()).nombreCaso(caso.getDescripcionCaso())
-				.descripcion(caso.getDescripcionAdicional()).fechaCreacion(fechaFormateada(caso.getFechaInicio()))
-				.ordenInspeccion(caso.getOrdenInspeccion()).tipoActuacion(tipoActuacion(caso.getActuaciones()))
-				.cantidadDocumentos(cantidadDocumentos(caso.getActuaciones()))
-				.funcionarios(funcionariosResponseList(caso))
-				.trabajadoresInvolucrados(mapInfraccion.getCantidadInvolucrados())
-				.sumaMultaPotencial(mapInfraccion.getInfracciones().stream()
-						.mapToDouble(InfraccionItem::getMultaPotencial).sum())
-				.sumaProvision(mapInfraccion.getSumaProvision()).riesgo(mapInfraccion.getNivelRiesgo())
-				.origen(mapInfraccion.getOrigenCaso()).materiasResponse(materiasNew).totalMaterias(totalMaterias)
-				.totalSubMaterias(totalSubMaterias).etapa(etapaActuacion).estadoCaso(mapEstado)
-				.region(caso.getIntendencias().stream().findFirst().orElse(new DynamoBodyGenerico()).getLabel())
-				.userName(caso.getUsuario()).datosUsuario(usuario.getDatosUsuario()).statusCase(caso.getEstadoCaso())
-				.build();
-	}
-
-	private List<MateriaResponse> materias(List<InfraccionItem> items) {
-		if (items == null) {
-			return new ArrayList<>();
-		}
-		List<MateriaResponse> materias = new ArrayList<>();
-		for (InfraccionItem item : items) {
-			com.samy.service.samiprimary.service.model.MateriaResponse matResponse = externalAws
-					.getTable(item.getMateria().getValue());
-			ReactSelect materia = item.getMateria();
-			ReactSelect subMateria = item.getSubMaterias();
-			materias.add(MateriaResponse
-					.builder().idMateria(materia.getValue()).color(matResponse.getColor()).icono(matResponse.getIcono())
-					.nombreMateria(materia.getLabel()).subMaterias(Arrays.asList(SubMateriaResponse.builder()
-							.idSubMateria(subMateria.getValue()).nombreSubMAteria(subMateria.getLabel()).build()))
-					.build());
-		}
-		List<MateriaResponse> newMaterias = new ArrayList<>();
-		for (MateriaResponse mat : materias) {
-			List<SubMateriaResponse> subMaterias = new ArrayList<>();
-			if (!validateMat(newMaterias, mat.getIdMateria())) {
-				for (SubMateriaResponse subMateria : mat.getSubMaterias()) {
-					if (!validateSub(subMaterias, subMateria.getIdSubMateria())) {
-						subMaterias.add(subMateria);
-					}
-				}
-				mat.setSubMaterias(subMaterias);
-				newMaterias.add(mat);
-			} else {
-				int index = 0;
-				for (int i = 0; i <= newMaterias.size(); i++) {
-					if (newMaterias.get(i).getIdMateria().equals(mat.getIdMateria())) {
-						index = i;
-						break;
-					}
-				}
-				List<SubMateriaResponse> lisAux = newMaterias.get(index).getSubMaterias();
-				for (SubMateriaResponse subMateria : mat.getSubMaterias()) {
-					if (!validateSub(lisAux, subMateria.getIdSubMateria())) {
-						lisAux.add(subMateria);
-					}
-				}
-				mat.setSubMaterias(lisAux);
-				newMaterias.set(index, mat);
-			}
-		}
-		return newMaterias;
-	}
-
-	private boolean validateMat(List<MateriaResponse> materias, String idMateria) {
-		for (MateriaResponse mat : materias) {
-			if (mat.getIdMateria().equals(idMateria)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean validateSub(List<SubMateriaResponse> subMaterias, String idSubMateria) {
-		for (SubMateriaResponse sub : subMaterias) {
-			if (sub.getIdSubMateria().equals(idSubMateria)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private List<FuncionarioResponse> funcionariosResponseList(Caso caso) {
-		List<Actuacion> actuaciones = caso.getActuaciones();
-		List<FuncionarioResponse> funcionarios = new ArrayList<>();
-		actuaciones.sort(Comparator.comparing(Actuacion::getFechaRegistro).reversed());
-		for (Actuacion actuacion : actuaciones) {
-			for (FuncionarioDto func : actuacion.getFuncionario()) {
-
-				List<FuncionarioResponse> funcis = funcionarios.stream()
-						.filter(item -> item.getIdFuncionario().equals(func.getId())).collect(Collectors.toList());
-				log.info("Funcis {}", funcionarios);
-				InspectorResponse inspectorResponse = externalAws.tableInspector(func.getId());
-				if (inspectorResponse.getId() == null) {
-					inspectorResponse.setId(func.getId());
-					inspectorResponse.setNombresApellidos(func.getDatosFuncionario());
-				}
-				if (!funcis.isEmpty()) {
-					funcionarios.add(FuncionarioResponse.builder().idFuncionario(inspectorResponse.getId())
-							.nombreFuncionario(inspectorResponse.getNombresApellidos()).cargo(inspectorResponse.getCargo())
-							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
-				} else {
-					funcionarios.add(FuncionarioResponse.builder().idFuncionario(func.getId())
-							.nombreFuncionario(inspectorResponse.getNombresApellidos()).cargo(inspectorResponse.getCargo())
-							.etapaActuacion(actuacion.getEtapa().getNombreEtapa()).build());
-				}
-			}
-		}
-		return funcionarios.stream().distinct().collect(Collectors.toList());
-	}
-
-	private HomeCaseResponse transformToHomeCase(Caso caso) {
-		String nombreEmpresa = caso.getEmpresas().stream().map(DynamoBodyGenerico::getLabel).findFirst().orElse("");
-		AnalisisRiesgo analisis = externalAws.tableInfraccion(caso.getId()).stream()
-				.reduce((first, second) -> second).orElse(new AnalisisRiesgo());
-		log.info("AnalisisPojo {}", analisis);
-		String nivelRiesgo = analisis.getIdAnalisis() != null ? analisis.getNivelRiesgo().getLabel() : "";
-		String colorRiesgo = Contants.mapRiesgo.get(nivelRiesgo);
-		String siguienteVencimiento = siguienteVencimientoDelCaso(caso.getActuaciones());
-		return HomeCaseResponse.builder().idCaso(caso.getId()).idCaso(caso.getId()).nombreEmpresa(nombreEmpresa)
-				.nombreCaso(caso.getDescripcionCaso()).nroOrdenInspeccion(caso.getOrdenInspeccion())
-				.utltimaActuacion(fechaActuacion(caso.getActuaciones()))
-				.tipoActuacion(tipoActuacion(caso.getActuaciones()))
-				.nroEtapa(nroOrdenEtapaActuacion(caso.getActuaciones()))
-				.etapaActuacion(etapaActuacion(caso.getActuaciones())).riesgo(nivelRiesgo).colorRiesgo(colorRiesgo)
-				.siguienteVencimiento(siguienteVencimiento).estaVencido(estaVencido(siguienteVencimiento)).build();
-	}
-
 	public int getIndexActuacion(String idActuacion, List<Actuacion> actuaciones) {
 		if (actuaciones.isEmpty()) {
 			throw new BadRequestException("Este caso no tiene actuaciones registradas");
@@ -1048,51 +732,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			throw new NotFoundException("El id de tarea : " + idTarea + " no se encuentra registrado");
 		}
 		return tareas.indexOf(tareaAux.get(0));
-	}
-
-	private List<NotificacionesVencimientosResponse> test(List<Caso> casos, boolean isProximos) {
-		List<Caso> listaCaso = casos;
-		List<NotificacionesVencimientosResponse> notiVenci = new ArrayList<NotificacionesVencimientosResponse>();
-		for (Caso caso : listaCaso) {
-			List<Actuacion> actuaciones = caso.getActuaciones();
-			for (Actuacion actuacion : actuaciones) {
-				List<Tarea> tareas = actuacion.getTareas();
-				for (Tarea tarea : tareas) {
-					LocalDate fechaVencimiento = tarea.getFechaVencimiento().toLocalDate();
-					LocalDate fechaActual = convertActualZone(LocalDate.now());
-					// LocalDate fechaAumentada = fechaActual.plusDays(diasPlazoVencimiento);
-					/**
-					 * Validar este tema
-					 */
-					if (isProximos) {
-						if (fechaVencimiento.isAfter(LocalDate.now())) {
-							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
-									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
-									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-									.fechaVenc(fechaVencimiento).nombreCaso(caso.getDescripcionCaso())
-									.descripcion(getObject(tarea)).build());
-						}
-					} else {
-						if (fechaVencimiento.isBefore(fechaActual.minusDays(1))) {
-							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
-									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
-									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
-									.fechaVenc(fechaVencimiento).nombreCaso(caso.getDescripcionCaso())
-									.descripcion(getObject(tarea)).build());
-						}
-					}
-				}
-			}
-		}
-		return notiVenci.stream().sorted(Comparator.comparing(NotificacionesVencimientosResponse::getFechaVenc))
-				.collect(Collectors.toList());
-	}
-
-	public Map<String, Object> getObject(Tarea tarea) {
-		Map<String, Object> lista = new HashMap<String, Object>();
-		lista.put("cabecera", "Tarea por vencer");
-		lista.put("contenido", tarea.getDenominacion());
-		return lista;
 	}
 
 	@Override
@@ -1148,7 +787,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		actuacion.setDescripcion(request.getDescripcionActuacion());
 		caso.getActuaciones().set(indexActuacion, actuacion);
 		Caso casoEdit = modificar(caso);
-		return transformActuacionResponseX3(casoEdit.getActuaciones().get(indexActuacion));
+		ActuacionResponseProcessor processor = new ActuacionResponseProcessor(externalAws);
+		return processor.transformActuacionResponseX3(casoEdit.getActuaciones().get(indexActuacion));
 	}
 
 	@Override
@@ -1164,8 +804,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		Caso caso = verPodId(idCaso);
 		List<Actuacion> actuaciones = caso.getActuaciones();
 		List<ActuacionResponseX3> response = new ArrayList<ActuacionResponseX3>();
+		ActuacionResponseProcessor processor = new ActuacionResponseProcessor(externalAws);
 		Supplier<Stream<ActuacionResponseX3>> stream = () -> actuaciones.stream()
-				.filter(item -> evaluateArrays(item, params)).map(item -> transformActuacionResponseX3(item));
+				.filter(item -> evaluateArrays(item, params)).map(item -> processor.transformActuacionResponseX3(item));
 		Comparator<ActuacionResponseX3> comparator = new Comparator<ActuacionResponseX3>() {
 			@Override
 			public int compare(ActuacionResponseX3 o1, ActuacionResponseX3 o2) {
@@ -1249,13 +890,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		}
 		Tarea tarea = tareas.stream().filter(item -> item.getIdTarea().equals(idTarea)).collect(Collectors.toList())
 				.get(0);
-		return SaveTareaResponse.builder().idTarea(tarea.getIdTarea()).tipoTarea(tarea.getTipoTarea().getNombreTipo())
-				.descripcion(tarea.getDenominacion())
-				.destinatario(tarea.getEquipos().stream().map(item -> item.getNombre()).collect(Collectors.toList()))
-				.correo(tarea.getEquipos().stream().map(item -> item.getCorreo()).collect(Collectors.toList()))
-				.recordatorio(tarea.getRecordatorio().getDia()).mensaje(tarea.getMensaje())
-				.fechaRegistro(fechaFormateada(tarea.getFechaRegistro()))
-				.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento())).build();
+		TareaResponseProcessor processor = new TareaResponseProcessor();
+		return processor.transformResponse(tarea);
 	}
 
 	@Override
@@ -1592,7 +1228,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		int indexActuacion = caso.getActuaciones().indexOf(actuacion);
 		caso.getActuaciones().get(indexActuacion).getArchivos().set(indexArchivo, archivo);
 		Caso caseModified = modificar(caso);
-		return transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos()).stream()
+		DocumentoReponseProcessor processor = new DocumentoReponseProcessor();
+		return processor.transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos()).stream()
 				.filter(item -> item.getIdArchivo().equals(request.getIdArchivo())).findFirst()
 				.orElse(DocumentoAnexoResponse.builder().build());
 	}
