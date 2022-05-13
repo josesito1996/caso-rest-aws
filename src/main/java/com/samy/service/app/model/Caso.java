@@ -85,6 +85,9 @@ public class Caso {
 
     @DynamoDBAttribute
     private String usuario;
+    
+    @DynamoDBAttribute
+    private String empresa;
 
     @DynamoDBTypeConverted(converter = LocalDateTimeConverter.class)
     @DynamoDBAttribute

@@ -153,7 +153,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	@Transactional
 	@Override
 	public Caso registrarCaso(CasoBody request) {
-		Caso casoRegistrado = registrar(builder.transformFromBody(request));
+		Caso casoParaRegistrar = builder.transformFromBody(request);
+		casoParaRegistrar.setEmpresa(externalAws.getUser(request.getUsuario()).getEmpresa());
+		Caso casoRegistrado = registrar(casoParaRegistrar);
 		if (casoRegistrado != null) {
 			try {
 				// LambdaUtils util = new LambdaUtils(lambdaService);
