@@ -16,6 +16,7 @@
 	<description>Proyecto que se encarga de registrar los casos en la BD</description>
 	<properties>
 		<java.version>1.8</java.version>
+		<spring-cloud.version>2020.0.5</spring-cloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -90,6 +91,14 @@
 			<artifactId>jsr305</artifactId>
 			<version>3.0.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-bootstrap</artifactId>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -97,6 +106,13 @@
 				<groupId>org.springframework.data</groupId>
 				<artifactId>spring-data-releasetrain</artifactId>
 				<version>Lovelace-SR16</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -183,7 +199,7 @@
 							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<!--  <inputSpec>http://samyappusuarios-env.eba-aja3zm2w.us-east-2.elasticbeanstalk.com/api-docs</inputSpec>-->
+							<!-- <inputSpec>http://samyappusuarios-env.eba-aja3zm2w.us-east-2.elasticbeanstalk.com/api-docs</inputSpec> -->
 							<inputSpec>${project.basedir}/src/main/resources/openapi/sami-users-openapi.json</inputSpec>
 							<generatorName>java</generatorName>
 							<library>resttemplate</library>
