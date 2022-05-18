@@ -21,9 +21,10 @@ public class TableNameResolver extends DynamoDBMapperConfig.DefaultTableNameReso
 
 	@Override
 	public String getTableName(Class<?> clazz, DynamoDBMapperConfig config) {
-		String stageName = envProfile.concat("_");
+		String stageName = "_".concat(envProfile);
 		String rawTableName = super.getTableName(clazz, config);
-		log.info("StageName {}, rawTableName {}", stageName, rawTableName);
-		return rawTableName.concat(stageName.equals("dev_") ? "" : stageName);
+		String tableName = rawTableName.concat(stageName.equals("_dev") ? "" : stageName);
+		log.info("StageName {}, rawTableName {}, TableName {}", stageName, rawTableName, tableName);
+		return tableName;
 	}
 }
