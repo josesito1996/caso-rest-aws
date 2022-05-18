@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo Entered the build phase....
+      - mvn clean package
+  post_build:
+    commands:
+      - echo Build completed succesfully
+artifacts:
+  files:
+    - target/samy-application-caso.jar
+  discard-paths: yes
