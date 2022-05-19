@@ -1,5 +1,6 @@
 package com.samy.service.app.aws;
 
+import static com.samy.service.app.util.Utils.esNumero;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,11 +73,11 @@ public class ExternalDbAws {
 	}
 
 	public InspectorResponse tableInspector(String idInspector) {
-		log.info("ExternalDbAws.tableInspector");
-		InspectorResponse response = inspectorApi.buscarPorId2(idInspector);
-		if (response == null) {
-			return InspectorResponse.builder().build();
+		log.info("ExternalDbAws.tableInspector {}", idInspector);
+		if (esNumero(idInspector)) {
+			return new InspectorResponse();
 		}
+		InspectorResponse response = inspectorApi.buscarPorId2(idInspector);
 		return response;
 	}
 
