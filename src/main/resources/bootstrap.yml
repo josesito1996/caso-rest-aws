@@ -1,4 +1,10 @@
 spring:
-  main:    allow-bean-definition-overriding: true
+  main:
+    allow-bean-definition-overriding: true
   application:
-    name: caso-service-aws  cloud:    config:      uri: http://samyconfigserver-env.eba-p4hpjge8.us-east-2.elasticbeanstalk.com  profiles:    active: prod
+    name: caso-service-aws
+  cloud:
+    config:
+      uri: http://samyconfigserver-env.eba-p4hpjge8.us-east-2.elasticbeanstalk.com
+  profiles:
+    active: prod

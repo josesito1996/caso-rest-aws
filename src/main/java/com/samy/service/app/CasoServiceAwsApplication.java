@@ -7,6 +7,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.samy.service.app.config.EndpointProperties;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.service.CasoService;
 
@@ -18,6 +19,9 @@ public class CasoServiceAwsApplication implements CommandLineRunner {
 
 	@Autowired
 	CasoService casoService;
+	
+	@Autowired
+	EndpointProperties props;
 
 
 	public static void main(String[] args) {
@@ -28,6 +32,7 @@ public class CasoServiceAwsApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		// testRestTemplate();
 		// testCasosFiles();
+		log.info("ENDPOINTS {}", props);
 	}
 
 	public void testCasosFiles() {
