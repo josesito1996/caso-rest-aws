@@ -22,4 +22,6 @@ public class EndpointProperties {
 	
 	private String usersUrl;
 	
+	private String urlLogin;
+	
 }

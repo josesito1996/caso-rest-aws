@@ -49,7 +49,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
+import com.samy.service.app.config.EndpointProperties;
 import com.samy.service.app.aws.ExternalDbAws;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
@@ -65,6 +68,7 @@ import com.samy.service.app.model.request.CasoBody;
 import com.samy.service.app.model.request.DocumentoAnexoRequest;
 import com.samy.service.app.model.request.EditarActuacionRequest;
 import com.samy.service.app.model.request.EliminarTareaRequest;
+import com.samy.service.app.model.request.EncryptionRequest;
 import com.samy.service.app.model.request.LambdaMailRequestSendgrid;
 import com.samy.service.app.model.request.ListActuacionesRequestFilter;
 import com.samy.service.app.model.request.MateriaRequestUpdate;
@@ -94,6 +98,7 @@ import com.samy.service.app.model.response.ResponseBar;
 import com.samy.service.app.model.response.SaveTareaResponse;
 import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
+import com.samy.service.app.util.EncriptadorAes;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
@@ -128,6 +133,12 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Autowired
 	private LambdaService lambdaService;
+
+	@Autowired
+	private EndpointProperties properties;
+
+	@Autowired
+	private EncriptadorAes encriptador;
 
 	@Override
 	protected GenericRepo<Caso, String> getRepo() {
@@ -199,14 +210,32 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		 * e) { log.error("Error al crear el correo registrando la tarea " +
 		 * e.getMessage()); } }
 		 **/
-		try {
-			CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
-					() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder().content(request.getMensaje())
-							.emailTo(request.getEquipos().get(0).getCorreo()).emailFrom(caso.getEmailGenerado())
-							.subject("Asunto : " + request.getDenominacion()).build()));
-			completableFuture.get();
-		} catch (Exception e) {
-			log.error("Error al enviar correo " + e.getMessage());
+		if (request.getTipoTarea().getLabel().equals("Solicitud")) {
+			try {
+				String urlLogin = properties.getUrlLogin();
+				String nameTo = request.getEquipos().get(0).getDestinatario();
+				String emailTo = request.getEquipos().get(0).getCorreo();
+				Map<String, String> dynamicTemplate = new HashMap<>();
+				dynamicTemplate.put("user", nameTo);
+				dynamicTemplate.put("case", caso.getDescripcionCaso());
+				dynamicTemplate.put("actuation",
+						caso.getActuaciones().stream().filter(item -> item.getIdActuacion().equals(idActuacion))
+								.findFirst().orElse(new Actuacion()).getDescripcionAux());
+				dynamicTemplate.put("fechaVenci", request.getFechaVencimiento().toString());
+				dynamicTemplate.put("recordatorioVenci", request.getRecordatorio().getTexto());
+				dynamicTemplate.put("denominacionVenci", request.getDenominacion());
+				dynamicTemplate.put("urlLogin", urlLogin.concat("uploadPage?").concat("code="));
+				dynamicTemplate.put("token", encriptador.encriptar(new Gson().toJson(EncryptionRequest.builder()
+						.idCaso(idCaso).idActuacion(idActuacion).userName(caso.getUsuario()).build())));
+				CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
+						() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder().emailTo(emailTo)
+								.emailFrom(caso.getEmailGenerado()).templateId("d-3bc8f52ff3b04e1e8e4012ca9f43184d")// Template
+																														// Sendgrid.
+								.dynamicTemplate(dynamicTemplate).build()));
+				completableFuture.get();
+			} catch (Exception e) {
+				log.error("Error al enviar correo " + e.getMessage());
+			}
 		}
 		TareaResponseProcessor processor = new TareaResponseProcessor(builder, repo);
 		return processor.registraTareaResponse(request, idActuacion, caso);
@@ -219,7 +248,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	public Map<String, Object> registrarArchivoTarea(TareaArchivoBody tareaArchivoBody) {
 		Caso caso = verPodId(tareaArchivoBody.getId_caso());
 		TareaResponseProcessor processor = new TareaResponseProcessor();
-		return processor.transformMapTarea(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)), tareaArchivoBody);
+		return processor.transformMapTarea(registrar(builder.transformUpdateTarea(caso, tareaArchivoBody)),
+				tareaArchivoBody);
 	}
 
 	/**
@@ -272,8 +302,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		List<Caso> lista = getUserNamePrincipal(userName);
 		CasoResponseProcessor processor = new CasoResponseProcessor(externalAws);
 		return ListPagination.getPage(
-				orderByDesc(lista.stream().map(processor::transformToHomeCase).collect(Collectors.toList())), pageNumber,
-				pageSize);
+				orderByDesc(lista.stream().map(processor::transformToHomeCase).collect(Collectors.toList())),
+				pageNumber, pageSize);
 	}
 
 	/**
@@ -326,11 +356,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 			return CriticidadCasosResponse.builder().build();
 		}
 		BigDecimal suma = casos.parallelStream().map(caso -> {
-			AnalisisRiesgo analisisRiesgo = externalAws.tableInfraccion(caso.getId())
-					.stream().sorted(Comparator.comparing(AnalisisRiesgo::getFechaRegistro).reversed())
-					.findFirst().orElse(AnalisisRiesgo.builder()
-							.sumaMultaPotencial(0.0)
-							.build());
+			AnalisisRiesgo analisisRiesgo = externalAws.tableInfraccion(caso.getId()).stream()
+					.sorted(Comparator.comparing(AnalisisRiesgo::getFechaRegistro).reversed()).findFirst()
+					.orElse(AnalisisRiesgo.builder().sumaMultaPotencial(0.0).build());
 			caso.setMultaPotencial(BigDecimal.valueOf(analisisRiesgo.getSumaMultaPotencial()));
 			return caso.getMultaPotencial();
 		}).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -560,8 +588,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 	private List<Map<String, Object>> transformToMap(List<Caso> casos) {
 		List<Map<String, Object>> listMap = new ArrayList<>();
 		Map<String, Object> mapa;
-		for (EtapaResponse etapa : externalAws.listEtapas().stream().sorted(Comparator.comparing(EtapaResponse::getNroOrden))
-				.collect(Collectors.toList())) {
+		for (EtapaResponse etapa : externalAws.listEtapas().stream()
+				.sorted(Comparator.comparing(EtapaResponse::getNroOrden)).collect(Collectors.toList())) {
 			List<ResponseBar> listResoluciones = new ArrayList<>();
 			if (!etapa.getNroOrden().equals(4)) {
 				int contadorPrimera = 0;
@@ -1231,8 +1259,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 		caso.getActuaciones().get(indexActuacion).getArchivos().set(indexArchivo, archivo);
 		Caso caseModified = modificar(caso);
 		DocumentoReponseProcessor processor = new DocumentoReponseProcessor();
-		return processor.transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos()).stream()
-				.filter(item -> item.getIdArchivo().equals(request.getIdArchivo())).findFirst()
+		return processor.transformDocumentosAnexos(caseModified.getActuaciones().get(indexActuacion).getArchivos())
+				.stream().filter(item -> item.getIdArchivo().equals(request.getIdArchivo())).findFirst()
 				.orElse(DocumentoAnexoResponse.builder().build());
 	}
 
