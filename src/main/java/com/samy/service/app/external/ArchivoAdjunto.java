@@ -27,7 +27,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
-public class ArchivoAdjunto {
+public class ArchivoAdjunto{
 	
 	@JsonProperty("id_archivo")
 	@DynamoDBAttribute(attributeName = "id_archivo")
@@ -81,4 +81,9 @@ public class ArchivoAdjunto {
     @DynamoDBTypeConverted(converter = LocalDateTimeConverter.class)
     @JsonInclude(Include.NON_NULL)
 	private LocalDateTime fechaRegistro;
+    
+    @JsonProperty("subido_por")
+    @DynamoDBAttribute(attributeName = "subido_por")
+    @JsonInclude(Include.NON_NULL)
+    private String subidoPor;
 }

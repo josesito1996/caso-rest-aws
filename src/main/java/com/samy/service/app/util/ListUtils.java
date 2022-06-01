@@ -31,6 +31,7 @@ public class ListUtils {
             .tamaño(body.getTamaño())
             .estado(body.isEstado())
             .tipoArchivo(body.getTipo())
+            .subidoPor(body.getSubidoPor())
             .build();
   }
 

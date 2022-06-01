@@ -58,4 +58,6 @@ public class ArchivoBody implements Serializable {
     @NotEmpty
     @Schema(title = "Tamaño", example = "212 kB", description = "Pedo del archivo en KB")
     private String tamaño;
+    
+    private String subidoPor;
 }

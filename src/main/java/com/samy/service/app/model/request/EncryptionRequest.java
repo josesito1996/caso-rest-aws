@@ -23,6 +23,7 @@ public class EncryptionRequest implements Serializable{
 	
 	private String idActuacion;
 	
-	private String userName;
+	private String destinatario;
 	
+	private String userName;
 }
