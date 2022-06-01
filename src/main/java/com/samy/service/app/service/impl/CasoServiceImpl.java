@@ -224,9 +224,14 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				dynamicTemplate.put("fechaVenci", request.getFechaVencimiento().toString());
 				dynamicTemplate.put("recordatorioVenci", request.getRecordatorio().getTexto());
 				dynamicTemplate.put("denominacionVenci", request.getDenominacion());
-				dynamicTemplate.put("urlLogin", urlLogin.concat("uploadPage?").concat("code="));
-				dynamicTemplate.put("token", encriptador.encriptar(new Gson().toJson(EncryptionRequest.builder()
-						.idCaso(idCaso).idActuacion(idActuacion).userName(caso.getUsuario()).build())));
+				dynamicTemplate.put("urlLogin", urlLogin);
+				dynamicTemplate.put("path", "vencimientoSolicitud");
+				String data = new Gson().toJson(EncryptionRequest.builder()
+						.idCaso(idCaso).idActuacion(idActuacion).userName(caso.getUsuario()).build());
+				String dataCifrada = encriptador.encryptCBC(data);
+				log.info("DATA : {}", data);
+				log.info("DATA encriptada : {}", dataCifrada);
+				dynamicTemplate.put("token", dataCifrada);
 				CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
 						() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder().emailTo(emailTo)
 								.emailFrom(caso.getEmailGenerado()).templateId("d-3bc8f52ff3b04e1e8e4012ca9f43184d")// Template
