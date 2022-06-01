@@ -1,6 +1,6 @@
 package com.samy.service.app.model.request;
 
-import java.util.Map;
+import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,11 +15,14 @@ import lombok.ToString;
 @NoArgsConstructor
 @Setter
 @ToString
-public class LambdaMailRequestSendgrid {
+public class EncryptionRequest implements Serializable{
 
-	private String emailFrom;
-	private String emailTo;
-	private String templateId;
-	private Map<String, String> dynamicTemplate;
+	private static final long serialVersionUID = -1800325903056351843L;
 
+	private String idCaso;
+	
+	private String idActuacion;
+	
+	private String userName;
+	
 }

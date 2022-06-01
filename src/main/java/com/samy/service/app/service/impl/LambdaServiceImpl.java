@@ -54,6 +54,7 @@ public class LambdaServiceImpl implements LambdaService {
             log.info("Cuerp de la peticion para el envio de correo : " + request);
             Gson gson = new Gson();
             String payLoad = gson.toJson(request);
+            log.info("PayLoad {}",payLoad);
             InvokeRequest invokeRequest = new InvokeRequest()
                     .withFunctionName(lambdaMailSenderNombre).withPayload(payLoad);
             InvokeResult result = awsLambda.invoke(invokeRequest);
@@ -62,6 +63,7 @@ public class LambdaServiceImpl implements LambdaService {
             log.info("Respuesta de la Lambda : " + ans);
             return element.getAsJsonObject();
         } catch (ServiceException e) {
+        	e.printStackTrace();
             log.error("Error al invocar lambda -> " + e.toString());
             return new JsonObject();
         }
