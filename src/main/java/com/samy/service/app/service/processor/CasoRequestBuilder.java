@@ -258,7 +258,7 @@ public class CasoRequestBuilder {
 		Tarea tarea = new Tarea();
 		tarea.setTipoTarea(transformTipoTarea(tareaBody.getTipoTarea()));
 		tarea.setDenominacion(tareaBody.getDenominacion());
-		tarea.setFechaRegistro(LocalDateTime.now());
+		tarea.setFechaRegistro(Utils.convertActualZoneLocalDateTime(LocalDateTime.now()));
 		tarea.setIdTarea(tareaBody.getIdTarea());
 		tarea.setRecordatorio(tareaBody.getRecordatorio());
 		tarea.setFechaVencimiento(LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
