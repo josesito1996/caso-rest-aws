@@ -105,7 +105,7 @@ public class TareaResponseProcessor {
 					 * Validar este tema
 					 */
 					if (isProximos) {
-						if (fechaVencimiento.isAfter(LocalDate.now())) {
+						if (fechaVencimiento.isAfter(fechaActual) || fechaVencimiento.isEqual(fechaActual)) {
 							notiVenci.add(NotificacionesVencimientosResponse.builder().idCaso(caso.getId())
 									.idActuacion(actuacion.getIdActuacion()).idTarea(tarea.getIdTarea())
 									.fechaVencimiento(fechaFormateada(tarea.getFechaVencimiento()))
