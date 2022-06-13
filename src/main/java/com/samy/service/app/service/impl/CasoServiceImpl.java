@@ -227,7 +227,8 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				dynamicTemplate.put("urlLogin", urlLogin);
 				dynamicTemplate.put("path", "vencimientoSolicitud");
 				String data = new Gson().toJson(EncryptionRequest.builder()
-						.idCaso(idCaso).idActuacion(idActuacion).userName(caso.getUsuario()).build());
+						.destinatario(nameTo)
+						.idCaso(idCaso).idActuacion(idActuacion).userName(emailTo).build());
 				String dataCifrada = encriptador.encryptCBC(data);
 				log.info("DATA : {}", data);
 				log.info("DATA encriptada : {}", dataCifrada);

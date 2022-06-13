@@ -242,14 +242,13 @@ public class Utils {
 		LocalDateTime fechaHora = LocalDateTime.of(fechaActual, LocalTime.now());
 		return LocalDate.parse(dateZone("America/Lima", fechaHora, "yyyy-MM-dd"));
 	}
-	
+
+	public static LocalDateTime convertActualZoneLocalDateTime(LocalDateTime fechaActual) {
+
+		return LocalDateTime.parse(dateZone("America/Lima", fechaActual, "uuuu-MM-dd'T'HH:mm:ss"));
+	}
+
 	public static boolean esNumero(String cadena) {
 		return cadena.matches("[0-9]*");
 	}
-
-
-	public static void main(String... args) {
-		System.out.println("Fecha : " + convertActualZone(LocalDate.of(2022, 03, 30)));
-	}
-
 }
