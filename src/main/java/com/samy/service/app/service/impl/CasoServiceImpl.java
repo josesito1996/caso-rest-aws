@@ -9,6 +9,7 @@ import static com.samy.service.app.service.impl.ServiceUtils.totalTareasPorVence
 import static com.samy.service.app.util.Contants.ID_PRIMERA_INSTANCIA;
 import static com.samy.service.app.util.Contants.ID_SEGUNDA_INSTANCIA;
 import static com.samy.service.app.util.Contants.ID_TERCERA_INSTANCIA;
+import static com.samy.service.app.util.Contants.YYYY_MM_DD_WITH_SCRIPTS;
 import static com.samy.service.app.util.Contants.correoSami;
 import static com.samy.service.app.util.ListUtils.listArchivoAdjunto;
 import static com.samy.service.app.util.ListUtils.orderByDesc;
@@ -18,6 +19,7 @@ import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.fechaFormateadaYYYMMDD;
 import static com.samy.service.app.util.Utils.formatMoney;
 import static com.samy.service.app.util.Utils.formatMoneyV2;
+import static com.samy.service.app.util.Utils.formatearLocalDate;
 import static com.samy.service.app.util.Utils.getPorcentaje;
 import static com.samy.service.app.util.Utils.mesAnioFecha;
 import static com.samy.service.app.util.Utils.mesFecha;
@@ -46,14 +48,14 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
-import com.samy.service.app.config.EndpointProperties;
 import com.samy.service.app.aws.ExternalDbAws;
+import com.samy.service.app.config.EndpointProperties;
 import com.samy.service.app.exception.BadRequestException;
 import com.samy.service.app.exception.NotFoundException;
 import com.samy.service.app.external.ArchivoAdjunto;
@@ -98,7 +100,6 @@ import com.samy.service.app.model.response.ResponseBar;
 import com.samy.service.app.model.response.SaveTareaResponse;
 import com.samy.service.app.model.response.UpdateCasoResumenResponse;
 import com.samy.service.app.model.response.UpdateTareaResponse;
-import com.samy.service.app.util.EncriptadorAes;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.repo.GenericRepo;
 import com.samy.service.app.service.CasoService;
@@ -108,6 +109,7 @@ import com.samy.service.app.service.processor.CasoRequestBuilder;
 import com.samy.service.app.service.processor.CasoResponseProcessor;
 import com.samy.service.app.service.processor.DocumentoReponseProcessor;
 import com.samy.service.app.service.processor.TareaResponseProcessor;
+import com.samy.service.app.util.EncriptadorAes;
 import com.samy.service.app.util.ListPagination;
 import com.samy.service.samifiles.service.model.ActuacionFileRequest;
 import com.samy.service.samifiles.service.model.ActuacionFileResponse;
@@ -139,6 +141,9 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 
 	@Autowired
 	private EncriptadorAes encriptador;
+	
+	@Value("${sendgrid.template-solicitud-informacion}")
+	private String templateSolicitudInfo;
 
 	@Override
 	protected GenericRepo<Caso, String> getRepo() {
@@ -216,27 +221,25 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				String nameTo = request.getEquipos().get(0).getDestinatario();
 				String emailTo = request.getEquipos().get(0).getCorreo();
 				Map<String, String> dynamicTemplate = new HashMap<>();
-				dynamicTemplate.put("user", nameTo);
-				dynamicTemplate.put("case", caso.getDescripcionCaso());
-				dynamicTemplate.put("actuation",
-						caso.getActuaciones().stream().filter(item -> item.getIdActuacion().equals(idActuacion))
-								.findFirst().orElse(new Actuacion()).getDescripcionAux());
-				dynamicTemplate.put("fechaVenci", request.getFechaVencimiento().toString());
-				dynamicTemplate.put("recordatorioVenci", request.getRecordatorio().getTexto());
-				dynamicTemplate.put("denominacionVenci", request.getDenominacion());
+				dynamicTemplate.put("destinatario", nameTo);
+				dynamicTemplate.put("creadorSolicitud", request.getNombreUsuario());
+				dynamicTemplate.put("correoCreador", request.getUsuario());
+				dynamicTemplate.put("empresa", caso.getEmpresa());
+				dynamicTemplate.put("mensaje", request.getMensaje());
+				dynamicTemplate.put("fechaVencimiento", formatearLocalDate(request.getFechaVencimiento(), YYYY_MM_DD_WITH_SCRIPTS));
 				dynamicTemplate.put("urlLogin", urlLogin);
 				dynamicTemplate.put("path", "vencimientoSolicitud");
-				String data = new Gson().toJson(EncryptionRequest.builder()
-						.destinatario(nameTo)
-						.idCaso(idCaso).idActuacion(idActuacion).userName(emailTo).build());
+				String data = new Gson().toJson(EncryptionRequest.builder().destinatario(nameTo).idCaso(idCaso)
+						.idActuacion(idActuacion).userName(emailTo).build());
 				String dataCifrada = encriptador.encryptCBC(data);
 				log.info("DATA : {}", data);
 				log.info("DATA encriptada : {}", dataCifrada);
 				dynamicTemplate.put("token", dataCifrada);
 				CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
-						() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder().emailTo(emailTo)
-								.emailFrom(caso.getEmailGenerado()).templateId("d-3bc8f52ff3b04e1e8e4012ca9f43184d")// Template
-																														// Sendgrid.
+						() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder()
+								.emailTo(emailTo)
+								.emailFrom(caso.getEmailGenerado())
+								.templateId(templateSolicitudInfo)// Template																					// Sendgrid.
 								.dynamicTemplate(dynamicTemplate).build()));
 				completableFuture.get();
 			} catch (Exception e) {

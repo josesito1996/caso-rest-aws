@@ -13,7 +13,7 @@ public class Contants {
 			+ "+[a-zA-Z]{2,6}$";
 
 	public static final String REGEX_MIME_TYPE = "(application|audio|font|example|image|message|model|multipart|text|video|x-(?:[0-9A-Za-z!#$%&'*+.^_`|~-]+))/([0-9A-Za-z!#$%&'*+.^_`|~-]+)";
-	
+
 	public static final String REGEX_DDMMYYYY = "^(?:(?:31(\\/|-|\\.)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(\\/|-|\\.)(?:0?[13-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(\\/|-|\\.)0?2\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(\\/|-|\\.)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$";
 
 	public static final String lambdaMailNombre = "lambda-mail-service";
@@ -36,4 +36,8 @@ public class Contants {
 	public static Integer ID_PRIMERA_INSTANCIA = 6;
 	public static Integer ID_SEGUNDA_INSTANCIA = 7;
 	public static Integer ID_TERCERA_INSTANCIA = 10;
+
+	public static final String YYYY_MM_DD_WITH_SCRIPTS = "YYYY-MM-dd";
+
+	public static final String DD_MM_YYYY_WITH_SLASH = "dd/MM/yyyy";
 }

@@ -61,6 +61,14 @@ public class TareaBody implements Serializable {
     @Valid
     private ReactSelectRequest tipoTarea;
     
+    @NotNull
+    @NotEmpty
+    private String usuario;
+    
+    @NotNull
+    @NotEmpty
+    private String nombreUsuario;
+    
     @Valid
     @NotNull
     @Schema(title = "Recordatorio")

@@ -2,6 +2,7 @@ package com.samy.service.app.service.impl;
 
 import static com.samy.service.app.util.Contants.diasPlazoVencimiento;
 import static com.samy.service.app.util.Contants.REGEX_DDMMYYYY;
+import static com.samy.service.app.util.Contants.DD_MM_YYYY_WITH_SLASH;
 import static com.samy.service.app.util.Utils.fechaFormateada;
 import static com.samy.service.app.util.Utils.toLocalDate;
 
@@ -203,8 +204,7 @@ public class ServiceUtils {
 
 	public static boolean estaVencido(String fecha) {
 		if (fecha.matches(REGEX_DDMMYYYY)) {
-			System.out.println(fecha);
-			LocalDate fechaProxima = toLocalDate(fecha);
+			LocalDate fechaProxima = toLocalDate(fecha, DD_MM_YYYY_WITH_SLASH);
 			return !fechaProxima.isAfter(LocalDate.now().plusDays(diasPlazoVencimiento));
 		}
 		return false;
