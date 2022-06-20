@@ -177,7 +177,6 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				// LambdaUtils util = new LambdaUtils(lambdaService);
 				// String email;
 				// email = util.mailGeneradoLambda(casoRegistrado);
-				casoRegistrado.setEmailGenerado(correoSami);
 				return modificar(casoRegistrado);
 			} catch (Exception e) {
 				log.error(e.getMessage());
@@ -238,7 +237,7 @@ public class CasoServiceImpl extends CrudImpl<Caso, String> implements CasoServi
 				CompletableFuture<JsonObject> completableFuture = CompletableFuture.supplyAsync(
 						() -> lambdaService.enviarCorreo(LambdaMailRequestSendgrid.builder()
 								.emailTo(emailTo)
-								.emailFrom(caso.getEmailGenerado())
+								.emailFrom(correoSami)
 								.templateId(templateSolicitudInfo)// Template																					// Sendgrid.
 								.dynamicTemplate(dynamicTemplate).build()));
 				completableFuture.get();

@@ -33,6 +33,7 @@ public class CasoServiceAwsApplication implements CommandLineRunner {
 		// testRestTemplate();
 		// testCasosFiles();
 		log.info("ENDPOINTS {}", props);
+		// arreglarCasos();
 	}
 
 	public void testCasosFiles() {
@@ -73,7 +74,7 @@ public class CasoServiceAwsApplication implements CommandLineRunner {
 	public void arreglarCasos() {
 		List<Caso> casos = casoService.listar();
 		casos.forEach(caso -> {
-			caso.setEmailGenerado("notificacion.sami@sidetechsolutions.com");
+			caso.setEmailGenerado("ponte.en@forma.com.pe");
 			log.info("Caso actualizado : {}", casoService.modificar(caso));
 		});
 	}
