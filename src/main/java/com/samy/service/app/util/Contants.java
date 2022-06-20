@@ -22,7 +22,7 @@ public class Contants {
 
 	public static final String passwordCaso = "51st3ma$2021.";
 
-	public static final String correoSami = "notificacion.sami@sidetechsolutions.com";
+	public static final String correoSami = "ponte.en@forma.com.pe";
 
 	public static Map<String, String> mapRiesgo = new HashMap<String, String>() {
 		private static final long serialVersionUID = 2806985167992013988L;
