@@ -62,6 +62,12 @@ public class Utils {
 		String fechaFormateada = fecha.format(formatter);
 		return fechaFormateada;
 	}
+	
+	public static String fechaFormateadaEstandar(LocalDateTime fecha) {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:s");
+      String fechaFormateada = fecha.format(formatter);
+      return fechaFormateada;
+  }
 
 	public static LocalDateTime transformToLocalTime(LocalDate date, LocalTime time) {
 		return LocalDateTime.of(date, time);
