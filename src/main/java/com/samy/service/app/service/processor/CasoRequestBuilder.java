@@ -263,8 +263,8 @@ public class CasoRequestBuilder {
 		tarea.setRecordatorio(tareaBody.getRecordatorio());
 		tarea.setFechaVencimiento(LocalDateTime.of(tareaBody.getFechaVencimiento(), LocalTime.now()));
 		tarea.setEliminado(tareaBody.isEliminado());
-		tarea.setUsuario(tarea.getUsuario());
-		tarea.setNombreUsuario(tarea.getNombreUsuario());
+		tarea.setUsuario(tareaBody.getUsuario());
+		tarea.setNombreUsuario(tareaBody.getNombreUsuario());
 		tarea.setEstado(tareaBody.isEstado());
 		if (tareaBody.getTipoTarea().getLabel().equals("Solicitud")) {
 			tarea.setMensaje(tareaBody.getMensaje());
