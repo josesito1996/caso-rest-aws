@@ -54,6 +54,12 @@ public class Tarea {
 
     @DynamoDBAttribute
     private List<ArchivoAdjunto> archivos;
+    
+    @DynamoDBAttribute
+    private String usuario;
+    
+    @DynamoDBAttribute
+    private String nombreUsuario;
 
     @DynamoDBAttribute
     private boolean estado;

@@ -30,14 +30,19 @@ public class Utils {
 		}
 	}
 
+	public static String formatearLocalDate(LocalDate fecha, String format) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+		return formatter.format(fecha);
+	}
+	
+	public static LocalDate toLocalDate(String fecha, String format) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+		return LocalDate.parse(fecha, formatter);
+	}
+	
 	public static String fechaFormateadaYYYMMDD(LocalDateTime fecha) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYY-MM-dd");
 		return fecha.format(formatter);
-	}
-
-	public static LocalDate toLocalDate(String fecha) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-		return LocalDate.parse(fecha, formatter);
 	}
 
 	public static LocalDate toLocalDateYYYYMMDD(String fecha) {
@@ -57,6 +62,12 @@ public class Utils {
 		String fechaFormateada = fecha.format(formatter);
 		return fechaFormateada;
 	}
+	
+	public static String fechaFormateadaEstandar(LocalDateTime fecha) {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:s");
+      String fechaFormateada = fecha.format(formatter);
+      return fechaFormateada;
+  }
 
 	public static LocalDateTime transformToLocalTime(LocalDate date, LocalTime time) {
 		return LocalDateTime.of(date, time);

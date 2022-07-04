@@ -9,6 +9,7 @@ import com.samy.service.samiprimary.service.api.AnalisisRiesgoControllerApi;
 import com.samy.service.samiprimary.service.api.EtapaControllerApi;
 import com.samy.service.samiprimary.service.api.InspectorControllerApi;
 import com.samy.service.samiprimary.service.api.MateriaControllerApi;
+import com.samy.service.samiusers.service.api.SeguimientoControllerApi;
 import com.samy.service.samiusers.service.api.UsuarioControllerApi;
 
 @Configuration
@@ -64,4 +65,9 @@ public class HttpClientsOpenApi {
 	public UsuarioControllerApi apiUsuario() {
 		return new UsuarioControllerApi(apiUsers());
 	}
+	
+	@Bean
+    public SeguimientoControllerApi apiSeguimiento() {
+        return new SeguimientoControllerApi(apiUsers());
+    }
 }
