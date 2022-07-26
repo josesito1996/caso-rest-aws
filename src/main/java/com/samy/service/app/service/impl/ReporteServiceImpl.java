@@ -11,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.samy.service.app.model.Caso;
 import com.samy.service.app.model.response.DetallePorEmpresaResponse;
+import com.samy.service.app.model.response.ReporteCasosEmpresa;
 import com.samy.service.app.repo.CasoRepo;
 import com.samy.service.app.service.ReporteService;
+import com.samy.service.app.util.Utils;
 import com.samy.service.samiusers.service.api.SeguimientoControllerApi;
 import com.samy.service.samiusers.service.api.UsuarioControllerApi;
 import com.samy.service.samiusers.service.model.Seguimiento;
@@ -68,6 +70,21 @@ public class ReporteServiceImpl implements ReporteService {
       map.put("cantidadActuaciones", cantidadActuaciones.intValue());
       return map;
     }).collect(Collectors.toList());
+  }
+
+  @Override
+  public ReporteCasosEmpresa reportePorEmpresa(String empresa) {
+    List<Caso> casosPorEmpresa = casoRepo.findByEmpresa(empresa);
+    int contadorMulta = 0;
+    double sumaMulta = 0;
+    for (Caso caso : casosPorEmpresa) {
+      if (caso.getMultaPotencial() != null) {
+        contadorMulta++;
+        sumaMulta = sumaMulta + caso.getMultaPotencial().doubleValue();
+      }
+    }
+    return ReporteCasosEmpresa.builder().conMulta(contadorMulta)
+        .sumaMulta(Utils.redondearDecimales(sumaMulta, 2)).build();
   }
 
 }

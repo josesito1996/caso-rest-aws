@@ -36,6 +36,7 @@ public class ActuacionResponseProcessor {
 	public ActuacionResponseX3 transformActuacionResponseX3(Actuacion actuacion) {
 		List<ArchivoAdjunto> archivos = actuacion.getArchivos();
 		String registradoPor = "";
+		log.info("Actuacion : {}", actuacion);
 		if (actuacion.getRegistradoPor() != null) {
 			registradoPor = externalAws.getUser(actuacion.getRegistradoPor()).getDatosUsuario();
 		}

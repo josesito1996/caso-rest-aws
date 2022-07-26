@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.samy.service.app.model.response.DetallePorEmpresaResponse;
+import com.samy.service.app.model.response.ReporteCasosEmpresa;
 import com.samy.service.app.service.ReporteService;
 
 @RestController
@@ -18,6 +19,11 @@ public class ReporteController {
   @GetMapping("/verPorEmpresa/{empresa}")
   public DetallePorEmpresaResponse verPorEmpresa(@PathVariable String empresa) {
     return service.verPorEmpresa(empresa);
+  }
+  
+  @GetMapping("/verReportePorEmpresa/{empresa}")
+  public ReporteCasosEmpresa reportePorEmpresa(@PathVariable String empresa) {
+    return service.reportePorEmpresa(empresa);
   }
   
 }

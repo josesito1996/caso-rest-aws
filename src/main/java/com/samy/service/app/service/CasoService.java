@@ -64,7 +64,6 @@ public interface CasoService extends ICrud<Caso, String> {
     public UpdateTareaResponse verTareaPorId(String idCaso, String idActuacion, String idTarea);
 
     public Caso eliminarTareaPorId(String idCaso, String idActuacion, String idTarea);
-
     /**
      * Vista del Dashboard.
      */
@@ -103,11 +102,9 @@ public interface CasoService extends ICrud<Caso, String> {
     public GraficoCasosTemplateResponse evolucionCarteraResponse(String userName, String desde, String hasta);
     
     public GraficoCasosTemplateResponse materiasFiscalizadas(String userName);
-    
     /**
      * Documento Anexo REsponse
      */
-
     public List<DocumentoAnexoResponse> cambiarPrincipal(DocumentoAnexoRequest request);
     
     public DocumentoAnexoResponse cambiarUrl(DocumentoAnexoRequest requests);
@@ -117,5 +114,12 @@ public interface CasoService extends ICrud<Caso, String> {
     public ActuacionResponseX3 editarActuacion(EditarActuacionRequest request);
     
     public UpdateCasoResumenResponse updateResumen(UpdateCasoResumenRequest request);
+    /**
+     * Logica para Eliminar Casos.
+     */
+    public void eliminarCaso(String idCaso);
+    
+    public void eliminarActuacion(String idCaso, String idActuacion);
+    
     
 }
